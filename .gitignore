@@ -1,0 +1,39 @@
+# Visual Studio temporary files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+Debug/
+Release/
+
+# Database / cache files
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.lock
+
+# Packages
+packages/
+
+# Others
+_ReSharper*/
+*.ncb
+*.aps
+*.pch
+*.pdb
+*.idb
+*.ipch
+*.tlog/
+*.lastbuildstate
+*.iobj
+*.iobj
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
