@@ -7,18 +7,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MaterialSkin;
+using MaterialSkin.Controls;
 
 namespace M.A_Florencio_Dental_Records
 {
-    public partial class Form1 : Form
+    public partial class Form1 : MaterialForm
     {
         Button NavButton;
 
         public Form1()
-        { 
+        {
             InitializeComponent();
-            LoadControl(new DBcontrol());
-            FormPnl.Visible = true;
+
+            var materialSkinManager = MaterialSkinManager.Instance;
+
+            materialSkinManager.AddFormToManage(this);
+
+            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+
+            materialSkinManager.ColorScheme = new ColorScheme(
+                Primary.Teal500,
+                Primary.Teal700,
+                Primary.Teal200,
+                Accent.Teal200,
+                TextShade.WHITE
+            );
+
+            // Load controls AFTER theme is applied
+            
         }
 
         void UseButton(Button btn)
@@ -52,7 +69,9 @@ namespace M.A_Florencio_Dental_Records
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            LoadControl(new DBcontrol());
+            FormPnl.Visible = true;
+            ActivateButton(button1);
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -131,6 +150,12 @@ namespace M.A_Florencio_Dental_Records
         private void button4_Click(object sender, EventArgs e)
         {
             LoadControl(new appointmentsControl());
+            ActivateButton((Button)sender);
+        }
+
+        private void NAVArchive_Click(object sender, EventArgs e)
+        {
+            LoadControl(new Archive());
             ActivateButton((Button)sender);
         }
     }

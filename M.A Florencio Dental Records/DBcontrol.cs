@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using MaterialSkin;
+using MaterialSkin.Controls;
+
 
 namespace M.A_Florencio_Dental_Records
 {
@@ -18,8 +21,15 @@ namespace M.A_Florencio_Dental_Records
         public DBcontrol()
         {
             InitializeComponent();
+
             int totalPatients = GetPatientCount();
             lblPatientCount.Text = "" + totalPatients;
+
+            int todayAppointments = GetTodayAppointments();
+            lblTodayAppointments.Text = todayAppointments.ToString();
+
+            int upcoming = GetUpcomingAppointments();
+            lblUpcomingAppointments.Text = upcoming.ToString();
         }
 
         private void panelContainer_Paint(object sender, PaintEventArgs e)
@@ -34,10 +44,11 @@ namespace M.A_Florencio_Dental_Records
 
         private void BTNAddPatient_Click(object sender, EventArgs e)
         {
-            BTNAddPatient.BackgroundImage = Properties.Resources.Button;
-            Form2 frm = new Form2();
+            Form1 mainForm = (Form1)this.FindForm(); // get the main form
+            Form2 frm = new Form2(mainForm);
+            mainForm.Hide();
             frm.Show();
-            this.Hide();
+            this.Hide(); // hide DBcontrol panel temporarily
         }
 
         private void BTNAddPatient_MouseEnter(object sender, EventArgs e)
@@ -95,5 +106,42 @@ namespace M.A_Florencio_Dental_Records
         {
 
         }
+        public int GetTodayAppointments()
+        {
+            int count = 0;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT COUNT(*) FROM Appointments WHERE AppointmentDate = @today";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@today", DateTime.Today);
+
+                conn.Open();
+                count = (int)cmd.ExecuteScalar();
+            }
+
+            return count;
+        }
+
+        public int GetUpcomingAppointments()
+        {
+            int count = 0;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"SELECT COUNT(*) 
+                         FROM Appointments
+                         WHERE AppointmentDate > CAST(GETDATE() AS DATE)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                conn.Open();
+                count = (int)cmd.ExecuteScalar();
+            }
+
+            return count;
+        }
+
     }
 }

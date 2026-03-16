@@ -11,28 +11,26 @@ using System.Data.SqlClient;
 
 namespace M.A_Florencio_Dental_Records
 {
-    public partial class patientControl : UserControl
+    public partial class Archive : UserControl
     {
         string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
 
-        public patientControl()
+        public int PatientID { get; set; }
+
+        public Archive()
         {
             InitializeComponent();
-            LoadPatients();
+            LoadArchivedPatients();
         }
 
-        private void patientControl_Load(object sender, EventArgs e)
+        private void LoadArchivedPatients()
         {
-
-        }
-
-        private void LoadPatients()
-        {
-            flowPatients.Controls.Clear();
+            flowArchive.Controls.Clear();
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT PatientID, FullName, Gender, Age, ContactNumber FROM Patients WHERE IsArchived = 0";
+                // Load ONLY archived patients (IsArchived = 1)
+                string query = "SELECT PatientID, FullName, Gender, Age, ContactNumber FROM Patients WHERE IsArchived = 1";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
 
@@ -41,7 +39,7 @@ namespace M.A_Florencio_Dental_Records
 
                 while (reader.Read())
                 {
-                    Patient card = new Patient();
+                    ArchivePatients card = new ArchivePatients();
 
                     card.PatientID = Convert.ToInt32(reader["PatientID"]);
 
@@ -53,12 +51,12 @@ namespace M.A_Florencio_Dental_Records
                         reader["ContactNumber"].ToString()
                     );
 
-                    flowPatients.Controls.Add(card);
+                    flowArchive.Controls.Add(card);
                 }
             }
         }
 
-        private void flowPatients_Paint(object sender, PaintEventArgs e)
+        private void Archive_Load(object sender, EventArgs e)
         {
 
         }

@@ -25,7 +25,7 @@ namespace M.A_Florencio_Dental_Records
         {
 
         }
-
+        
         private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
         {
             LoadAppointments(e.Start);
@@ -84,6 +84,24 @@ namespace M.A_Florencio_Dental_Records
 
                 DGVAppointments.DataSource = table;
             }
+        }
+
+        public int GetTodayAppointmentsCount()
+        {
+            int count = 0;
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT COUNT(*) FROM Appointments WHERE AppointmentDate = @today";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@today", DateTime.Today);
+
+                conn.Open();
+                count = (int)cmd.ExecuteScalar();
+            }
+
+            return count;
         }
 
         private void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e)
