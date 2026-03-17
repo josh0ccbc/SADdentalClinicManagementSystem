@@ -29,28 +29,25 @@ namespace M.A_Florencio_Dental_Records
         private void LoadPatients()
         {
             flowPatients.Controls.Clear();
-
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT PatientID, FullName, Gender, Age, ContactNumber FROM Patients WHERE IsArchived = 0";
-
+                string query = "SELECT PatientID, FullName, Gender, BirthDate, Age, ContactNumber FROM Patients WHERE IsArchived = 0";
                 SqlCommand cmd = new SqlCommand(query, conn);
-
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 while (reader.Read())
                 {
                     Patient card = new Patient();
-
                     card.PatientID = Convert.ToInt32(reader["PatientID"]);
-
+                    
                     card.SetPatient(
-                        reader["PatientID"].ToString(),
-                        reader["FullName"].ToString(),
-                        reader["Gender"].ToString(),
-                        Convert.ToInt32(reader["Age"]),
-                        reader["ContactNumber"].ToString()
+                        Convert.ToDateTime(reader["BirthDate"]),     
+                        reader["PatientID"].ToString(),              
+                        reader["FullName"].ToString(),               
+                        reader["Gender"].ToString(),                 
+                        Convert.ToInt32(reader["Age"]),            
+                        reader["ContactNumber"].ToString()            
                     );
 
                     flowPatients.Controls.Add(card);

@@ -32,22 +32,19 @@ namespace M.A_Florencio_Dental_Records
                 Primary.Teal200,
                 Accent.Teal200,
                 TextShade.WHITE
-            );
-
-            // Load controls AFTER theme is applied
-            
+            );        
         }
 
         void UseButton(Button btn)
         {
             if (NavButton != null)
             {
-                NavButton.BackColor = Color.FromArgb(255, 255, 255); // normal color
+                NavButton.BackColor = Color.FromArgb(255, 255, 255); 
                 NavButton.ForeColor = Color.Black;
             }
 
             NavButton = btn;
-            NavButton.BackColor = Color.FromArgb(95, 158, 160); // active color
+            NavButton.BackColor = Color.FromArgb(95, 158, 160); 
             NavButton.ForeColor = Color.White;
         }
 
@@ -55,7 +52,7 @@ namespace M.A_Florencio_Dental_Records
         {
             if (NavButton != null)
             {
-                NavButton.BackColor = Color.FromArgb(255, 255, 255); // normal color
+                NavButton.BackColor = Color.FromArgb(255, 255, 255);
                 NavButton.ForeColor = Color.Black;
             }
 
@@ -63,7 +60,7 @@ namespace M.A_Florencio_Dental_Records
             button1.ForeColor = Color.Black;
 
             NavButton = btn;
-            NavButton.BackColor = Color.FromArgb(95, 158, 160); // active color
+            NavButton.BackColor = Color.FromArgb(95, 158, 160);
             NavButton.ForeColor = Color.White;
         }
 

@@ -33,48 +33,52 @@
             this.lblContact = new System.Windows.Forms.Label();
             this.DPpatientid = new System.Windows.Forms.Label();
             this.btnDelete = new System.Windows.Forms.Button();
+            this.BTNedit = new System.Windows.Forms.Button();
             this.btnView = new System.Windows.Forms.Button();
+            this.BDAYage = new System.Windows.Forms.Label();
+            this.lblAge = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblName
             // 
             this.lblName.AutoSize = true;
             this.lblName.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblName.Location = new System.Drawing.Point(93, 8);
+            this.lblName.Location = new System.Drawing.Point(40, 9);
             this.lblName.Name = "lblName";
-            this.lblName.Size = new System.Drawing.Size(47, 15);
+            this.lblName.Size = new System.Drawing.Size(72, 15);
             this.lblName.TabIndex = 4;
-            this.lblName.Text = "label1";
+            this.lblName.Text = "Full Name";
             // 
             // lblGenderAge
             // 
             this.lblGenderAge.AutoSize = true;
             this.lblGenderAge.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblGenderAge.Location = new System.Drawing.Point(286, 9);
+            this.lblGenderAge.Location = new System.Drawing.Point(269, 13);
             this.lblGenderAge.Name = "lblGenderAge";
-            this.lblGenderAge.Size = new System.Drawing.Size(47, 15);
+            this.lblGenderAge.Size = new System.Drawing.Size(55, 15);
             this.lblGenderAge.TabIndex = 6;
-            this.lblGenderAge.Text = "label1";
+            this.lblGenderAge.Text = "Gender";
+            this.lblGenderAge.Click += new System.EventHandler(this.lblGenderAge_Click);
             // 
             // lblContact
             // 
             this.lblContact.AutoSize = true;
             this.lblContact.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblContact.Location = new System.Drawing.Point(467, 9);
+            this.lblContact.Location = new System.Drawing.Point(611, 13);
             this.lblContact.Name = "lblContact";
-            this.lblContact.Size = new System.Drawing.Size(47, 15);
+            this.lblContact.Size = new System.Drawing.Size(59, 15);
             this.lblContact.TabIndex = 7;
-            this.lblContact.Text = "label2";
+            this.lblContact.Text = "Contact";
             // 
             // DPpatientid
             // 
             this.DPpatientid.AutoSize = true;
             this.DPpatientid.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DPpatientid.Location = new System.Drawing.Point(16, 14);
+            this.DPpatientid.Location = new System.Drawing.Point(-3, 14);
             this.DPpatientid.Name = "DPpatientid";
-            this.DPpatientid.Size = new System.Drawing.Size(47, 15);
+            this.DPpatientid.Size = new System.Drawing.Size(21, 15);
             this.DPpatientid.TabIndex = 4;
-            this.DPpatientid.Text = "label1";
+            this.DPpatientid.Text = "ID";
             // 
             // btnDelete
             // 
@@ -83,7 +87,7 @@
             this.btnDelete.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.btnDelete.FlatAppearance.BorderSize = 0;
             this.btnDelete.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnDelete.Location = new System.Drawing.Point(642, 5);
+            this.btnDelete.Location = new System.Drawing.Point(806, 5);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(20, 20);
             this.btnDelete.TabIndex = 5;
@@ -92,6 +96,22 @@
             this.btnDelete.MouseEnter += new System.EventHandler(this.btnDelete_MouseEnter);
             this.btnDelete.MouseLeave += new System.EventHandler(this.btnDelete_MouseLeave);
             // 
+            // BTNedit
+            // 
+            this.BTNedit.BackColor = System.Drawing.Color.White;
+            this.BTNedit.BackgroundImage = global::M.A_Florencio_Dental_Records.Properties.Resources.edit;
+            this.BTNedit.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.BTNedit.FlatAppearance.BorderSize = 0;
+            this.BTNedit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTNedit.Location = new System.Drawing.Point(780, 4);
+            this.BTNedit.Name = "BTNedit";
+            this.BTNedit.Size = new System.Drawing.Size(20, 20);
+            this.BTNedit.TabIndex = 5;
+            this.BTNedit.UseVisualStyleBackColor = false;
+            this.BTNedit.Click += new System.EventHandler(this.btnView_Click);
+            this.BTNedit.MouseEnter += new System.EventHandler(this.BTNedit_MouseEnter);
+            this.BTNedit.MouseLeave += new System.EventHandler(this.BTNedit_MouseLeave);
+            // 
             // btnView
             // 
             this.btnView.BackColor = System.Drawing.Color.White;
@@ -99,7 +119,7 @@
             this.btnView.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.btnView.FlatAppearance.BorderSize = 0;
             this.btnView.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnView.Location = new System.Drawing.Point(609, 6);
+            this.btnView.Location = new System.Drawing.Point(749, 6);
             this.btnView.Name = "btnView";
             this.btnView.Size = new System.Drawing.Size(20, 20);
             this.btnView.TabIndex = 5;
@@ -108,18 +128,43 @@
             this.btnView.MouseEnter += new System.EventHandler(this.btnView_MouseEnter);
             this.btnView.MouseLeave += new System.EventHandler(this.btnView_MouseLeave);
             // 
+            // BDAYage
+            // 
+            this.BDAYage.AutoSize = true;
+            this.BDAYage.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BDAYage.Location = new System.Drawing.Point(461, 13);
+            this.BDAYage.Name = "BDAYage";
+            this.BDAYage.Size = new System.Drawing.Size(43, 15);
+            this.BDAYage.TabIndex = 6;
+            this.BDAYage.Text = "BDAY";
+            this.BDAYage.Click += new System.EventHandler(this.lblGenderAge_Click);
+            // 
+            // lblAge
+            // 
+            this.lblAge.AutoSize = true;
+            this.lblAge.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAge.Location = new System.Drawing.Point(378, 13);
+            this.lblAge.Name = "lblAge";
+            this.lblAge.Size = new System.Drawing.Size(32, 15);
+            this.lblAge.TabIndex = 6;
+            this.lblAge.Text = "Age";
+            this.lblAge.Click += new System.EventHandler(this.lblGenderAge_Click);
+            // 
             // Patient
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.Controls.Add(this.lblContact);
+            this.Controls.Add(this.lblAge);
+            this.Controls.Add(this.BDAYage);
             this.Controls.Add(this.lblGenderAge);
             this.Controls.Add(this.btnDelete);
+            this.Controls.Add(this.BTNedit);
             this.Controls.Add(this.btnView);
             this.Controls.Add(this.DPpatientid);
             this.Controls.Add(this.lblName);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "Patient";
-            this.Size = new System.Drawing.Size(704, 51);
+            this.Size = new System.Drawing.Size(857, 51);
             this.Load += new System.EventHandler(this.Patient_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -133,5 +178,8 @@
         private System.Windows.Forms.Label lblContact;
         private System.Windows.Forms.Label DPpatientid;
         private System.Windows.Forms.Button btnDelete;
+        private System.Windows.Forms.Button BTNedit;
+        private System.Windows.Forms.Label BDAYage;
+        private System.Windows.Forms.Label lblAge;
     }
 }
