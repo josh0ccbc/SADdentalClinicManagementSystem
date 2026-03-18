@@ -32,7 +32,6 @@ namespace M.A_Florencio_Dental_Records
         {
             this.PatientID = Convert.ToInt32(PatientID);
             lblName.Text = name;
-            lblGenderAge.Text = gender + " • " + age + " yrs old";
             lblContact.Text = contact;
         }
 
@@ -129,6 +128,44 @@ namespace M.A_Florencio_Dental_Records
             {
                 MessageBox.Show("Error: " + ex.Message);
             }
+        }
+
+        private void btnUnarchive_MouseEnter(object sender, EventArgs e)
+        {
+            btnUnarchive.BackgroundImage = Properties.Resources.outbox2;
+        }
+
+        private void btnUnarchive_MouseLeave(object sender, EventArgs e)
+        {
+            btnUnarchive.BackgroundImage = Properties.Resources.outbox;
+        }
+
+        private void btnView_MouseEnter(object sender, EventArgs e)
+        {
+            btnView.BackgroundImage = Properties.Resources.view2;
+        }
+
+        private void btnView_MouseLeave(object sender, EventArgs e)
+        {
+            btnView.BackgroundImage = Properties.Resources.view;
+        }
+
+        private void btnDelete_MouseEnter(object sender, EventArgs e)
+        {
+            btnDelete.BackgroundImage = Properties.Resources.bin2;
+        }
+
+        private void btnDelete_MouseLeave(object sender, EventArgs e)
+        {
+            btnDelete.BackgroundImage = Properties.Resources.bin;
+        }
+
+        private void btnView_Click_1(object sender, EventArgs e)
+        {
+            Form1 mainForm = (Form1)this.FindForm();
+            ViewArchivedPatient viewPatient = new ViewArchivedPatient();
+            viewPatient.LoadPatientDetails(this.PatientID);
+            mainForm.LoadControl(viewPatient);
         }
     }
 }

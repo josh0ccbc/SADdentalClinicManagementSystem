@@ -149,7 +149,7 @@ namespace M.A_Florencio_Dental_Records
         {
             sortAtoZ = !sortAtoZ;
             currentPage = 1; 
-            btnAtoZ.Text = sortAtoZ ? "Z-A" : "A-Z";
+            btnAtoZ.Text = sortAtoZ ? "A-Z" : "Z-A";
             LoadPatients();
         }
 

@@ -154,7 +154,7 @@
             // lblPageInfo
             // 
             this.lblPageInfo.AutoSize = true;
-            this.lblPageInfo.Location = new System.Drawing.Point(835, 40);
+            this.lblPageInfo.Location = new System.Drawing.Point(800, 34);
             this.lblPageInfo.Name = "lblPageInfo";
             this.lblPageInfo.Size = new System.Drawing.Size(41, 13);
             this.lblPageInfo.TabIndex = 14;
@@ -162,7 +162,7 @@
             // 
             // btnNextPage
             // 
-            this.btnNextPage.Location = new System.Drawing.Point(738, 30);
+            this.btnNextPage.Location = new System.Drawing.Point(705, 28);
             this.btnNextPage.Name = "btnNextPage";
             this.btnNextPage.Size = new System.Drawing.Size(75, 23);
             this.btnNextPage.TabIndex = 15;
@@ -172,7 +172,7 @@
             // 
             // btnPreviousPage
             // 
-            this.btnPreviousPage.Location = new System.Drawing.Point(653, 30);
+            this.btnPreviousPage.Location = new System.Drawing.Point(620, 28);
             this.btnPreviousPage.Name = "btnPreviousPage";
             this.btnPreviousPage.Size = new System.Drawing.Size(75, 23);
             this.btnPreviousPage.TabIndex = 16;
@@ -182,19 +182,19 @@
             // 
             // txtSearch
             // 
-            this.txtSearch.Location = new System.Drawing.Point(501, 32);
+            this.txtSearch.Location = new System.Drawing.Point(434, 28);
             this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Size = new System.Drawing.Size(100, 20);
+            this.txtSearch.Size = new System.Drawing.Size(169, 20);
             this.txtSearch.TabIndex = 17;
             this.txtSearch.TextChanged += new System.EventHandler(this.txtSearch_TextChanged);
             // 
             // btnAtoZ
             // 
-            this.btnAtoZ.Location = new System.Drawing.Point(388, 29);
+            this.btnAtoZ.Location = new System.Drawing.Point(344, 29);
             this.btnAtoZ.Name = "btnAtoZ";
             this.btnAtoZ.Size = new System.Drawing.Size(75, 23);
             this.btnAtoZ.TabIndex = 18;
-            this.btnAtoZ.Text = "A to Z";
+            this.btnAtoZ.Text = "A-Z";
             this.btnAtoZ.UseVisualStyleBackColor = false;
             this.btnAtoZ.Click += new System.EventHandler(this.btnAtoZ_Click);
             // 

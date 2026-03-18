@@ -125,6 +125,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewArchivedPatient.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ViewArchivedPatient.Designer.cs">
+      <DependentUpon>ViewArchivedPatient.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="AddPatientInfo.resx">
       <DependentUpon>AddPatientInfo.cs</DependentUpon>
     </EmbeddedResource>
@@ -171,6 +177,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="ViewArchivedPatient.resx">
+      <DependentUpon>ViewArchivedPatient.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -241,6 +250,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\edit2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\outbox.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\outbox2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
