@@ -58,7 +58,7 @@
             // 
             // flowPatients
             // 
-            this.flowPatients.Location = new System.Drawing.Point(19, 105);
+            this.flowPatients.Location = new System.Drawing.Point(19, 95);
             this.flowPatients.Name = "flowPatients";
             this.flowPatients.Padding = new System.Windows.Forms.Padding(20);
             this.flowPatients.Size = new System.Drawing.Size(857, 451);

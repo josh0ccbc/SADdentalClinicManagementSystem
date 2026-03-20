@@ -56,6 +56,18 @@
     <Compile Include="AddPatientInfo.Designer.cs">
       <DependentUpon>AddPatientInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppointmentCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AppointmentCard.Designer.cs">
+      <DependentUpon>AppointmentCard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AppointmentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AppointmentForm.Designer.cs">
+      <DependentUpon>AppointmentForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="appointmentsControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -91,12 +103,6 @@
     </Compile>
     <Compile Include="Form2.Designer.cs">
       <DependentUpon>Form2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Form3.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form3.Designer.cs">
-      <DependentUpon>Form3.cs</DependentUpon>
     </Compile>
     <Compile Include="MedicalInfo.cs">
       <SubType>UserControl</SubType>
@@ -134,6 +140,12 @@
     <EmbeddedResource Include="AddPatientInfo.resx">
       <DependentUpon>AddPatientInfo.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="AppointmentCard.resx">
+      <DependentUpon>AppointmentCard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AppointmentForm.resx">
+      <DependentUpon>AppointmentForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="appointmentsControl.resx">
       <DependentUpon>appointmentsControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -151,9 +163,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form2.resx">
       <DependentUpon>Form2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Form3.resx">
-      <DependentUpon>Form3.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MedicalInfo.resx">
       <DependentUpon>MedicalInfo.cs</DependentUpon>
