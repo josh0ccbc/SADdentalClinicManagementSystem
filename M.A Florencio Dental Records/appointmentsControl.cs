@@ -39,10 +39,13 @@ namespace M.A_Florencio_Dental_Records
         // Add appointment button
         private void button1_Click(object sender, EventArgs e)
         {
+            Form1 mainForm = (Form1)this.FindForm();
+            mainForm.Hide();
+
             AppointmentForm appointmentForm = new AppointmentForm();
             appointmentForm.ShowDialog();
 
-            // Reload everything after adding
+            mainForm.Show();
             LoadAppointmentDates();
             LoadAppointments(DateTime.Today);
             monthCalendar1.SelectionStart = DateTime.Today;

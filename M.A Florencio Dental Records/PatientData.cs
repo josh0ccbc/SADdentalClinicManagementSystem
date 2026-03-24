@@ -8,6 +8,7 @@ namespace M.A_Florencio_Dental_Records
 {
     public class PatientData
     {
+        public int PatientID { get; set; }
         public string FullName { get; set; }
         public string Gender { get; set; }
         public DateTime BirthDate { get; set; }

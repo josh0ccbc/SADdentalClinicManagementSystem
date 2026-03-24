@@ -208,9 +208,8 @@ namespace M.A_Florencio_Dental_Records
             patientData.GuardianRelationship = Grelationship.Text;
 
             Form2 form2 = (Form2)this.FindForm();
-            MedicalInfo medicalInfo = new MedicalInfo();
-            medicalInfo.patientData = patientData; 
-            form2.LoadControl(medicalInfo);
+            MedicalHistoryForm mhForm = new MedicalHistoryForm(patientData.PatientID);
+            mhForm.ShowDialog();
         }
 
         private void txtFullName_TextChanged(object sender, EventArgs e)

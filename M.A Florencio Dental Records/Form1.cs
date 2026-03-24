@@ -155,5 +155,10 @@ namespace M.A_Florencio_Dental_Records
             LoadControl(new Archive());
             ActivateButton((Button)sender);
         }
+
+        private void label1_Click_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }

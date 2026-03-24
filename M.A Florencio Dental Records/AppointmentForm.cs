@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using MaterialSkin;
+using MaterialSkin.Controls;
 
 namespace M.A_Florencio_Dental_Records
 {
-    public partial class AppointmentForm : Form
+    public partial class AppointmentForm : MaterialForm
     {
         string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+
 
         public AppointmentForm()
         {
@@ -138,6 +141,21 @@ namespace M.A_Florencio_Dental_Records
         private void btnBack_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void btnBack_MouseEnter(object sender, EventArgs e)
+        {
+            btnBack.BackgroundImage = Properties.Resources.HoverArrowBack;
+        }
+
+        private void btnBack_MouseLeave(object sender, EventArgs e)
+        {
+            btnBack.BackgroundImage = Properties.Resources.ArrowBack;
+        }
+
+        private void txtPatientName_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 

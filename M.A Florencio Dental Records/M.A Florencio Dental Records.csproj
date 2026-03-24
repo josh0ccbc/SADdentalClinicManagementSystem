@@ -104,11 +104,11 @@
     <Compile Include="Form2.Designer.cs">
       <DependentUpon>Form2.cs</DependentUpon>
     </Compile>
-    <Compile Include="MedicalInfo.cs">
-      <SubType>UserControl</SubType>
+    <Compile Include="MedicalHistoryForm.cs">
+      <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MedicalInfo.Designer.cs">
-      <DependentUpon>MedicalInfo.cs</DependentUpon>
+    <Compile Include="MedicalHistoryForm.Designer.cs">
+      <DependentUpon>MedicalHistoryForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Patient.cs">
       <SubType>UserControl</SubType>
@@ -164,8 +164,8 @@
     <EmbeddedResource Include="Form2.resx">
       <DependentUpon>Form2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MedicalInfo.resx">
-      <DependentUpon>MedicalInfo.cs</DependentUpon>
+    <EmbeddedResource Include="MedicalHistoryForm.resx">
+      <DependentUpon>MedicalHistoryForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Patient.resx">
       <DependentUpon>Patient.cs</DependentUpon>
