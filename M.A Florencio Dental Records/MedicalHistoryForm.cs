@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Data.SqlClient;
 using MaterialSkin;
 using MaterialSkin.Controls;
+using System.Linq;
 
 namespace M.A_Florencio_Dental_Records
 {
@@ -89,14 +90,14 @@ namespace M.A_Florencio_Dental_Records
                     // General Tab
                     radGoodHealth.Checked = Convert.ToBoolean(reader["GoodHealth"]);
                     radUnderTreatment.Checked = Convert.ToBoolean(reader["UnderMedicalTreatment"]);
-                    radSeriousIllness.Checked = Convert.ToBoolean(reader["GoodHealth"]);
-                    radHospitalized.Checked = Convert.ToBoolean(reader["UnderMedicalTreatment"]);
+                    radSeriousIllness.Checked = Convert.ToBoolean(reader["SeriousIllness"]);
+                    radHospitalized.Checked = Convert.ToBoolean(reader["Hospitalized"]);
                     
                     // Allergies Tab
                     chkLocalAnesthetic.Checked = Convert.ToBoolean(reader["LocalAestheticAllergy"]);
                     chkPenicillin.Checked = Convert.ToBoolean(reader["PenicillinAllergy"]);
                     chkSulfa.Checked = Convert.ToBoolean(reader["SulfaAllergy"]);
-                    chkLatex.Checked = Convert.ToBoolean(reader["AspirinAllergy"]);
+                    chkAspirin.Checked = Convert.ToBoolean(reader["AspirinAllergy"]);
                     chkLatex.Checked = Convert.ToBoolean(reader["LatexAllergy"]);
                     txtOtherAllergies.Text = reader["OtherAllergies"].ToString() ?? "";
 
@@ -152,10 +153,16 @@ namespace M.A_Florencio_Dental_Records
                 tabMedicalHistory.SelectedIndex = currentTab;
                 UpdateNavigation();
             }
+            else
+            {
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            }
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
 
@@ -235,9 +242,25 @@ namespace M.A_Florencio_Dental_Records
                         insertCmd.ExecuteNonQuery();
                     }
 
+                    MessageBox.Show("Patient Recorded Successfully");
                     conn.Close();
-                    MessageBox.Show("Medical history saved successfully!");
-                    this.Close();
+                    
+
+                    Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+
+                    if (mainForm != null)
+                    {
+                        mainForm.Show();
+                        mainForm.WindowState = FormWindowState.Normal;
+                        mainForm.BringToFront();
+                        mainForm.LoadControl(new DBcontrol());
+                    }
+                    else
+                    {
+                        mainForm = new Form1();
+                        mainForm.Show();
+                        mainForm.LoadControl(new DBcontrol()); 
+                    }
                 }
             }
             catch (Exception ex)
@@ -256,8 +279,8 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@LocalAnesthetic", chkLocalAnesthetic.Checked);
             cmd.Parameters.AddWithValue("@Penicillin", chkPenicillin.Checked);
             cmd.Parameters.AddWithValue("@Sulfa", chkSulfa.Checked);
-            cmd.Parameters.AddWithValue("@Aspirin", chkLatex.Checked);
-            cmd.Parameters.AddWithValue("@Latex", chkLatex.Checked);
+            cmd.Parameters.AddWithValue("@Aspirin", chkAspirin.Checked);
+            cmd.Parameters.AddWithValue("@Latex", chkAspirin.Checked);
             cmd.Parameters.AddWithValue("@OtherAllergies", txtOtherAllergies.Text ?? "");
             cmd.Parameters.AddWithValue("@PrescriptionMeds", chkPrescriptionMeds.Checked);
             cmd.Parameters.AddWithValue("@MedicationList", txtMedicationList.Text ?? "");

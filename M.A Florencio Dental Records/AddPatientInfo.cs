@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 
 namespace M.A_Florencio_Dental_Records
 {
@@ -207,9 +208,82 @@ namespace M.A_Florencio_Dental_Records
             patientData.GuardianContact = Gcontact.Text;
             patientData.GuardianRelationship = Grelationship.Text;
 
+            // ✅ SAVE PATIENT FIRST
+            int newPatientID = SavePatientToDB();
+
             Form2 form2 = (Form2)this.FindForm();
-            MedicalHistoryForm mhForm = new MedicalHistoryForm(patientData.PatientID);
-            mhForm.ShowDialog();
+
+            form2.Hide();
+
+            MedicalHistoryForm mhForm = new MedicalHistoryForm(newPatientID);
+            DialogResult result = mhForm.ShowDialog();
+
+            if (result == DialogResult.OK)
+            {
+                Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+
+                if (mainForm == null)
+                {
+                    mainForm = new Form1();
+                }
+
+                mainForm.Show();
+                mainForm.WindowState = FormWindowState.Normal;
+                mainForm.BringToFront();
+                mainForm.LoadControl(new DBcontrol());
+
+                form2.Close(); // closes Form2 AFTER Form1 is visible
+            }
+            else
+            {
+                form2.Show();
+            }
+        }
+
+        private int SavePatientToDB()
+        {
+            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"
+                INSERT INTO Patients 
+                (FullName, Gender, BirthDate, Age, ContactNumber, Address, CivilStatus, Religion, 
+                 GuardianName, GuardianContact, GuardianRelationship, DateRegistered, IsArchived)
+                VALUES
+                (@FullName, @Gender, @BirthDate, @Age, @ContactNumber, @Address, @CivilStatus, @Religion,
+                 @GuardianName, @GuardianContact, @GuardianRelationship, @DateRegistered, 0);
+                
+                SELECT CAST(SCOPE_IDENTITY() as int);";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@FullName", patientData.FullName);
+                    cmd.Parameters.AddWithValue("@Gender", patientData.Gender);
+                    cmd.Parameters.AddWithValue("@BirthDate", patientData.BirthDate);
+                    cmd.Parameters.AddWithValue("@Age", patientData.Age);
+                    cmd.Parameters.AddWithValue("@ContactNumber", patientData.ContactNumber);
+                    cmd.Parameters.AddWithValue("@Address", patientData.Address);
+                    cmd.Parameters.AddWithValue("@CivilStatus", patientData.CivilStatus);
+                    cmd.Parameters.AddWithValue("@Religion", patientData.Religion);
+                    cmd.Parameters.AddWithValue("@GuardianName", patientData.GuardianName ?? "");
+                    cmd.Parameters.AddWithValue("@GuardianContact", patientData.GuardianContact ?? "");
+                    cmd.Parameters.AddWithValue("@GuardianRelationship", patientData.GuardianRelationship ?? "");
+                    cmd.Parameters.AddWithValue("@DateRegistered", DateTime.Now);
+
+                    conn.Open();
+                    int newID = (int)cmd.ExecuteScalar();
+                    conn.Close();
+
+                    return newID;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving patient: " + ex.Message);
+                return 0;
+            }
         }
 
         private void txtFullName_TextChanged(object sender, EventArgs e)

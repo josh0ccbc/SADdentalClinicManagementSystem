@@ -68,6 +68,7 @@
             // 
             // FormPnl
             // 
+            this.FormPnl.AutoScroll = true;
             this.FormPnl.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.FormPnl.Location = new System.Drawing.Point(230, 64);
             this.FormPnl.Name = "FormPnl";
@@ -117,9 +118,8 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1146, 624);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.ClientSize = new System.Drawing.Size(1131, 585);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button2);
