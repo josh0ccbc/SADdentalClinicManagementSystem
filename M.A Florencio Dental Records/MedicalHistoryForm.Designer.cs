@@ -35,18 +35,8 @@
             this.tabMedicalHistory = new MaterialSkin.Controls.MaterialTabControl();
             this.tabGeneral = new System.Windows.Forms.TabPage();
             this.cmbBloodType = new System.Windows.Forms.ComboBox();
-            this.radHospitalized = new System.Windows.Forms.RadioButton();
-            this.radSeriousIllness = new System.Windows.Forms.RadioButton();
-            this.radUnderTreatment = new System.Windows.Forms.RadioButton();
-            this.radGoodHealth = new System.Windows.Forms.RadioButton();
-            this.txtBleedingTime = new System.Windows.Forms.TextBox();
-            this.txtBloodPressure = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
-            this.textBox5 = new System.Windows.Forms.TextBox();
-            this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.tabAllergies = new System.Windows.Forms.TabPage();
             this.label21 = new System.Windows.Forms.Label();
@@ -87,6 +77,16 @@
             this.chkPregnant = new System.Windows.Forms.CheckBox();
             this.label27 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
+            this.chkGoodHealth = new System.Windows.Forms.CheckBox();
+            this.chkUnderMedication = new System.Windows.Forms.CheckBox();
+            this.chkSeriousIllness = new System.Windows.Forms.CheckBox();
+            this.chkHospitalized = new System.Windows.Forms.CheckBox();
+            this.lblMedicationDetails = new System.Windows.Forms.Label();
+            this.txtMedicationDetails = new System.Windows.Forms.TextBox();
+            this.txtIllnessDetails = new System.Windows.Forms.TextBox();
+            this.lblIllnessDetails = new System.Windows.Forms.Label();
+            this.lblHospitalizationDetails = new System.Windows.Forms.Label();
+            this.txtHospitalizationDetails = new System.Windows.Forms.TextBox();
             this.tabMedicalHistory.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.tabAllergies.SuspendLayout();
@@ -198,19 +198,19 @@
             // 
             // tabGeneral
             // 
+            this.tabGeneral.Controls.Add(this.txtHospitalizationDetails);
+            this.tabGeneral.Controls.Add(this.txtIllnessDetails);
+            this.tabGeneral.Controls.Add(this.txtMedicationDetails);
+            this.tabGeneral.Controls.Add(this.chkHospitalized);
+            this.tabGeneral.Controls.Add(this.chkSeriousIllness);
+            this.tabGeneral.Controls.Add(this.chkUnderMedication);
+            this.tabGeneral.Controls.Add(this.chkGoodHealth);
             this.tabGeneral.Controls.Add(this.cmbBloodType);
-            this.tabGeneral.Controls.Add(this.radHospitalized);
-            this.tabGeneral.Controls.Add(this.radSeriousIllness);
-            this.tabGeneral.Controls.Add(this.radUnderTreatment);
-            this.tabGeneral.Controls.Add(this.radGoodHealth);
-            this.tabGeneral.Controls.Add(this.txtBleedingTime);
-            this.tabGeneral.Controls.Add(this.txtBloodPressure);
-            this.tabGeneral.Controls.Add(this.label15);
-            this.tabGeneral.Controls.Add(this.label16);
             this.tabGeneral.Controls.Add(this.label17);
             this.tabGeneral.Controls.Add(this.label18);
-            this.tabGeneral.Controls.Add(this.textBox5);
-            this.tabGeneral.Controls.Add(this.label19);
+            this.tabGeneral.Controls.Add(this.lblHospitalizationDetails);
+            this.tabGeneral.Controls.Add(this.lblIllnessDetails);
+            this.tabGeneral.Controls.Add(this.lblMedicationDetails);
             this.tabGeneral.Controls.Add(this.label20);
             this.tabGeneral.Location = new System.Drawing.Point(4, 24);
             this.tabGeneral.Name = "tabGeneral";
@@ -218,95 +218,21 @@
             this.tabGeneral.TabIndex = 0;
             this.tabGeneral.Text = "General";
             this.tabGeneral.UseVisualStyleBackColor = true;
+            this.tabGeneral.Click += new System.EventHandler(this.tabGeneral_Click);
             // 
             // cmbBloodType
             // 
             this.cmbBloodType.FormattingEnabled = true;
-            this.cmbBloodType.Location = new System.Drawing.Point(452, 45);
+            this.cmbBloodType.Location = new System.Drawing.Point(178, 250);
             this.cmbBloodType.Name = "cmbBloodType";
             this.cmbBloodType.Size = new System.Drawing.Size(110, 23);
             this.cmbBloodType.TabIndex = 38;
-            // 
-            // radHospitalized
-            // 
-            this.radHospitalized.AutoSize = true;
-            this.radHospitalized.Location = new System.Drawing.Point(27, 115);
-            this.radHospitalized.Name = "radHospitalized";
-            this.radHospitalized.Size = new System.Drawing.Size(106, 19);
-            this.radHospitalized.TabIndex = 37;
-            this.radHospitalized.TabStop = true;
-            this.radHospitalized.Text = "Hospitalized";
-            this.radHospitalized.UseVisualStyleBackColor = true;
-            // 
-            // radSeriousIllness
-            // 
-            this.radSeriousIllness.AutoSize = true;
-            this.radSeriousIllness.Location = new System.Drawing.Point(27, 92);
-            this.radSeriousIllness.Name = "radSeriousIllness";
-            this.radSeriousIllness.Size = new System.Drawing.Size(120, 19);
-            this.radSeriousIllness.TabIndex = 37;
-            this.radSeriousIllness.TabStop = true;
-            this.radSeriousIllness.Text = "Serious Illness";
-            this.radSeriousIllness.UseVisualStyleBackColor = true;
-            // 
-            // radUnderTreatment
-            // 
-            this.radUnderTreatment.AutoSize = true;
-            this.radUnderTreatment.Location = new System.Drawing.Point(27, 69);
-            this.radUnderTreatment.Name = "radUnderTreatment";
-            this.radUnderTreatment.Size = new System.Drawing.Size(190, 19);
-            this.radUnderTreatment.TabIndex = 37;
-            this.radUnderTreatment.TabStop = true;
-            this.radUnderTreatment.Text = "Under Medical Treatment";
-            this.radUnderTreatment.UseVisualStyleBackColor = true;
-            // 
-            // radGoodHealth
-            // 
-            this.radGoodHealth.AutoSize = true;
-            this.radGoodHealth.Location = new System.Drawing.Point(27, 46);
-            this.radGoodHealth.Name = "radGoodHealth";
-            this.radGoodHealth.Size = new System.Drawing.Size(105, 19);
-            this.radGoodHealth.TabIndex = 36;
-            this.radGoodHealth.TabStop = true;
-            this.radGoodHealth.Text = "Good Health";
-            this.radGoodHealth.UseVisualStyleBackColor = true;
-            // 
-            // txtBleedingTime
-            // 
-            this.txtBleedingTime.Location = new System.Drawing.Point(452, 117);
-            this.txtBleedingTime.Name = "txtBleedingTime";
-            this.txtBleedingTime.Size = new System.Drawing.Size(110, 23);
-            this.txtBleedingTime.TabIndex = 35;
-            // 
-            // txtBloodPressure
-            // 
-            this.txtBloodPressure.Location = new System.Drawing.Point(452, 80);
-            this.txtBloodPressure.Name = "txtBloodPressure";
-            this.txtBloodPressure.Size = new System.Drawing.Size(110, 23);
-            this.txtBloodPressure.TabIndex = 34;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(300, 121);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(103, 15);
-            this.label15.TabIndex = 30;
-            this.label15.Text = "Bleeding Time:";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(300, 84);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(110, 15);
-            this.label16.TabIndex = 31;
-            this.label16.Text = "Blood Pressure:";
+            this.cmbBloodType.SelectedIndexChanged += new System.EventHandler(this.cmbBloodType_SelectedIndexChanged);
             // 
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(300, 48);
+            this.label17.Location = new System.Drawing.Point(26, 253);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(82, 15);
             this.label17.TabIndex = 32;
@@ -316,29 +242,11 @@
             // 
             this.label18.AutoSize = true;
             this.label18.Font = new System.Drawing.Font("Arial Rounded MT Bold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label18.Location = new System.Drawing.Point(300, 16);
+            this.label18.Location = new System.Drawing.Point(26, 221);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(188, 18);
+            this.label18.Size = new System.Drawing.Size(177, 18);
             this.label18.TabIndex = 29;
-            this.label18.Text = "VITALS INFORMATION";
-            // 
-            // textBox5
-            // 
-            this.textBox5.Location = new System.Drawing.Point(27, 209);
-            this.textBox5.Multiline = true;
-            this.textBox5.Name = "textBox5";
-            this.textBox5.Size = new System.Drawing.Size(535, 78);
-            this.textBox5.TabIndex = 28;
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Font = new System.Drawing.Font("Arial Rounded MT Bold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label19.Location = new System.Drawing.Point(24, 175);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(150, 18);
-            this.label19.TabIndex = 22;
-            this.label19.Text = "Treatment Details";
+            this.label18.Text = "VITAL INFORMATION";
             // 
             // label20
             // 
@@ -696,9 +604,9 @@
             this.tabWomen.Controls.Add(this.chkPregnant);
             this.tabWomen.Controls.Add(this.label27);
             this.tabWomen.Controls.Add(this.label28);
-            this.tabWomen.Location = new System.Drawing.Point(4, 24);
+            this.tabWomen.Location = new System.Drawing.Point(4, 22);
             this.tabWomen.Name = "tabWomen";
-            this.tabWomen.Size = new System.Drawing.Size(615, 302);
+            this.tabWomen.Size = new System.Drawing.Size(615, 304);
             this.tabWomen.TabIndex = 4;
             this.tabWomen.Text = "Women";
             this.tabWomen.UseVisualStyleBackColor = true;
@@ -761,6 +669,100 @@
             this.label28.TabIndex = 4;
             this.label28.Text = "FOR WOMEN ONLY";
             // 
+            // chkGoodHealth
+            // 
+            this.chkGoodHealth.AutoSize = true;
+            this.chkGoodHealth.Location = new System.Drawing.Point(27, 48);
+            this.chkGoodHealth.Name = "chkGoodHealth";
+            this.chkGoodHealth.Size = new System.Drawing.Size(106, 19);
+            this.chkGoodHealth.TabIndex = 39;
+            this.chkGoodHealth.Text = "Good Health";
+            this.chkGoodHealth.UseVisualStyleBackColor = true;
+            // 
+            // chkUnderMedication
+            // 
+            this.chkUnderMedication.AutoSize = true;
+            this.chkUnderMedication.Location = new System.Drawing.Point(28, 130);
+            this.chkUnderMedication.Name = "chkUnderMedication";
+            this.chkUnderMedication.Size = new System.Drawing.Size(141, 19);
+            this.chkUnderMedication.TabIndex = 39;
+            this.chkUnderMedication.Text = "Under Medication";
+            this.chkUnderMedication.UseVisualStyleBackColor = true;
+            this.chkUnderMedication.CheckedChanged += new System.EventHandler(this.chkUnderMedication_CheckedChanged);
+            // 
+            // chkSeriousIllness
+            // 
+            this.chkSeriousIllness.AutoSize = true;
+            this.chkSeriousIllness.Location = new System.Drawing.Point(263, 48);
+            this.chkSeriousIllness.Name = "chkSeriousIllness";
+            this.chkSeriousIllness.Size = new System.Drawing.Size(121, 19);
+            this.chkSeriousIllness.TabIndex = 39;
+            this.chkSeriousIllness.Text = "Serious Illness";
+            this.chkSeriousIllness.UseVisualStyleBackColor = true;
+            this.chkSeriousIllness.CheckedChanged += new System.EventHandler(this.chkSeriousIllness_CheckedChanged);
+            // 
+            // chkHospitalized
+            // 
+            this.chkHospitalized.AutoSize = true;
+            this.chkHospitalized.Location = new System.Drawing.Point(263, 130);
+            this.chkHospitalized.Name = "chkHospitalized";
+            this.chkHospitalized.Size = new System.Drawing.Size(107, 19);
+            this.chkHospitalized.TabIndex = 39;
+            this.chkHospitalized.Text = "Hospitalized";
+            this.chkHospitalized.UseVisualStyleBackColor = true;
+            this.chkHospitalized.CheckedChanged += new System.EventHandler(this.chkHospitalized_CheckedChanged);
+            // 
+            // lblMedicationDetails
+            // 
+            this.lblMedicationDetails.AutoSize = true;
+            this.lblMedicationDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMedicationDetails.Location = new System.Drawing.Point(26, 155);
+            this.lblMedicationDetails.Name = "lblMedicationDetails";
+            this.lblMedicationDetails.Size = new System.Drawing.Size(132, 15);
+            this.lblMedicationDetails.TabIndex = 23;
+            this.lblMedicationDetails.Text = "Medication Details:";
+            // 
+            // txtMedicationDetails
+            // 
+            this.txtMedicationDetails.Location = new System.Drawing.Point(28, 176);
+            this.txtMedicationDetails.Name = "txtMedicationDetails";
+            this.txtMedicationDetails.Size = new System.Drawing.Size(157, 23);
+            this.txtMedicationDetails.TabIndex = 40;
+            // 
+            // txtIllnessDetails
+            // 
+            this.txtIllnessDetails.Location = new System.Drawing.Point(262, 90);
+            this.txtIllnessDetails.Name = "txtIllnessDetails";
+            this.txtIllnessDetails.Size = new System.Drawing.Size(157, 23);
+            this.txtIllnessDetails.TabIndex = 40;
+            // 
+            // lblIllnessDetails
+            // 
+            this.lblIllnessDetails.AutoSize = true;
+            this.lblIllnessDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblIllnessDetails.Location = new System.Drawing.Point(260, 71);
+            this.lblIllnessDetails.Name = "lblIllnessDetails";
+            this.lblIllnessDetails.Size = new System.Drawing.Size(102, 15);
+            this.lblIllnessDetails.TabIndex = 23;
+            this.lblIllnessDetails.Text = "Illness Details:";
+            // 
+            // lblHospitalizationDetails
+            // 
+            this.lblHospitalizationDetails.AutoSize = true;
+            this.lblHospitalizationDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHospitalizationDetails.Location = new System.Drawing.Point(262, 153);
+            this.lblHospitalizationDetails.Name = "lblHospitalizationDetails";
+            this.lblHospitalizationDetails.Size = new System.Drawing.Size(158, 15);
+            this.lblHospitalizationDetails.TabIndex = 23;
+            this.lblHospitalizationDetails.Text = "Hospitalization Details:";
+            // 
+            // txtHospitalizationDetails
+            // 
+            this.txtHospitalizationDetails.Location = new System.Drawing.Point(263, 175);
+            this.txtHospitalizationDetails.Name = "txtHospitalizationDetails";
+            this.txtHospitalizationDetails.Size = new System.Drawing.Size(157, 23);
+            this.txtHospitalizationDetails.TabIndex = 40;
+            // 
             // MedicalHistoryForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -798,14 +800,8 @@
         private MaterialSkin.Controls.MaterialButton btnSave;
         private MaterialSkin.Controls.MaterialTabControl tabMedicalHistory;
         private System.Windows.Forms.TabPage tabGeneral;
-        private System.Windows.Forms.TextBox txtBleedingTime;
-        private System.Windows.Forms.TextBox txtBloodPressure;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.TextBox textBox5;
-        private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TabPage tabAllergies;
         private System.Windows.Forms.Label label21;
@@ -846,10 +842,16 @@
         private System.Windows.Forms.CheckBox chkPregnant;
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.Label label28;
-        private System.Windows.Forms.RadioButton radGoodHealth;
-        private System.Windows.Forms.RadioButton radHospitalized;
-        private System.Windows.Forms.RadioButton radSeriousIllness;
-        private System.Windows.Forms.RadioButton radUnderTreatment;
         private System.Windows.Forms.ComboBox cmbBloodType;
+        private System.Windows.Forms.TextBox txtHospitalizationDetails;
+        private System.Windows.Forms.TextBox txtIllnessDetails;
+        private System.Windows.Forms.TextBox txtMedicationDetails;
+        private System.Windows.Forms.CheckBox chkHospitalized;
+        private System.Windows.Forms.CheckBox chkSeriousIllness;
+        private System.Windows.Forms.CheckBox chkUnderMedication;
+        private System.Windows.Forms.CheckBox chkGoodHealth;
+        private System.Windows.Forms.Label lblHospitalizationDetails;
+        private System.Windows.Forms.Label lblIllnessDetails;
+        private System.Windows.Forms.Label lblMedicationDetails;
     }
 }

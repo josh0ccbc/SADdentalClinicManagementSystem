@@ -16,6 +16,9 @@ namespace M.A_Florencio_Dental_Records
         string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int PatientID { get; set; }
 
+        private bool isPersonalExpanded = true;
+        private bool isMedicalExpanded = true;
+
         public patientDetailsControl()
         {
             InitializeComponent();
@@ -30,6 +33,10 @@ namespace M.A_Florencio_Dental_Records
             PatientID = patientID;
             LoadPersonalInformation();
             LoadMedicalHistory();
+
+            panelMedical.Visible = false;
+            btnToggleMedical.Text = "Medical Information ▲";
+            isMedicalExpanded = false;
         }
 
         // ✅ PERSONAL INFORMATION
@@ -100,19 +107,51 @@ namespace M.A_Florencio_Dental_Records
 
                 if (reader.Read())
                 {
-                    // General Health
-                    lblGoodHealth.Text = Convert.ToBoolean(reader["GoodHealth"]) ? "Yes" : "No";
-                    lblUnderTreatment.Text = Convert.ToBoolean(reader["UnderMedicalTreatment"]) ? "Yes" : "No";
-                    lblSeriousIllness.Text = Convert.ToBoolean(reader["SeriousIllnessOrSurgery"]) ? "Yes" : "No";
-                    lblHospitalized.Text = Convert.ToBoolean(reader["Hospitalized"]) ? "Yes" : "No";
+                    // ✅ GENERAL HEALTH STATUS
+                    List<string> generalHealth = new List<string>();
+
+                    // Good Health
+                    if (Convert.ToBoolean(reader["is_healthy"] ?? false))
+                    {
+                        generalHealth.Add("✓ Good Health \n");
+                    }
+
+                    // Under Medical Treatment
+                    if (Convert.ToBoolean(reader["under_treatment"] ?? false))
+                    {
+                        generalHealth.Add("✓ Under Medical Treatment");
+                        string treatmentDetails = reader["treatment_details"].ToString();
+                        if (!string.IsNullOrEmpty(treatmentDetails))
+                            generalHealth.Add("   Details: " + treatmentDetails + "\n");
+                    }
+
+                    // Serious Illness
+                    if (Convert.ToBoolean(reader["serious_illness"] ?? false))
+                    {
+                        generalHealth.Add("✓ Serious Illness");
+                        string illnessDetails = reader["illness_details"].ToString();
+                        if (!string.IsNullOrEmpty(illnessDetails))
+                            generalHealth.Add("   Details: " + illnessDetails + "\n");
+                    }
+
+                    // Hospitalized
+                    if (Convert.ToBoolean(reader["recently_hospitalized"] ?? false))
+                    {
+                        generalHealth.Add("✓ Recently Hospitalized");
+                        string hospitalizationDetails = reader["hospitalization_details"].ToString();
+                        if (!string.IsNullOrEmpty(hospitalizationDetails))
+                            generalHealth.Add("   Details: " + hospitalizationDetails + "\n");
+                    }
+
+                    lblGeneralHealth.Text = generalHealth.Count > 0 ? string.Join("\n", generalHealth) : "None recorded";
 
                     // Allergies
                     List<string> allergies = new List<string>();
-                    if (Convert.ToBoolean(reader["LocalAestheticAllergy"])) allergies.Add("Local Anesthetic");
-                    if (Convert.ToBoolean(reader["PenicillinAllergy"])) allergies.Add("Penicillin");
-                    if (Convert.ToBoolean(reader["SulfaAllergy"])) allergies.Add("Sulfa");
-                    if (Convert.ToBoolean(reader["AspirinAllergy"])) allergies.Add("Aspirin");
-                    if (Convert.ToBoolean(reader["LatexAllergy"])) allergies.Add("Latex");
+                    if (Convert.ToBoolean(reader["LocalAestheticAllergy"] ?? false)) allergies.Add("Local Anesthetic");
+                    if (Convert.ToBoolean(reader["PenicillinAllergy"] ?? false)) allergies.Add("Penicillin");
+                    if (Convert.ToBoolean(reader["SulfaAllergy"] ?? false)) allergies.Add("Sulfa");
+                    if (Convert.ToBoolean(reader["AspirinAllergy"] ?? false)) allergies.Add("Aspirin");
+                    if (Convert.ToBoolean(reader["LatexAllergy"] ?? false)) allergies.Add("Latex");
 
                     string otherAllergies = reader["OtherAllergies"].ToString();
                     if (!string.IsNullOrEmpty(otherAllergies)) allergies.Add(otherAllergies);
@@ -120,12 +159,25 @@ namespace M.A_Florencio_Dental_Records
                     lblAllergies.Text = allergies.Count > 0 ? string.Join(", ", allergies) : "None";
 
                     // Medications
-                    lblTakingMeds.Text = Convert.ToBoolean(reader["TakingPrescriptionMeds"]) ? "Yes" : "No";
-                    lblMedicationList.Text = reader["MedicationList"].ToString() ?? "None";
+                    lblTakingMeds.Text = Convert.ToBoolean(reader["TakingPrescriptionMeds"] ?? false) ? "Yes" : "No";
+
+                    string medicationList = reader["MedicationList"].ToString() ?? "";
+                    if (!string.IsNullOrEmpty(medicationList))
+                    {
+                        string[] medications = medicationList.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        lblMedicationList.Text = string.Join(", ", medications.Select(m => m.Trim()));
+                    }
+                    else
+                    {
+                        lblMedicationList.Text = "None";
+                    }
 
                     // Substances
-                    lblUsesTobacco.Text = Convert.ToBoolean(reader["UsesTobacco"]) ? "Yes" : "No";
-                    lblUsesAlcoholDrugs.Text = Convert.ToBoolean(reader["UsesAlcoholDrugs"]) ? "Yes" : "No";
+                    List<string> substances = new List<string>();
+                    if (Convert.ToBoolean(reader["UsesTobacco"] ?? false)) substances.Add("Tobacco");
+                    if (Convert.ToBoolean(reader["UsesAlcoholDrugs"] ?? false)) substances.Add("Alcohol/Drugs");
+
+                    lblSubstances.Text = substances.Count > 0 ? string.Join(", ", substances) : "None";
 
                     // Medical Conditions
                     List<string> conditions = new List<string>();
@@ -144,16 +196,14 @@ namespace M.A_Florencio_Dental_Records
 
                     // Vitals
                     lblBloodType.Text = reader["BloodType"].ToString() ?? "Not recorded";
-                    lblBloodPressure.Text = reader["BloodPressure"].ToString() ?? "Not recorded";
-                    lblBleedingTime.Text = reader["BleedingTime"].ToString() ?? "Not recorded";
-
+                    
                     // Women Info
                     if (GetPatientGender() == "Female")
                     {
                         panelWomenInfo.Visible = true;
-                        lblPregnant.Text = Convert.ToBoolean(reader["IsPregnant"]) ? "Yes" : "No";
-                        lblNursing.Text = Convert.ToBoolean(reader["IsNursing"]) ? "Yes" : "No";
-                        lblBirthControl.Text = Convert.ToBoolean(reader["OnBirthControl"]) ? "Yes" : "No";
+                        lblPregnant.Text = Convert.ToBoolean(reader["IsPregnant"] ?? false) ? "Yes" : "No";
+                        lblNursing.Text = Convert.ToBoolean(reader["IsNursing"] ?? false) ? "Yes" : "No";
+                        lblBirthControl.Text = Convert.ToBoolean(reader["OnBirthControl"] ?? false) ? "Yes" : "No";
                     }
                     else
                     {
@@ -249,6 +299,40 @@ namespace M.A_Florencio_Dental_Records
             {
                 MessageBox.Show("Error: " + ex.Message);
             }
+        }
+
+        private void panelPersonal_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void btnTogglePersonal_Click(object sender, EventArgs e)
+        {
+            isPersonalExpanded = !isPersonalExpanded;
+            panelPersonal.Visible = isPersonalExpanded;
+            btnTogglePersonal.Text = isPersonalExpanded ? "Personal Information ▼" : "Personal Information ▲";
+        }
+
+        private void btnToggleMedical_Click(object sender, EventArgs e)
+        {
+            isMedicalExpanded = !isMedicalExpanded;
+            panelMedical.Visible = isMedicalExpanded;
+            btnToggleMedical.Text = isMedicalExpanded ? "Medical Information ▼" : "Medical Information ▲";
+        }
+
+        private void lblGoodHealth_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblMedicationList_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panelMedical_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
