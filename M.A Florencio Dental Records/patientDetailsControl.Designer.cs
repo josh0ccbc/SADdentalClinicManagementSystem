@@ -87,6 +87,8 @@
             this.label23 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.lblMedicationList = new System.Windows.Forms.Label();
+            this.panelMedicalRecords = new System.Windows.Forms.Panel();
+            this.btnToggleMedicalRecords = new System.Windows.Forms.Button();
             this.panelPersonal.SuspendLayout();
             this.panelGuardian.SuspendLayout();
             this.panelWomenInfo.SuspendLayout();
@@ -250,7 +252,7 @@
             this.panelPersonal.Name = "panelPersonal";
             this.panelPersonal.Size = new System.Drawing.Size(853, 244);
             this.panelPersonal.TabIndex = 13;
-            this.panelPersonal.Paint += new System.Windows.Forms.PaintEventHandler(this.panelPersonal_Paint);
+            
             // 
             // label11
             // 
@@ -580,7 +582,6 @@
             this.lblGeneralHealth.Size = new System.Drawing.Size(114, 17);
             this.lblGeneralHealth.TabIndex = 3;
             this.lblGeneralHealth.Text = "lblGeneralHealth";
-            this.lblGeneralHealth.Click += new System.EventHandler(this.lblGoodHealth_Click);
             // 
             // lblSubstances
             // 
@@ -644,7 +645,6 @@
             this.panelMedical.Name = "panelMedical";
             this.panelMedical.Size = new System.Drawing.Size(853, 425);
             this.panelMedical.TabIndex = 14;
-            this.panelMedical.Paint += new System.Windows.Forms.PaintEventHandler(this.panelMedical_Paint);
             // 
             // label27
             // 
@@ -709,12 +709,34 @@
             this.lblMedicationList.Size = new System.Drawing.Size(114, 17);
             this.lblMedicationList.TabIndex = 3;
             this.lblMedicationList.Text = "lblMedicationList";
-            this.lblMedicationList.Click += new System.EventHandler(this.lblMedicationList_Click);
+            // 
+            // panelMedicalRecords
+            // 
+            this.panelMedicalRecords.AutoScroll = true;
+            this.panelMedicalRecords.Location = new System.Drawing.Point(13, 854);
+            this.panelMedicalRecords.Name = "panelMedicalRecords";
+            this.panelMedicalRecords.Size = new System.Drawing.Size(853, 492);
+            this.panelMedicalRecords.TabIndex = 17;
+            // 
+            // btnToggleMedicalRecords
+            // 
+            this.btnToggleMedicalRecords.FlatAppearance.BorderSize = 0;
+            this.btnToggleMedicalRecords.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnToggleMedicalRecords.Font = new System.Drawing.Font("Arial Rounded MT Bold", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnToggleMedicalRecords.Location = new System.Drawing.Point(12, 818);
+            this.btnToggleMedicalRecords.Name = "btnToggleMedicalRecords";
+            this.btnToggleMedicalRecords.Size = new System.Drawing.Size(240, 28);
+            this.btnToggleMedicalRecords.TabIndex = 18;
+            this.btnToggleMedicalRecords.Text = "Medical Records ▲";
+            this.btnToggleMedicalRecords.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnToggleMedicalRecords.UseVisualStyleBackColor = true;
             // 
             // patientDetailsControl
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoScroll = true;
+            this.Controls.Add(this.btnToggleMedicalRecords);
+            this.Controls.Add(this.panelMedicalRecords);
             this.Controls.Add(this.btnToggleMedical);
             this.Controls.Add(this.btnTogglePersonal);
             this.Controls.Add(this.panelMedical);
@@ -798,5 +820,7 @@
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Panel panelMedicalRecords;
+        private System.Windows.Forms.Button btnToggleMedicalRecords;
     }
 }

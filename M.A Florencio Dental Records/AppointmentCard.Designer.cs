@@ -34,6 +34,7 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnEdit = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
+            this.btnMarkAsDone = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblPatientName
@@ -93,10 +94,21 @@
             this.btnDelete.UseVisualStyleBackColor = true;
             this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
+            // btnMarkAsDone
+            // 
+            this.btnMarkAsDone.Location = new System.Drawing.Point(601, 8);
+            this.btnMarkAsDone.Name = "btnMarkAsDone";
+            this.btnMarkAsDone.Size = new System.Drawing.Size(63, 23);
+            this.btnMarkAsDone.TabIndex = 8;
+            this.btnMarkAsDone.Text = "Done";
+            this.btnMarkAsDone.UseVisualStyleBackColor = true;
+            this.btnMarkAsDone.Click += new System.EventHandler(this.btnMarkAsDone_Click);
+            // 
             // AppointmentCard
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.Controls.Add(this.btnMarkAsDone);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnEdit);
             this.Controls.Add(this.lblStatus);
@@ -119,5 +131,6 @@
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button btnEdit;
         private System.Windows.Forms.Button btnDelete;
+        private System.Windows.Forms.Button btnMarkAsDone;
     }
 }

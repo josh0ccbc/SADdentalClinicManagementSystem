@@ -30,13 +30,11 @@ namespace M.A_Florencio_Dental_Records
             LoadAppointments(DateTime.Today);
         }
 
-        // Calendar date selected
         private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
         {
             LoadAppointments(e.Start);
         }
 
-        // Add appointment button
         private void button1_Click(object sender, EventArgs e)
         {
             Form1 mainForm = (Form1)this.FindForm();
@@ -51,7 +49,6 @@ namespace M.A_Florencio_Dental_Records
             monthCalendar1.SelectionStart = DateTime.Today;
         }
 
-        // Load all appointment dates to bold on calendar
         private void LoadAppointmentDates()
         {
             List<DateTime> appointmentDates = new List<DateTime>();
@@ -73,10 +70,8 @@ namespace M.A_Florencio_Dental_Records
             monthCalendar1.BoldedDates = appointmentDates.ToArray();
         }
 
-        // Load appointments for selected date as CARDS
         private void LoadAppointments(DateTime date)
         {
-            // Clear existing cards
             flowAppointments.Controls.Clear();
 
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -119,11 +114,98 @@ namespace M.A_Florencio_Dental_Records
                             reader["Notes"].ToString()
                         );
 
+                        // ✅ NEW - WIRE EVENT
+                        card.OnMarkAsDone += Card_OnMarkAsDone;
+
                         flowAppointments.Controls.Add(card);
                     }
                 }
 
                 conn.Close();
+            }
+        }
+
+        // ✅ NEW - HANDLE MARK AS DONE
+        private void Card_OnMarkAsDone(int appointmentID)
+        {
+            // Get appointment details from database
+            var appt = GetAppointmentDetails(appointmentID);
+
+            if (appt != null)
+            {
+                // Get patient ID
+                int patientID = GetPatientID(appt.PatientName);
+
+                if (patientID > 0)
+                {
+                    // Open CompleteAppointmentForm
+                    CompleteAppointmentForm completeForm = new CompleteAppointmentForm(appointmentID, appt, patientID);
+
+                    if (completeForm.ShowDialog() == DialogResult.OK)
+                    {
+                        // Refresh appointments list
+                        LoadAppointmentDates();
+                        LoadAppointments(monthCalendar1.SelectionStart);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Patient not found");
+                }
+            }
+        }
+
+        // ✅ NEW - GET APPOINTMENT DETAILS
+        private AppointmentDetail GetAppointmentDetails(int appointmentID)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"SELECT AppointmentID, PatientName, AppointmentDate, AppointmentTime, ServiceName, Status
+                               FROM Appointments a
+                               LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
+                               WHERE AppointmentID = @AppointmentID";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@AppointmentID", appointmentID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    return new AppointmentDetail
+                    {
+                        AppointmentID = Convert.ToInt32(reader["AppointmentID"]),
+                        PatientName = reader["PatientName"].ToString(),
+                        AppointmentDate = Convert.ToDateTime(reader["AppointmentDate"]),
+                        AppointmentTime = TimeSpan.Parse(reader["AppointmentTime"].ToString()),
+                        ServiceName = reader["ServiceName"]?.ToString() ?? "N/A",
+                        Status = reader["Status"].ToString()
+                    };
+                }
+
+                conn.Close();
+                return null;
+            }
+        }
+
+        // ✅ NEW - GET PATIENT ID
+        private int GetPatientID(string patientName)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT PatientID FROM Patients WHERE FullName = @PatientName";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@PatientName", patientName);
+
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                conn.Close();
+
+                if (result != null)
+                    return Convert.ToInt32(result);
+
+                return 0;
             }
         }
 
@@ -144,5 +226,16 @@ namespace M.A_Florencio_Dental_Records
         private void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e)
         {
         }
+    }
+
+    // ✅ NEW - APPOINTMENT DETAIL CLASS
+    public class AppointmentDetail
+    {
+        public int AppointmentID { get; set; }
+        public string PatientName { get; set; }
+        public DateTime AppointmentDate { get; set; }
+        public TimeSpan AppointmentTime { get; set; }
+        public string ServiceName { get; set; }
+        public string Status { get; set; }
     }
 }

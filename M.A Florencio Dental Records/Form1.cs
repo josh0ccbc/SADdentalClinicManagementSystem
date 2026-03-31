@@ -9,12 +9,57 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
+using System.Data.SqlClient;
 
 namespace M.A_Florencio_Dental_Records
 {
     public partial class Form1 : MaterialForm
     {
         Button NavButton;
+
+        public int LoggedInUserID { get; set; }
+        public string LoggedInUsername { get; set; }
+
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show(
+                "Are you sure you want to logout?",
+                "Logout",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                // Log logout
+                LogAuditTrail(LoggedInUserID, "LOGOUT");
+
+                // ✅ CLOSE FORM1 - Program.cs will show login again
+                this.Close();
+            }
+        }
+
+        private void LogAuditTrail(int userID, string action)
+        {
+            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@UserID", userID);
+                cmd.Parameters.AddWithValue("@Action", action);
+                cmd.Parameters.AddWithValue("@IPAddress", "127.0.0.1");
+
+                try
+                {
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+                catch { }
+            }
+        }
 
         public Form1()
         {
@@ -66,6 +111,12 @@ namespace M.A_Florencio_Dental_Records
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            LoggedInUserID = LoginForm.CurrentUserID;
+            LoggedInUsername = LoginForm.CurrentUsername;
+
+            // Show username in form (optional)
+            this.Text = "M.A. Florencio Dental Records - " + LoggedInUsername;
+
             LoadControl(new DBcontrol());
             FormPnl.Visible = true;
             ActivateButton(button1);
@@ -157,6 +208,11 @@ namespace M.A_Florencio_Dental_Records
         }
 
         private void label1_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
 
         }

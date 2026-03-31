@@ -13,7 +13,17 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class AppointmentCard : UserControl
     {
+        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+
         public int AppointmentID { get; set; }
+        public string PatientName { get; set; }
+        public DateTime AppointmentDate { get; set; }
+        public TimeSpan AppointmentTime { get; set; }
+        public string ServiceName { get; set; }
+        public string Status { get; set; }
+
+        // ✅ NEW - EVENT FOR MARK AS DONE
+        public event Action<int> OnMarkAsDone;
 
         public AppointmentCard()
         {
@@ -29,12 +39,35 @@ namespace M.A_Florencio_Dental_Records
                            TimeSpan appointmentTime, string serviceName, string status, string notes)
         {
             AppointmentID = appointmentID;
+            PatientName = patientName;
+            AppointmentDate = appointmentDate;
+            AppointmentTime = appointmentTime;
+            ServiceName = serviceName;
+            Status = status;
 
             lblPatientName.Text = patientName;
             lblService.Text = "Service: " + serviceName;
             lblDateTime.Text = appointmentDate.ToString("MMM dd, yyyy") + " at " + appointmentTime.ToString(@"hh\:mm");
             lblStatus.Text = "Status: " + status;
-            //lblNotes.Text = "Notes: " + (string.IsNullOrEmpty(notes) ? "N/A" : notes);
+        }
+
+        // ✅ NEW - MARK AS DONE BUTTON
+        private void btnMarkAsDone_Click(object sender, EventArgs e)
+        {
+            if (Status.Equals("Done", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("This appointment is already completed");
+                return;
+            }
+
+            if (Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("This appointment is cancelled");
+                return;
+            }
+
+            // Trigger event to open CompleteAppointmentForm
+            OnMarkAsDone?.Invoke(AppointmentID);
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
@@ -49,7 +82,6 @@ namespace M.A_Florencio_Dental_Records
                 "Cancel Appointment",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
-
             if (result == DialogResult.Yes)
             {
                 CancelAppointment();
@@ -58,19 +90,15 @@ namespace M.A_Florencio_Dental_Records
 
         private void CancelAppointment()
         {
-            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
             try
             {
-                using (System.Data.SqlClient.SqlConnection conn = new System.Data.SqlClient.SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     string query = "UPDATE Appointments SET Status = 'Cancelled' WHERE AppointmentID = @AppointmentID";
-                    System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand(query, conn);
+                    SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@AppointmentID", AppointmentID);
-
                     conn.Open();
                     cmd.ExecuteNonQuery();
-
                     MessageBox.Show("Appointment cancelled!");
                     this.Parent.Controls.Remove(this);
                 }
@@ -88,7 +116,6 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnEdit_MouseLeave(object sender, EventArgs e)
         {
-
         }
 
         private void btnDelete_MouseEnter(object sender, EventArgs e)
@@ -103,12 +130,10 @@ namespace M.A_Florencio_Dental_Records
 
         private void label2_Click(object sender, EventArgs e)
         {
-
         }
 
         private void lblNotes_Click(object sender, EventArgs e)
         {
-
         }
     }
 }

@@ -18,6 +18,7 @@ namespace M.A_Florencio_Dental_Records
 
         private bool isPersonalExpanded = true;
         private bool isMedicalExpanded = true;
+        private bool isMedicalRecordsExpanded = false;  // ✅ ADD THIS
 
         public patientDetailsControl()
         {
@@ -26,6 +27,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void patientDetailsControl_Load(object sender, EventArgs e)
         {
+            this.AutoScroll = true;
         }
 
         public void LoadPatientDetails(int patientID)
@@ -33,13 +35,18 @@ namespace M.A_Florencio_Dental_Records
             PatientID = patientID;
             LoadPersonalInformation();
             LoadMedicalHistory();
+            LoadMedicalRecords();  // ✅ ADD THIS
 
             panelMedical.Visible = false;
             btnToggleMedical.Text = "Medical Information ▲";
             isMedicalExpanded = false;
+
+            panelMedicalRecords.Visible = false;  // ✅ ADD THIS
+            btnToggleMedicalRecords.Text = "Medical Records ▲";
+            isMedicalRecordsExpanded = false;
         }
 
-        // ✅ PERSONAL INFORMATION
+        // ✅ PERSONAL INFORMATION (EXISTING - NO CHANGES)
         private void LoadPersonalInformation()
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -53,7 +60,6 @@ namespace M.A_Florencio_Dental_Records
 
                 if (reader.Read())
                 {
-                    // Basic Info
                     lblPatientID.Text = reader["PatientID"].ToString();
                     lblFullName.Text = reader["FullName"].ToString();
                     lblGender.Text = reader["Gender"].ToString();
@@ -70,7 +76,6 @@ namespace M.A_Florencio_Dental_Records
                     DateTime dateReg = Convert.ToDateTime(reader["DateRegistered"]);
                     lblDateRegistered.Text = dateReg.ToString("MMM dd, yyyy");
 
-                    // Guardian Info
                     string guardianName = reader["GuardianName"].ToString();
                     if (!string.IsNullOrEmpty(guardianName))
                     {
@@ -93,7 +98,7 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ MEDICAL HISTORY
+        // ✅ MEDICAL HISTORY (EXISTING - NO CHANGES)
         private void LoadMedicalHistory()
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -107,16 +112,13 @@ namespace M.A_Florencio_Dental_Records
 
                 if (reader.Read())
                 {
-                    // ✅ GENERAL HEALTH STATUS
                     List<string> generalHealth = new List<string>();
 
-                    // Good Health
                     if (Convert.ToBoolean(reader["is_healthy"] ?? false))
                     {
                         generalHealth.Add("✓ Good Health \n");
                     }
 
-                    // Under Medical Treatment
                     if (Convert.ToBoolean(reader["under_treatment"] ?? false))
                     {
                         generalHealth.Add("✓ Under Medical Treatment");
@@ -125,7 +127,6 @@ namespace M.A_Florencio_Dental_Records
                             generalHealth.Add("   Details: " + treatmentDetails + "\n");
                     }
 
-                    // Serious Illness
                     if (Convert.ToBoolean(reader["serious_illness"] ?? false))
                     {
                         generalHealth.Add("✓ Serious Illness");
@@ -134,7 +135,6 @@ namespace M.A_Florencio_Dental_Records
                             generalHealth.Add("   Details: " + illnessDetails + "\n");
                     }
 
-                    // Hospitalized
                     if (Convert.ToBoolean(reader["recently_hospitalized"] ?? false))
                     {
                         generalHealth.Add("✓ Recently Hospitalized");
@@ -145,7 +145,6 @@ namespace M.A_Florencio_Dental_Records
 
                     lblGeneralHealth.Text = generalHealth.Count > 0 ? string.Join("\n", generalHealth) : "None recorded";
 
-                    // Allergies
                     List<string> allergies = new List<string>();
                     if (Convert.ToBoolean(reader["LocalAestheticAllergy"] ?? false)) allergies.Add("Local Anesthetic");
                     if (Convert.ToBoolean(reader["PenicillinAllergy"] ?? false)) allergies.Add("Penicillin");
@@ -158,7 +157,6 @@ namespace M.A_Florencio_Dental_Records
 
                     lblAllergies.Text = allergies.Count > 0 ? string.Join(", ", allergies) : "None";
 
-                    // Medications
                     lblTakingMeds.Text = Convert.ToBoolean(reader["TakingPrescriptionMeds"] ?? false) ? "Yes" : "No";
 
                     string medicationList = reader["MedicationList"].ToString() ?? "";
@@ -172,14 +170,12 @@ namespace M.A_Florencio_Dental_Records
                         lblMedicationList.Text = "None";
                     }
 
-                    // Substances
                     List<string> substances = new List<string>();
                     if (Convert.ToBoolean(reader["UsesTobacco"] ?? false)) substances.Add("Tobacco");
                     if (Convert.ToBoolean(reader["UsesAlcoholDrugs"] ?? false)) substances.Add("Alcohol/Drugs");
 
                     lblSubstances.Text = substances.Count > 0 ? string.Join(", ", substances) : "None";
 
-                    // Medical Conditions
                     List<string> conditions = new List<string>();
                     if (Convert.ToBoolean(reader["HighBP"] ?? false)) conditions.Add("High Blood Pressure");
                     if (Convert.ToBoolean(reader["LowBP"] ?? false)) conditions.Add("Low Blood Pressure");
@@ -194,10 +190,8 @@ namespace M.A_Florencio_Dental_Records
 
                     lblMedicalConditions.Text = conditions.Count > 0 ? string.Join(", ", conditions) : "None";
 
-                    // Vitals
                     lblBloodType.Text = reader["BloodType"].ToString() ?? "Not recorded";
-                    
-                    // Women Info
+
                     if (GetPatientGender() == "Female")
                     {
                         panelWomenInfo.Visible = true;
@@ -219,21 +213,137 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ HELPER METHODS
-        private string GetPatientName()
+        // ✅ NEW - MEDICAL RECORDS (SAME PATTERN AS PERSONAL & MEDICAL)
+        private void LoadMedicalRecords()
         {
+            panelMedicalRecords.Controls.Clear();
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT FullName FROM Patients WHERE PatientID = @PatientID";
+                string query = @"
+                    SELECT mr.record_id, mr.visit_date, mr.diagnosis, mr.[procedure], mr.notes, mr.appointment_id,
+                           a.AppointmentDate, a.ServiceType
+                    FROM MedicalRecords mr
+                    LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
+                    WHERE mr.patient_id = @PatientID
+                    ORDER BY mr.visit_date DESC";
+
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@PatientID", PatientID);
+
                 conn.Open();
-                object result = cmd.ExecuteScalar();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                int yPosition = 10;
+
+                if (!reader.HasRows)
+                {
+                    Label noRecords = new Label();
+                    noRecords.Text = "No medical records";
+                    noRecords.AutoSize = true;
+                    noRecords.ForeColor = Color.Gray;
+                    noRecords.Location = new Point(10, yPosition);
+                    panelMedicalRecords.Controls.Add(noRecords);
+                }
+                else
+                {
+                    while (reader.Read())
+                    {
+                        int recordID = Convert.ToInt32(reader["record_id"]);
+                        DateTime visitDate = Convert.ToDateTime(reader["visit_date"]);
+                        string diagnosis = reader["diagnosis"]?.ToString() ?? "N/A";
+                        string procedure = reader["procedure"]?.ToString() ?? "N/A";
+                        string serviceType = reader["ServiceType"]?.ToString() ?? "N/A";
+
+                        Label lblRecord = new Label();
+                        lblRecord.Text = visitDate.ToString("MMM dd, yyyy") + " | " +
+                                        serviceType + " | " +
+                                        "Diagnosis: " + diagnosis + " | " +
+                                        "Procedure: " + procedure;
+
+                        lblRecord.AutoSize = true;
+                        lblRecord.Tag = recordID;
+                        lblRecord.Cursor = Cursors.Hand;
+                        lblRecord.Location = new Point(10, yPosition);
+                        lblRecord.ForeColor = Color.Blue;
+                        lblRecord.Click += (s, e) => ViewRecordDetails(recordID);
+                        lblRecord.MouseEnter += (s, e) => lblRecord.ForeColor = Color.DarkBlue;
+                        lblRecord.MouseLeave += (s, e) => lblRecord.ForeColor = Color.Blue;
+
+                        panelMedicalRecords.Controls.Add(lblRecord);
+                        yPosition += 30;
+                    }
+                }
+
                 conn.Close();
-                return result?.ToString() ?? "";
             }
         }
 
+        // ✅ NEW - VIEW RECORD DETAILS
+        private void ViewRecordDetails(int recordID)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM MedicalRecords WHERE record_id = @RecordID";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@RecordID", recordID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    string details = "";
+                    details += "Visit Date: " + Convert.ToDateTime(reader["visit_date"]).ToString("MMM dd, yyyy") + "\n\n";
+                    details += "Diagnosis:\n" + (reader["diagnosis"]?.ToString() ?? "N/A") + "\n\n";
+                    details += "Procedure:\n" + (reader["procedure"]?.ToString() ?? "N/A") + "\n\n";
+                    details += "Notes:\n" + (reader["notes"]?.ToString() ?? "None");
+
+                    // Show prescriptions if any
+                    List<string> prescriptions = GetPrescriptionsForRecord(recordID);
+                    if (prescriptions.Count > 0)
+                    {
+                        details += "\n\n💊 Prescriptions:\n";
+                        details += string.Join("\n\n", prescriptions);
+                    }
+
+                    MessageBox.Show(details, "Medical Record Details", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                conn.Close();
+            }
+        }
+
+        // ✅ NEW - GET PRESCRIPTIONS FOR RECORD
+        private List<string> GetPrescriptionsForRecord(int recordID)
+        {
+            List<string> prescriptions = new List<string>();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT medication, prescription_date, med_instructions FROM Prescription WHERE record_id = @RecordID ORDER BY prescription_date DESC";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@RecordID", recordID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    string presc = reader["medication"]?.ToString() + "\n";
+                    presc += "Date: " + Convert.ToDateTime(reader["prescription_date"]).ToString("MMM dd, yyyy") + "\n";
+                    presc += "Instructions: " + (reader["med_instructions"]?.ToString() ?? "None");
+
+                    prescriptions.Add(presc);
+                }
+
+                conn.Close();
+            }
+
+            return prescriptions;
+        }
+
+        // ✅ HELPER METHODS
         private string GetPatientGender()
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -255,11 +365,26 @@ namespace M.A_Florencio_Dental_Records
             mainForm.LoadControl(new patientControl());
         }
 
-        private void btnViewMedicalHistory_Click(object sender, EventArgs e)
+        private void btnTogglePersonal_Click(object sender, EventArgs e)
         {
-            MedicalHistoryForm mhForm = new MedicalHistoryForm(PatientID);
-            mhForm.ShowDialog();
-            LoadMedicalHistory(); // Refresh after closing
+            isPersonalExpanded = !isPersonalExpanded;
+            panelPersonal.Visible = isPersonalExpanded;
+            btnTogglePersonal.Text = isPersonalExpanded ? "Personal Information ▼" : "Personal Information ▲";
+        }
+
+        private void btnToggleMedical_Click(object sender, EventArgs e)
+        {
+            isMedicalExpanded = !isMedicalExpanded;
+            panelMedical.Visible = isMedicalExpanded;
+            btnToggleMedical.Text = isMedicalExpanded ? "Medical Information ▼" : "Medical Information ▲";
+        }
+
+        // ✅ NEW - TOGGLE MEDICAL RECORDS
+        private void btnToggleMedicalRecords_Click(object sender, EventArgs e)
+        {
+            isMedicalRecordsExpanded = !isMedicalRecordsExpanded;
+            panelMedicalRecords.Visible = isMedicalRecordsExpanded;
+            btnToggleMedicalRecords.Text = isMedicalRecordsExpanded ? "Medical Records ▼" : "Medical Records ▲";
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
@@ -299,40 +424,6 @@ namespace M.A_Florencio_Dental_Records
             {
                 MessageBox.Show("Error: " + ex.Message);
             }
-        }
-
-        private void panelPersonal_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void btnTogglePersonal_Click(object sender, EventArgs e)
-        {
-            isPersonalExpanded = !isPersonalExpanded;
-            panelPersonal.Visible = isPersonalExpanded;
-            btnTogglePersonal.Text = isPersonalExpanded ? "Personal Information ▼" : "Personal Information ▲";
-        }
-
-        private void btnToggleMedical_Click(object sender, EventArgs e)
-        {
-            isMedicalExpanded = !isMedicalExpanded;
-            panelMedical.Visible = isMedicalExpanded;
-            btnToggleMedical.Text = isMedicalExpanded ? "Medical Information ▼" : "Medical Information ▲";
-        }
-
-        private void lblGoodHealth_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblMedicationList_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panelMedical_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }
