@@ -23,11 +23,68 @@ namespace M.A_Florencio_Dental_Records
             monthCalendar1.SelectionStart = DateTime.Today;
             monthCalendar1.SelectionEnd = DateTime.Today;
             LoadAppointments(DateTime.Today);
+
+            LoadAllAppointments();
         }
 
         private void appointmentsControl_Load(object sender, EventArgs e)
         {
             LoadAppointments(DateTime.Today);
+        }
+
+        private void LoadAllAppointments()
+        {
+            flowAllAppointments.Controls.Clear();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                // Query ALL appointments (not filtered by date)
+                string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
+                               s.ServiceName, a.Status, a.Notes
+                        FROM Appointments a
+                        LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
+                        WHERE a.Status != 'Cancelled'
+                        ORDER BY a.AppointmentDate DESC, a.AppointmentTime ASC";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (!reader.HasRows)
+                {
+                    Label emptyLabel = new Label();
+                    emptyLabel.Text = "No appointments";
+                    emptyLabel.Font = new Font("Segoe UI", 12);
+                    emptyLabel.ForeColor = Color.Gray;
+                    emptyLabel.AutoSize = true;
+                    flowAllAppointments.Controls.Add(emptyLabel);
+                }
+                else
+                {
+                    while (reader.Read())
+                    {
+                        AppointmentCard card = new AppointmentCard();
+
+                        card.SetAppointment(
+                            Convert.ToInt32(reader["AppointmentID"]),
+                            reader["PatientName"].ToString(),
+                            Convert.ToDateTime(reader["AppointmentDate"]),
+                            TimeSpan.Parse(reader["AppointmentTime"].ToString()),
+                            reader["ServiceName"].ToString() ?? "N/A",
+                            reader["Status"].ToString(),
+                            reader["Notes"].ToString()
+                        );
+
+                        // ✅ WIRE EVENT - Same as flowAppointments
+                        card.OnMarkAsDone += Card_OnMarkAsDone;
+
+                        flowAllAppointments.Controls.Add(card);
+                    }
+                }
+
+                conn.Close();
+            }
         }
 
         private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
@@ -46,6 +103,7 @@ namespace M.A_Florencio_Dental_Records
             mainForm.Show();
             LoadAppointmentDates();
             LoadAppointments(DateTime.Today);
+            LoadAllAppointments();  // ← ADD THIS
             monthCalendar1.SelectionStart = DateTime.Today;
         }
 
@@ -128,24 +186,22 @@ namespace M.A_Florencio_Dental_Records
         // ✅ NEW - HANDLE MARK AS DONE
         private void Card_OnMarkAsDone(int appointmentID)
         {
-            // Get appointment details from database
             var appt = GetAppointmentDetails(appointmentID);
 
             if (appt != null)
             {
-                // Get patient ID
                 int patientID = GetPatientID(appt.PatientName);
 
                 if (patientID > 0)
                 {
-                    // Open CompleteAppointmentForm
                     CompleteAppointmentForm completeForm = new CompleteAppointmentForm(appointmentID, appt, patientID);
 
                     if (completeForm.ShowDialog() == DialogResult.OK)
                     {
-                        // Refresh appointments list
+                        // ✅ REFRESH BOTH PANELS
                         LoadAppointmentDates();
                         LoadAppointments(monthCalendar1.SelectionStart);
+                        LoadAllAppointments();  // ← ADD THIS
                     }
                 }
                 else
@@ -225,6 +281,16 @@ namespace M.A_Florencio_Dental_Records
 
         private void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e)
         {
+        }
+
+        private void flowAppointments_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void FlowAllAppointments_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 

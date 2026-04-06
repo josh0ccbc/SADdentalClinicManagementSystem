@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             this.lblAppointmentInfo = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.dtpVisitDate = new System.Windows.Forms.DateTimePicker();
             this.label2 = new System.Windows.Forms.Label();
             this.txtDiagnosis = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -49,6 +47,8 @@
             this.lstPrescriptions = new System.Windows.Forms.ListBox();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.dtpVisitDate = new System.Windows.Forms.DateTimePicker();
             this.SuspendLayout();
             // 
             // lblAppointmentInfo
@@ -61,35 +61,18 @@
             this.lblAppointmentInfo.TabIndex = 0;
             this.lblAppointmentInfo.Text = "lblAppointmentInfo";
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(19, 119);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(52, 17);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "label1";
-            // 
-            // dtpVisitDate
-            // 
-            this.dtpVisitDate.Location = new System.Drawing.Point(22, 153);
-            this.dtpVisitDate.Name = "dtpVisitDate";
-            this.dtpVisitDate.Size = new System.Drawing.Size(200, 25);
-            this.dtpVisitDate.TabIndex = 1;
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(19, 197);
+            this.label2.Location = new System.Drawing.Point(19, 189);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(52, 17);
+            this.label2.Size = new System.Drawing.Size(79, 17);
             this.label2.TabIndex = 2;
-            this.label2.Text = "label2";
+            this.label2.Text = "Diagnosis";
             // 
             // txtDiagnosis
             // 
-            this.txtDiagnosis.Location = new System.Drawing.Point(22, 229);
+            this.txtDiagnosis.Location = new System.Drawing.Point(22, 214);
             this.txtDiagnosis.Name = "txtDiagnosis";
             this.txtDiagnosis.Size = new System.Drawing.Size(100, 25);
             this.txtDiagnosis.TabIndex = 3;
@@ -98,15 +81,15 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(19, 270);
+            this.label3.Location = new System.Drawing.Point(19, 255);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(52, 17);
+            this.label3.Size = new System.Drawing.Size(86, 17);
             this.label3.TabIndex = 4;
-            this.label3.Text = "label3";
+            this.label3.Text = "Procedure";
             // 
             // txtProcedure
             // 
-            this.txtProcedure.Location = new System.Drawing.Point(22, 304);
+            this.txtProcedure.Location = new System.Drawing.Point(22, 278);
             this.txtProcedure.Name = "txtProcedure";
             this.txtProcedure.Size = new System.Drawing.Size(100, 25);
             this.txtProcedure.TabIndex = 5;
@@ -115,11 +98,11 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(394, 84);
+            this.label4.Location = new System.Drawing.Point(394, 91);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(52, 17);
+            this.label4.Size = new System.Drawing.Size(50, 17);
             this.label4.TabIndex = 6;
-            this.label4.Text = "label4";
+            this.label4.Text = "Notes";
             // 
             // txtNotes
             // 
@@ -132,11 +115,11 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(394, 159);
+            this.label5.Location = new System.Drawing.Point(394, 164);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(52, 17);
+            this.label5.Size = new System.Drawing.Size(87, 17);
             this.label5.TabIndex = 8;
-            this.label5.Text = "label5";
+            this.label5.Text = "Medication";
             // 
             // txtMedication
             // 
@@ -149,11 +132,11 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(394, 229);
+            this.label6.Location = new System.Drawing.Point(394, 240);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(52, 17);
+            this.label6.Size = new System.Drawing.Size(136, 17);
             this.label6.TabIndex = 10;
-            this.label6.Text = "label6";
+            this.label6.Text = "Prescription Date";
             // 
             // dtpPrescDate
             // 
@@ -167,9 +150,9 @@
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(397, 304);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(52, 17);
+            this.label7.Size = new System.Drawing.Size(170, 17);
             this.label7.TabIndex = 12;
-            this.label7.Text = "label7";
+            this.label7.Text = "Medication Instruction";
             // 
             // txtMedInstructions
             // 
@@ -187,6 +170,7 @@
             this.btnAddPrescription.TabIndex = 14;
             this.btnAddPrescription.Text = "Add Presc";
             this.btnAddPrescription.UseVisualStyleBackColor = true;
+            this.btnAddPrescription.Click += new System.EventHandler(this.btnAddPrescription_Click);
             // 
             // btnRemovePrescription
             // 
@@ -196,6 +180,7 @@
             this.btnRemovePrescription.TabIndex = 14;
             this.btnRemovePrescription.Text = "Remove Presc";
             this.btnRemovePrescription.UseVisualStyleBackColor = true;
+            this.btnRemovePrescription.Click += new System.EventHandler(this.btnRemovePrescription_Click);
             // 
             // label8
             // 
@@ -212,7 +197,7 @@
             this.lstPrescriptions.ItemHeight = 17;
             this.lstPrescriptions.Location = new System.Drawing.Point(400, 484);
             this.lstPrescriptions.Name = "lstPrescriptions";
-            this.lstPrescriptions.Size = new System.Drawing.Size(120, 89);
+            this.lstPrescriptions.Size = new System.Drawing.Size(185, 89);
             this.lstPrescriptions.TabIndex = 16;
             // 
             // btnSave
@@ -223,6 +208,7 @@
             this.btnSave.TabIndex = 17;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // btnCancel
             // 
@@ -232,6 +218,24 @@
             this.btnCancel.TabIndex = 17;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(19, 119);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(77, 17);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Visit Date";
+            // 
+            // dtpVisitDate
+            // 
+            this.dtpVisitDate.Location = new System.Drawing.Point(22, 144);
+            this.dtpVisitDate.Name = "dtpVisitDate";
+            this.dtpVisitDate.Size = new System.Drawing.Size(200, 25);
+            this.dtpVisitDate.TabIndex = 1;
             // 
             // CompleteAppointmentForm
             // 
@@ -260,7 +264,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblAppointmentInfo);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "CompleteAppointmentForm";
             this.Padding = new System.Windows.Forms.Padding(4, 84, 4, 4);
             this.Text = "CompleteAppointmentForm";
@@ -273,8 +277,6 @@
         #endregion
 
         private System.Windows.Forms.Label lblAppointmentInfo;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.DateTimePicker dtpVisitDate;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtDiagnosis;
         private System.Windows.Forms.Label label3;
@@ -293,5 +295,7 @@
         private System.Windows.Forms.ListBox lstPrescriptions;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.DateTimePicker dtpVisitDate;
     }
 }

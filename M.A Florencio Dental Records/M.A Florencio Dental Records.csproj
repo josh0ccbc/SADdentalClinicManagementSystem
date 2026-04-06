@@ -56,6 +56,12 @@
     <Compile Include="AddPatientInfo.Designer.cs">
       <DependentUpon>AddPatientInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddPrescriptionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddPrescriptionDialog.Designer.cs">
+      <DependentUpon>AddPrescriptionDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="AppointmentCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -164,6 +170,9 @@
     </Compile>
     <EmbeddedResource Include="AddPatientInfo.resx">
       <DependentUpon>AddPatientInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddPrescriptionDialog.resx">
+      <DependentUpon>AddPrescriptionDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AppointmentCard.resx">
       <DependentUpon>AppointmentCard.cs</DependentUpon>
@@ -302,6 +311,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\outbox2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\checkmark.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\checkmark2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cancel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cancel2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -18,7 +18,9 @@ namespace M.A_Florencio_Dental_Records
 
         private bool isPersonalExpanded = true;
         private bool isMedicalExpanded = true;
-        private bool isMedicalRecordsExpanded = false;  // ✅ ADD THIS
+        private bool isMedicalRecordsExpanded = false;
+        private int SelectedRecordID = 0;  // ✅ TRACK SELECTED RECORD
+
 
         public patientDetailsControl()
         {
@@ -35,13 +37,13 @@ namespace M.A_Florencio_Dental_Records
             PatientID = patientID;
             LoadPersonalInformation();
             LoadMedicalHistory();
-            LoadMedicalRecords();  // ✅ ADD THIS
+            LoadMedicalRecords();
 
             panelMedical.Visible = false;
             btnToggleMedical.Text = "Medical Information ▲";
             isMedicalExpanded = false;
 
-            panelMedicalRecords.Visible = false;  // ✅ ADD THIS
+            panelMedicalRecords.Visible = false;
             btnToggleMedicalRecords.Text = "Medical Records ▲";
             isMedicalRecordsExpanded = false;
         }
@@ -114,12 +116,12 @@ namespace M.A_Florencio_Dental_Records
                 {
                     List<string> generalHealth = new List<string>();
 
-                    if (Convert.ToBoolean(reader["is_healthy"] ?? false))
+                    if (reader["is_healthy"] != DBNull.Value && Convert.ToBoolean(reader["is_healthy"]))
                     {
                         generalHealth.Add("✓ Good Health \n");
                     }
 
-                    if (Convert.ToBoolean(reader["under_treatment"] ?? false))
+                    if (reader["under_treatment"] != DBNull.Value && Convert.ToBoolean(reader["under_treatment"]))
                     {
                         generalHealth.Add("✓ Under Medical Treatment");
                         string treatmentDetails = reader["treatment_details"].ToString();
@@ -127,7 +129,7 @@ namespace M.A_Florencio_Dental_Records
                             generalHealth.Add("   Details: " + treatmentDetails + "\n");
                     }
 
-                    if (Convert.ToBoolean(reader["serious_illness"] ?? false))
+                    if (reader["serious_illness"] != DBNull.Value && Convert.ToBoolean(reader["serious_illness"]))
                     {
                         generalHealth.Add("✓ Serious Illness");
                         string illnessDetails = reader["illness_details"].ToString();
@@ -135,7 +137,7 @@ namespace M.A_Florencio_Dental_Records
                             generalHealth.Add("   Details: " + illnessDetails + "\n");
                     }
 
-                    if (Convert.ToBoolean(reader["recently_hospitalized"] ?? false))
+                    if (reader["recently_hospitalized"] != DBNull.Value && Convert.ToBoolean(reader["recently_hospitalized"]))
                     {
                         generalHealth.Add("✓ Recently Hospitalized");
                         string hospitalizationDetails = reader["hospitalization_details"].ToString();
@@ -195,9 +197,9 @@ namespace M.A_Florencio_Dental_Records
                     if (GetPatientGender() == "Female")
                     {
                         panelWomenInfo.Visible = true;
-                        lblPregnant.Text = Convert.ToBoolean(reader["IsPregnant"] ?? false) ? "Yes" : "No";
-                        lblNursing.Text = Convert.ToBoolean(reader["IsNursing"] ?? false) ? "Yes" : "No";
-                        lblBirthControl.Text = Convert.ToBoolean(reader["OnBirthControl"] ?? false) ? "Yes" : "No";
+                        lblPregnant.Text = (reader["IsPregnant"] != DBNull.Value && Convert.ToBoolean(reader["IsPregnant"])) ? "Yes" : "No";
+                        lblNursing.Text = (reader["IsNursing"] != DBNull.Value && Convert.ToBoolean(reader["IsNursing"])) ? "Yes" : "No";
+                        lblBirthControl.Text = (reader["OnBirthControl"] != DBNull.Value && Convert.ToBoolean(reader["OnBirthControl"])) ? "Yes" : "No";
                     }
                     else
                     {
@@ -213,7 +215,7 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ NEW - MEDICAL RECORDS (SAME PATTERN AS PERSONAL & MEDICAL)
+        // ✅ MEDICAL RECORDS WITH PRESCRIPTION SUPPORT
         private void LoadMedicalRecords()
         {
             panelMedicalRecords.Controls.Clear();
@@ -257,11 +259,14 @@ namespace M.A_Florencio_Dental_Records
 
                         Label lblRecord = new Label();
                         lblRecord.Text = visitDate.ToString("MMM dd, yyyy") + " | " +
-                                        serviceType + " | " +
-                                        "Diagnosis: " + diagnosis + " | " +
-                                        "Procedure: " + procedure;
+                            (string.IsNullOrEmpty(serviceType) ? "Walk-in" : serviceType) + " | " +
+                            "Diagnosis: " + (string.IsNullOrEmpty(diagnosis) ? "N/A" : diagnosis) + " | " +
+                            "Procedure: " + (string.IsNullOrEmpty(procedure) ? "N/A" : procedure);
 
-                        lblRecord.AutoSize = true;
+                        lblRecord.AutoSize = false;                          // ✅ disable autosize
+                        lblRecord.Width = panelMedicalRecords.Width - 20;    // ✅ fit panel width
+                        lblRecord.Height = 40;                               // ✅ allow two lines
+                        lblRecord.AutoEllipsis = true;                       // ✅ cut off with ...
                         lblRecord.Tag = recordID;
                         lblRecord.Cursor = Cursors.Hand;
                         lblRecord.Location = new Point(10, yPosition);
@@ -271,7 +276,7 @@ namespace M.A_Florencio_Dental_Records
                         lblRecord.MouseLeave += (s, e) => lblRecord.ForeColor = Color.Blue;
 
                         panelMedicalRecords.Controls.Add(lblRecord);
-                        yPosition += 30;
+                        yPosition += 50;  // ✅ increase spacing to match taller label
                     }
                 }
 
@@ -279,12 +284,19 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ NEW - VIEW RECORD DETAILS
+        // ✅ VIEW RECORD DETAILS WITH PRESCRIPTIONS
         private void ViewRecordDetails(int recordID)
         {
+            SelectedRecordID = recordID;
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = "SELECT * FROM MedicalRecords WHERE record_id = @RecordID";
+                string query = @"
+            SELECT mr.*, a.ServiceType, a.AppointmentDate
+            FROM MedicalRecords mr
+            LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
+            WHERE mr.record_id = @RecordID";
+
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@RecordID", recordID);
 
@@ -293,54 +305,102 @@ namespace M.A_Florencio_Dental_Records
 
                 if (reader.Read())
                 {
-                    string details = "";
-                    details += "Visit Date: " + Convert.ToDateTime(reader["visit_date"]).ToString("MMM dd, yyyy") + "\n\n";
-                    details += "Diagnosis:\n" + (reader["diagnosis"]?.ToString() ?? "N/A") + "\n\n";
-                    details += "Procedure:\n" + (reader["procedure"]?.ToString() ?? "N/A") + "\n\n";
-                    details += "Notes:\n" + (reader["notes"]?.ToString() ?? "None");
+                    int lineWidth = 45;
+                    string divider = new string('═', lineWidth);
+                    string thinDivider = new string('─', lineWidth);
 
-                    // Show prescriptions if any
-                    List<string> prescriptions = GetPrescriptionsForRecord(recordID);
-                    if (prescriptions.Count > 0)
+                    string serviceType = reader["ServiceType"]?.ToString();
+                    string diagnosis = reader["diagnosis"]?.ToString();
+                    string procedure = reader["procedure"]?.ToString();
+                    string notes = reader["notes"]?.ToString();
+
+                    string details = "";
+                    details += divider + "\n";
+                    details += "        MEDICAL RECORD DETAILS\n";
+                    details += divider + "\n\n";
+
+                    details += "Visit Date : " + Convert.ToDateTime(reader["visit_date"]).ToString("MMM dd, yyyy") + "\n";
+                    details += "Service    : " + (string.IsNullOrEmpty(serviceType) ? "Walk-in" : serviceType) + "\n\n";
+
+                    details += thinDivider + "\n";
+                    details += "DIAGNOSIS:\n";
+                    details += WrapText(string.IsNullOrEmpty(diagnosis) ? "N/A" : diagnosis, lineWidth) + "\n\n";
+
+                    details += "PROCEDURE:\n";
+                    details += WrapText(string.IsNullOrEmpty(procedure) ? "N/A" : procedure, lineWidth) + "\n\n";
+
+                    details += "NOTES:\n";
+                    details += WrapText(string.IsNullOrEmpty(notes) ? "None" : notes, lineWidth) + "\n";
+                    details += thinDivider + "\n";
+
+                    reader.Close();
+
+                    string prescQuery = @"
+                SELECT medication, prescription_date, med_instructions 
+                FROM Prescription 
+                WHERE record_id = @RecordID 
+                ORDER BY prescription_date DESC";
+
+                    SqlCommand prescCmd = new SqlCommand(prescQuery, conn);
+                    prescCmd.Parameters.AddWithValue("@RecordID", recordID);
+                    SqlDataReader prescReader = prescCmd.ExecuteReader();
+
+                    if (prescReader.HasRows)
                     {
-                        details += "\n\n💊 Prescriptions:\n";
-                        details += string.Join("\n\n", prescriptions);
+                        details += "PRESCRIPTIONS:\n\n";
+                        int count = 1;
+                        while (prescReader.Read())
+                        {
+                            string medication = prescReader["medication"]?.ToString() ?? "N/A";
+                            string instructions = prescReader["med_instructions"]?.ToString();
+
+                            details += $"  [{count}] {medication}\n";
+                            details += $"      Date: {Convert.ToDateTime(prescReader["prescription_date"]).ToString("MMM dd, yyyy")}\n";
+                            details += $"      Instructions:\n";
+                            details += $"      {WrapText(string.IsNullOrEmpty(instructions) ? "None" : instructions, lineWidth - 6)}\n\n";
+                            count++;
+                        }
+                    }
+                    else
+                    {
+                        details += "PRESCRIPTIONS: None\n";
                     }
 
-                    MessageBox.Show(details, "Medical Record Details", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    details += divider;
+
+                    MessageBox.Show(details, "Medical Record Details", MessageBoxButtons.OK, MessageBoxIcon.None);
                 }
 
                 conn.Close();
             }
         }
 
-        // ✅ NEW - GET PRESCRIPTIONS FOR RECORD
-        private List<string> GetPrescriptionsForRecord(int recordID)
+        private string WrapText(string text, int maxWidth)
         {
-            List<string> prescriptions = new List<string>();
+            if (string.IsNullOrEmpty(text)) return "N/A";
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            var words = text.Split(' ');
+            var lines = new List<string>();
+            string currentLine = "";
+
+            foreach (var word in words)
             {
-                string query = "SELECT medication, prescription_date, med_instructions FROM Prescription WHERE record_id = @RecordID ORDER BY prescription_date DESC";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@RecordID", recordID);
-
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                if ((currentLine + " " + word).Trim().Length > maxWidth)
                 {
-                    string presc = reader["medication"]?.ToString() + "\n";
-                    presc += "Date: " + Convert.ToDateTime(reader["prescription_date"]).ToString("MMM dd, yyyy") + "\n";
-                    presc += "Instructions: " + (reader["med_instructions"]?.ToString() ?? "None");
-
-                    prescriptions.Add(presc);
+                    if (!string.IsNullOrEmpty(currentLine))
+                        lines.Add(currentLine);
+                    currentLine = word;
                 }
-
-                conn.Close();
+                else
+                {
+                    currentLine = (currentLine + " " + word).Trim();
+                }
             }
 
-            return prescriptions;
+            if (!string.IsNullOrEmpty(currentLine))
+                lines.Add(currentLine);
+
+            return string.Join("\n", lines);
         }
 
         // ✅ HELPER METHODS
@@ -379,7 +439,6 @@ namespace M.A_Florencio_Dental_Records
             btnToggleMedical.Text = isMedicalExpanded ? "Medical Information ▼" : "Medical Information ▲";
         }
 
-        // ✅ NEW - TOGGLE MEDICAL RECORDS
         private void btnToggleMedicalRecords_Click(object sender, EventArgs e)
         {
             isMedicalRecordsExpanded = !isMedicalRecordsExpanded;
@@ -424,6 +483,28 @@ namespace M.A_Florencio_Dental_Records
             {
                 MessageBox.Show("Error: " + ex.Message);
             }
+        }
+
+        private void panelMedicalRecords_Paint(object sender, PaintEventArgs e)
+        {
+        }
+
+        private void btnAddPrescription_Click_1(object sender, EventArgs e)
+        {
+            AddPrescriptionDialog addPrescDialog = new AddPrescriptionDialog(PatientID);
+
+            if (addPrescDialog.ShowDialog() == DialogResult.OK)
+            {
+                LoadMedicalRecords();
+                MessageBox.Show("Prescription added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void btnToggleMedicalRecords_Click_1(object sender, EventArgs e)
+        {
+            isMedicalRecordsExpanded = !isMedicalRecordsExpanded;
+            panelMedicalRecords.Visible = isMedicalRecordsExpanded;
+            btnToggleMedicalRecords.Text = isMedicalRecordsExpanded ? "Medical Records ▼" : "Medical Records ▲";
         }
     }
 }

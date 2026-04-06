@@ -16,13 +16,20 @@ namespace M.A_Florencio_Dental_Records
             {
                 LoginForm loginForm = new LoginForm();
 
-                if (loginForm.ShowDialog() == DialogResult.OK)
+                DialogResult result = loginForm.ShowDialog();
+
+                if (result == DialogResult.OK)
                 {
                     // User logged in successfully
-                    // Exit the loop and let application continue
-                    break;
+                    break;  // Exit loop and show main form
                 }
-                // If ShowDialog returns anything else, loop continues (show login again)
+                else if (result == DialogResult.Cancel)
+                {
+                    // User clicked X button or closed form
+                    Application.Exit();  // ✅ EXIT APPLICATION
+                    return;
+                }
+                // If anything else, loop continues (show login again)
             }
 
             // After successful login, show main form

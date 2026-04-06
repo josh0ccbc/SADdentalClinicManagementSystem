@@ -89,6 +89,7 @@
             this.lblMedicationList = new System.Windows.Forms.Label();
             this.panelMedicalRecords = new System.Windows.Forms.Panel();
             this.btnToggleMedicalRecords = new System.Windows.Forms.Button();
+            this.btnAddPrescription = new System.Windows.Forms.Button();
             this.panelPersonal.SuspendLayout();
             this.panelGuardian.SuspendLayout();
             this.panelWomenInfo.SuspendLayout();
@@ -252,7 +253,6 @@
             this.panelPersonal.Name = "panelPersonal";
             this.panelPersonal.Size = new System.Drawing.Size(853, 244);
             this.panelPersonal.TabIndex = 13;
-            
             // 
             // label11
             // 
@@ -717,6 +717,7 @@
             this.panelMedicalRecords.Name = "panelMedicalRecords";
             this.panelMedicalRecords.Size = new System.Drawing.Size(853, 492);
             this.panelMedicalRecords.TabIndex = 17;
+            this.panelMedicalRecords.Paint += new System.Windows.Forms.PaintEventHandler(this.panelMedicalRecords_Paint);
             // 
             // btnToggleMedicalRecords
             // 
@@ -730,11 +731,23 @@
             this.btnToggleMedicalRecords.Text = "Medical Records ▲";
             this.btnToggleMedicalRecords.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnToggleMedicalRecords.UseVisualStyleBackColor = true;
+            this.btnToggleMedicalRecords.Click += new System.EventHandler(this.btnToggleMedicalRecords_Click_1);
+            // 
+            // btnAddPrescription
+            // 
+            this.btnAddPrescription.Location = new System.Drawing.Point(523, 1352);
+            this.btnAddPrescription.Name = "btnAddPrescription";
+            this.btnAddPrescription.Size = new System.Drawing.Size(166, 23);
+            this.btnAddPrescription.TabIndex = 0;
+            this.btnAddPrescription.Text = "Add Prescription";
+            this.btnAddPrescription.UseVisualStyleBackColor = true;
+            this.btnAddPrescription.Click += new System.EventHandler(this.btnAddPrescription_Click_1);
             // 
             // patientDetailsControl
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoScroll = true;
+            this.Controls.Add(this.btnAddPrescription);
             this.Controls.Add(this.btnToggleMedicalRecords);
             this.Controls.Add(this.panelMedicalRecords);
             this.Controls.Add(this.btnToggleMedical);
@@ -822,5 +835,6 @@
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.Panel panelMedicalRecords;
         private System.Windows.Forms.Button btnToggleMedicalRecords;
+        private System.Windows.Forms.Button btnAddPrescription;
     }
 }

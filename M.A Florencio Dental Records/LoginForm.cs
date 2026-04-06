@@ -152,6 +152,12 @@ namespace M.A_Florencio_Dental_Records
         // ✅ CLEAR PASSWORD WHEN FORM CLOSES
         private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // If user clicks X button (not logging in), allow exit
+            if (this.DialogResult != DialogResult.OK)
+            {
+                this.DialogResult = DialogResult.Cancel;  // Signal to Program.cs to exit
+            }
+
             txtPassword.Clear();
         }
 

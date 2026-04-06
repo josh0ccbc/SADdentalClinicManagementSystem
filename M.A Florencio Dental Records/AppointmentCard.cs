@@ -135,5 +135,35 @@ namespace M.A_Florencio_Dental_Records
         private void lblNotes_Click(object sender, EventArgs e)
         {
         }
+
+        private void btnDelete_MouseEnter_1(object sender, EventArgs e)
+        {
+            btnDelete.BackgroundImage = Properties.Resources.cancel2;
+        }
+
+        private void btnDelete_MouseLeave_1(object sender, EventArgs e)
+        {
+            btnDelete.BackgroundImage = Properties.Resources.cancel;
+        }
+
+        private void btnEdit_MouseEnter_1(object sender, EventArgs e)
+        {
+            btnEdit.BackgroundImage = Properties.Resources.edit2;
+        }
+
+        private void btnEdit_MouseLeave_1(object sender, EventArgs e)
+        {
+            btnEdit.BackgroundImage = Properties.Resources.edit;
+        }
+
+        private void btnMarkAsDone_MouseEnter(object sender, EventArgs e)
+        {
+            btnMarkAsDone.BackgroundImage = Properties.Resources.checkmark2;
+        }
+
+        private void btnMarkAsDone_MouseLeave(object sender, EventArgs e)
+        {
+            btnMarkAsDone.BackgroundImage = Properties.Resources.checkmark;
+        }
     }
 }
