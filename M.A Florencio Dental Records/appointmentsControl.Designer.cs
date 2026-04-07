@@ -35,7 +35,10 @@
             this.flowAppointments = new System.Windows.Forms.FlowLayoutPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.flowAllAppointments = new System.Windows.Forms.FlowLayoutPanel();
+            this.panelPagination = new System.Windows.Forms.FlowLayoutPanel();
+            this.btnNext = new System.Windows.Forms.Button();
+            this.lblPageInfo = new System.Windows.Forms.Label();
+            this.btnPrevious = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -117,19 +120,51 @@
             this.pictureBox1.TabIndex = 16;
             this.pictureBox1.TabStop = false;
             // 
-            // flowAllAppointments
+            // panelPagination
             // 
-            this.flowAllAppointments.Location = new System.Drawing.Point(16, 556);
-            this.flowAllAppointments.Name = "flowAllAppointments";
-            this.flowAllAppointments.Size = new System.Drawing.Size(844, 285);
-            this.flowAllAppointments.TabIndex = 18;
-            this.flowAllAppointments.Paint += new System.Windows.Forms.PaintEventHandler(this.FlowAllAppointments_Paint);
+            this.panelPagination.Location = new System.Drawing.Point(16, 556);
+            this.panelPagination.Name = "panelPagination";
+            this.panelPagination.Size = new System.Drawing.Size(844, 285);
+            this.panelPagination.TabIndex = 18;
+            this.panelPagination.Paint += new System.Windows.Forms.PaintEventHandler(this.FlowAllAppointments_Paint);
+            // 
+            // btnNext
+            // 
+            this.btnNext.Location = new System.Drawing.Point(647, 504);
+            this.btnNext.Name = "btnNext";
+            this.btnNext.Size = new System.Drawing.Size(75, 23);
+            this.btnNext.TabIndex = 19;
+            this.btnNext.Text = "Next";
+            this.btnNext.UseVisualStyleBackColor = true;
+            this.btnNext.Click += new System.EventHandler(this.btnNext_Click);
+            // 
+            // lblPageInfo
+            // 
+            this.lblPageInfo.AutoSize = true;
+            this.lblPageInfo.Location = new System.Drawing.Point(762, 509);
+            this.lblPageInfo.Name = "lblPageInfo";
+            this.lblPageInfo.Size = new System.Drawing.Size(60, 13);
+            this.lblPageInfo.TabIndex = 20;
+            this.lblPageInfo.Text = "lblPageInfo";
+            // 
+            // btnPrevious
+            // 
+            this.btnPrevious.Location = new System.Drawing.Point(566, 504);
+            this.btnPrevious.Name = "btnPrevious";
+            this.btnPrevious.Size = new System.Drawing.Size(75, 23);
+            this.btnPrevious.TabIndex = 19;
+            this.btnPrevious.Text = "Previous";
+            this.btnPrevious.UseVisualStyleBackColor = true;
+            this.btnPrevious.Click += new System.EventHandler(this.btnPrevious_Click);
             // 
             // appointmentsControl
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoScroll = true;
-            this.Controls.Add(this.flowAllAppointments);
+            this.Controls.Add(this.lblPageInfo);
+            this.Controls.Add(this.btnPrevious);
+            this.Controls.Add(this.btnNext);
+            this.Controls.Add(this.panelPagination);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.flowAppointments);
@@ -156,6 +191,9 @@
         private System.Windows.Forms.FlowLayoutPanel flowAppointments;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.FlowLayoutPanel flowAllAppointments;
+        private System.Windows.Forms.FlowLayoutPanel panelPagination;
+        private System.Windows.Forms.Button btnNext;
+        private System.Windows.Forms.Label lblPageInfo;
+        private System.Windows.Forms.Button btnPrevious;
     }
 }

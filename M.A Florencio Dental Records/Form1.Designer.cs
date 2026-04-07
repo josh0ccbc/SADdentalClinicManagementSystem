@@ -73,7 +73,7 @@
             this.FormPnl.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.FormPnl.Location = new System.Drawing.Point(230, 64);
             this.FormPnl.Name = "FormPnl";
-            this.FormPnl.Size = new System.Drawing.Size(899, 559);
+            this.FormPnl.Size = new System.Drawing.Size(926, 559);
             this.FormPnl.TabIndex = 8;
             this.FormPnl.Visible = false;
             this.FormPnl.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
@@ -141,7 +141,7 @@
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(1146, 580);
+            this.ClientSize = new System.Drawing.Size(1162, 590);
             this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button4);

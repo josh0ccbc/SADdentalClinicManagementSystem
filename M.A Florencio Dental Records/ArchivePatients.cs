@@ -163,9 +163,10 @@ namespace M.A_Florencio_Dental_Records
         private void btnView_Click_1(object sender, EventArgs e)
         {
             Form1 mainForm = (Form1)this.FindForm();
-            ViewArchivedPatient viewPatient = new ViewArchivedPatient();
-            viewPatient.LoadPatientDetails(this.PatientID);
-            mainForm.LoadControl(viewPatient);
+            patientDetailsControl detailsControl = new patientDetailsControl();
+            detailsControl.IsArchived = true;  
+            detailsControl.LoadPatientDetails(this.PatientID);
+            mainForm.LoadControl(detailsControl);
         }
     }
 }

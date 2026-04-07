@@ -8,7 +8,7 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class LoginForm : MaterialForm
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+        string connectionString = @"Data Source=localhost;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int LoggedInUserID { get; set; }
         public string LoggedInUsername { get; set; }
 

@@ -34,38 +34,40 @@
             this.dtpVisitDate = new System.Windows.Forms.DateTimePicker();
             this.label3 = new System.Windows.Forms.Label();
             this.txtInstructions = new System.Windows.Forms.TextBox();
-            this.btnSave = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.txtDiagnosis = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.txtProcedure = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.txtNotes = new System.Windows.Forms.TextBox();
+            this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
+            this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(28, 100);
+            this.label1.Location = new System.Drawing.Point(28, 155);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(87, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "Medication";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // txtMedication
             // 
-            this.txtMedication.Location = new System.Drawing.Point(31, 125);
+            this.txtMedication.Location = new System.Drawing.Point(31, 182);
             this.txtMedication.Margin = new System.Windows.Forms.Padding(4);
             this.txtMedication.Name = "txtMedication";
             this.txtMedication.Size = new System.Drawing.Size(200, 25);
             this.txtMedication.TabIndex = 1;
+            this.txtMedication.TextChanged += new System.EventHandler(this.txtMedication_TextChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(28, 170);
+            this.label2.Location = new System.Drawing.Point(28, 84);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(136, 17);
@@ -74,7 +76,7 @@
             // 
             // dtpVisitDate
             // 
-            this.dtpVisitDate.Location = new System.Drawing.Point(31, 199);
+            this.dtpVisitDate.Location = new System.Drawing.Point(31, 113);
             this.dtpVisitDate.Name = "dtpVisitDate";
             this.dtpVisitDate.Size = new System.Drawing.Size(200, 25);
             this.dtpVisitDate.TabIndex = 2;
@@ -82,7 +84,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(28, 244);
+            this.label3.Location = new System.Drawing.Point(28, 219);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(95, 17);
@@ -91,35 +93,15 @@
             // 
             // txtInstructions
             // 
-            this.txtInstructions.Location = new System.Drawing.Point(31, 275);
+            this.txtInstructions.Location = new System.Drawing.Point(31, 246);
             this.txtInstructions.Name = "txtInstructions";
             this.txtInstructions.Size = new System.Drawing.Size(200, 25);
             this.txtInstructions.TabIndex = 3;
             // 
-            // btnSave
-            // 
-            this.btnSave.Location = new System.Drawing.Point(31, 321);
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(75, 23);
-            this.btnSave.TabIndex = 4;
-            this.btnSave.Text = "Save";
-            this.btnSave.UseVisualStyleBackColor = true;
-            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
-            // 
-            // btnCancel
-            // 
-            this.btnCancel.Location = new System.Drawing.Point(156, 321);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 4;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
-            // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(293, 100);
+            this.label4.Location = new System.Drawing.Point(277, 84);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(79, 17);
             this.label4.TabIndex = 5;
@@ -127,15 +109,15 @@
             // 
             // txtDiagnosis
             // 
-            this.txtDiagnosis.Location = new System.Drawing.Point(296, 125);
+            this.txtDiagnosis.Location = new System.Drawing.Point(280, 113);
             this.txtDiagnosis.Name = "txtDiagnosis";
-            this.txtDiagnosis.Size = new System.Drawing.Size(170, 25);
+            this.txtDiagnosis.Size = new System.Drawing.Size(192, 25);
             this.txtDiagnosis.TabIndex = 6;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(293, 170);
+            this.label5.Location = new System.Drawing.Point(277, 155);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(86, 17);
             this.label5.TabIndex = 5;
@@ -143,15 +125,15 @@
             // 
             // txtProcedure
             // 
-            this.txtProcedure.Location = new System.Drawing.Point(296, 199);
+            this.txtProcedure.Location = new System.Drawing.Point(280, 182);
             this.txtProcedure.Name = "txtProcedure";
-            this.txtProcedure.Size = new System.Drawing.Size(170, 25);
+            this.txtProcedure.Size = new System.Drawing.Size(192, 25);
             this.txtProcedure.TabIndex = 6;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(293, 244);
+            this.label6.Location = new System.Drawing.Point(28, 283);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(50, 17);
             this.label6.TabIndex = 5;
@@ -159,25 +141,66 @@
             // 
             // txtNotes
             // 
-            this.txtNotes.Location = new System.Drawing.Point(296, 275);
+            this.txtNotes.Location = new System.Drawing.Point(31, 311);
             this.txtNotes.Multiline = true;
             this.txtNotes.Name = "txtNotes";
-            this.txtNotes.Size = new System.Drawing.Size(170, 69);
+            this.txtNotes.Size = new System.Drawing.Size(200, 47);
             this.txtNotes.TabIndex = 7;
+            // 
+            // materialButton1
+            // 
+            this.materialButton1.AutoSize = false;
+            this.materialButton1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialButton1.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton1.Depth = 0;
+            this.materialButton1.HighEmphasis = true;
+            this.materialButton1.Icon = null;
+            this.materialButton1.Location = new System.Drawing.Point(397, 322);
+            this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton1.Name = "materialButton1";
+            this.materialButton1.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.materialButton1.Size = new System.Drawing.Size(75, 36);
+            this.materialButton1.TabIndex = 8;
+            this.materialButton1.Text = "Save";
+            this.materialButton1.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton1.UseAccentColor = false;
+            this.materialButton1.UseVisualStyleBackColor = true;
+            this.materialButton1.Click += new System.EventHandler(this.btnSave_Click);
+            // 
+            // materialButton2
+            // 
+            this.materialButton2.AutoSize = false;
+            this.materialButton2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.materialButton2.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
+            this.materialButton2.Depth = 0;
+            this.materialButton2.HighEmphasis = false;
+            this.materialButton2.Icon = null;
+            this.materialButton2.Location = new System.Drawing.Point(288, 322);
+            this.materialButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
+            this.materialButton2.Name = "materialButton2";
+            this.materialButton2.NoAccentTextColor = System.Drawing.Color.Empty;
+            this.materialButton2.Size = new System.Drawing.Size(75, 36);
+            this.materialButton2.TabIndex = 9;
+            this.materialButton2.Text = "Cancel";
+            this.materialButton2.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
+            this.materialButton2.UseAccentColor = false;
+            this.materialButton2.UseVisualStyleBackColor = true;
+            this.materialButton2.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // AddPrescriptionDialog
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1200, 588);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.ClientSize = new System.Drawing.Size(508, 380);
+            this.Controls.Add(this.materialButton2);
+            this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.txtNotes);
             this.Controls.Add(this.txtProcedure);
             this.Controls.Add(this.txtDiagnosis);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.txtInstructions);
             this.Controls.Add(this.dtpVisitDate);
             this.Controls.Add(this.txtMedication);
@@ -186,8 +209,12 @@
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
+            this.MaximizeBox = false;
             this.Name = "AddPrescriptionDialog";
             this.Padding = new System.Windows.Forms.Padding(4, 84, 4, 4);
+            this.Sizable = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Add Prescription";
             this.Load += new System.EventHandler(this.AddPrescriptionDialog_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -202,13 +229,13 @@
         private System.Windows.Forms.DateTimePicker dtpVisitDate;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtInstructions;
-        private System.Windows.Forms.Button btnSave;
-        private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtDiagnosis;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox txtProcedure;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox txtNotes;
+        private MaterialSkin.Controls.MaterialButton materialButton1;
+        private MaterialSkin.Controls.MaterialButton materialButton2;
     }
 }

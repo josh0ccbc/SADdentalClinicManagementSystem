@@ -98,7 +98,7 @@
             // 
             // btnBack
             // 
-            this.btnBack.Location = new System.Drawing.Point(13, 14);
+            this.btnBack.Location = new System.Drawing.Point(20, 14);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(75, 23);
             this.btnBack.TabIndex = 1;
@@ -108,7 +108,7 @@
             // 
             // btnDelete
             // 
-            this.btnDelete.Location = new System.Drawing.Point(695, 1352);
+            this.btnDelete.Location = new System.Drawing.Point(702, 14);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(75, 23);
             this.btnDelete.TabIndex = 8;
@@ -118,7 +118,7 @@
             // 
             // btnEdit
             // 
-            this.btnEdit.Location = new System.Drawing.Point(786, 1352);
+            this.btnEdit.Location = new System.Drawing.Point(793, 14);
             this.btnEdit.Name = "btnEdit";
             this.btnEdit.Size = new System.Drawing.Size(75, 23);
             this.btnEdit.TabIndex = 9;
@@ -430,7 +430,7 @@
             this.btnTogglePersonal.FlatAppearance.BorderSize = 0;
             this.btnTogglePersonal.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnTogglePersonal.Font = new System.Drawing.Font("Arial Rounded MT Bold", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnTogglePersonal.Location = new System.Drawing.Point(13, 54);
+            this.btnTogglePersonal.Location = new System.Drawing.Point(12, 55);
             this.btnTogglePersonal.Name = "btnTogglePersonal";
             this.btnTogglePersonal.Size = new System.Drawing.Size(240, 28);
             this.btnTogglePersonal.TabIndex = 16;
@@ -444,11 +444,12 @@
             this.btnToggleMedical.FlatAppearance.BorderSize = 0;
             this.btnToggleMedical.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToggleMedical.Font = new System.Drawing.Font("Arial Rounded MT Bold", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnToggleMedical.Location = new System.Drawing.Point(12, 348);
+            this.btnToggleMedical.Location = new System.Drawing.Point(12, 353);
             this.btnToggleMedical.Name = "btnToggleMedical";
             this.btnToggleMedical.Size = new System.Drawing.Size(240, 28);
             this.btnToggleMedical.TabIndex = 16;
             this.btnToggleMedical.Text = "Medical Information ▲";
+            this.btnToggleMedical.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnToggleMedical.UseVisualStyleBackColor = true;
             this.btnToggleMedical.Click += new System.EventHandler(this.btnToggleMedical_Click);
             // 
@@ -724,9 +725,9 @@
             this.btnToggleMedicalRecords.FlatAppearance.BorderSize = 0;
             this.btnToggleMedicalRecords.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToggleMedicalRecords.Font = new System.Drawing.Font("Arial Rounded MT Bold", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnToggleMedicalRecords.Location = new System.Drawing.Point(12, 818);
+            this.btnToggleMedicalRecords.Location = new System.Drawing.Point(13, 823);
             this.btnToggleMedicalRecords.Name = "btnToggleMedicalRecords";
-            this.btnToggleMedicalRecords.Size = new System.Drawing.Size(240, 28);
+            this.btnToggleMedicalRecords.Size = new System.Drawing.Size(239, 28);
             this.btnToggleMedicalRecords.TabIndex = 18;
             this.btnToggleMedicalRecords.Text = "Medical Records ▲";
             this.btnToggleMedicalRecords.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -735,7 +736,7 @@
             // 
             // btnAddPrescription
             // 
-            this.btnAddPrescription.Location = new System.Drawing.Point(523, 1352);
+            this.btnAddPrescription.Location = new System.Drawing.Point(526, 14);
             this.btnAddPrescription.Name = "btnAddPrescription";
             this.btnAddPrescription.Size = new System.Drawing.Size(166, 23);
             this.btnAddPrescription.TabIndex = 0;
@@ -748,18 +749,18 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.AutoScroll = true;
             this.Controls.Add(this.btnAddPrescription);
+            this.Controls.Add(this.btnEdit);
+            this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnToggleMedicalRecords);
             this.Controls.Add(this.panelMedicalRecords);
             this.Controls.Add(this.btnToggleMedical);
             this.Controls.Add(this.btnTogglePersonal);
             this.Controls.Add(this.panelMedical);
-            this.Controls.Add(this.btnEdit);
-            this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.panelPersonal);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "patientDetailsControl";
-            this.Size = new System.Drawing.Size(880, 1393);
+            this.Size = new System.Drawing.Size(926, 1362);
             this.Load += new System.EventHandler(this.patientDetailsControl_Load);
             this.panelPersonal.ResumeLayout(false);
             this.panelPersonal.PerformLayout();

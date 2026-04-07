@@ -16,6 +16,7 @@ namespace M.A_Florencio_Dental_Records
         string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int PatientID { get; set; }
 
+        public bool IsArchived { get; set; } = false;
         private bool isPersonalExpanded = true;
         private bool isMedicalExpanded = true;
         private bool isMedicalRecordsExpanded = false;
@@ -29,6 +30,10 @@ namespace M.A_Florencio_Dental_Records
 
         private void patientDetailsControl_Load(object sender, EventArgs e)
         {
+            this.AutoScroll = false;
+            this.HorizontalScroll.Maximum = 0;
+            this.HorizontalScroll.Enabled = false;
+            this.HorizontalScroll.Visible = false;
             this.AutoScroll = true;
         }
 
@@ -46,6 +51,8 @@ namespace M.A_Florencio_Dental_Records
             panelMedicalRecords.Visible = false;
             btnToggleMedicalRecords.Text = "Medical Records ▲";
             isMedicalRecordsExpanded = false;
+
+            RepositionPanels(); // ✅ initial layout
         }
 
         // ✅ PERSONAL INFORMATION (EXISTING - NO CHANGES)
@@ -98,6 +105,74 @@ namespace M.A_Florencio_Dental_Records
 
                 conn.Close();
             }
+        }
+
+        private int _startY = -1;
+
+        private void RepositionPanels()
+        {
+            // ✅ Save the original Y position of btnTogglePersonal ONCE
+            if (_startY == -1)
+                _startY = btnTogglePersonal.Top;
+
+            int controlWidth = this.Width - 20;
+
+            btnTogglePersonal.Width = controlWidth;
+            panelPersonal.Width = controlWidth;
+            btnToggleMedical.Width = controlWidth;
+            panelMedical.Width = controlWidth;
+            btnToggleMedicalRecords.Width = controlWidth;
+            panelMedicalRecords.Width = controlWidth;
+
+            // ✅ Always start from the fixed Y position
+            int yPosition = _startY + btnTogglePersonal.Height + 5;
+
+            if (isPersonalExpanded)
+            {
+                panelPersonal.Location = new Point(panelPersonal.Left, yPosition);
+                panelPersonal.Visible = true;
+                yPosition = panelPersonal.Bottom + 5;
+            }
+            else
+            {
+                panelPersonal.Visible = false;
+            }
+
+            btnToggleMedical.Location = new Point(btnToggleMedical.Left, yPosition);
+            yPosition = btnToggleMedical.Bottom + 5;
+
+            if (isMedicalExpanded)
+            {
+                panelMedical.Location = new Point(panelMedical.Left, yPosition);
+                panelMedical.Visible = true;
+                yPosition = panelMedical.Bottom + 5;
+            }
+            else
+            {
+                panelMedical.Visible = false;
+            }
+
+            btnToggleMedicalRecords.Location = new Point(btnToggleMedicalRecords.Left, yPosition);
+            yPosition = btnToggleMedicalRecords.Bottom + 5;
+
+            if (isMedicalRecordsExpanded)
+            {
+                panelMedicalRecords.Location = new Point(panelMedicalRecords.Left, yPosition);
+                panelMedicalRecords.Visible = true;
+                yPosition = panelMedicalRecords.Bottom + 5;
+            }
+            else
+            {
+                panelMedicalRecords.Visible = false;
+            }
+
+            this.Height = yPosition + 20;
+
+            this.AutoScroll = false;
+            this.HorizontalScroll.Maximum = 0;
+            this.HorizontalScroll.Enabled = false;
+            this.HorizontalScroll.Visible = false;
+            this.AutoScroll = false;
         }
 
         // ✅ MEDICAL HISTORY (EXISTING - NO CHANGES)
@@ -422,33 +497,44 @@ namespace M.A_Florencio_Dental_Records
         private void btnBack_Click(object sender, EventArgs e)
         {
             Form1 mainForm = (Form1)this.FindForm();
-            mainForm.LoadControl(new patientControl());
+            if (IsArchived)
+                mainForm.LoadControl(new Archive()); // whatever your archive list control is named
+            else
+                mainForm.LoadControl(new patientControl());
         }
 
         private void btnTogglePersonal_Click(object sender, EventArgs e)
         {
             isPersonalExpanded = !isPersonalExpanded;
-            panelPersonal.Visible = isPersonalExpanded;
             btnTogglePersonal.Text = isPersonalExpanded ? "Personal Information ▼" : "Personal Information ▲";
+            RepositionPanels();
         }
 
         private void btnToggleMedical_Click(object sender, EventArgs e)
         {
             isMedicalExpanded = !isMedicalExpanded;
-            panelMedical.Visible = isMedicalExpanded;
             btnToggleMedical.Text = isMedicalExpanded ? "Medical Information ▼" : "Medical Information ▲";
+            RepositionPanels();
         }
 
         private void btnToggleMedicalRecords_Click(object sender, EventArgs e)
         {
             isMedicalRecordsExpanded = !isMedicalRecordsExpanded;
-            panelMedicalRecords.Visible = isMedicalRecordsExpanded;
             btnToggleMedicalRecords.Text = isMedicalRecordsExpanded ? "Medical Records ▼" : "Medical Records ▲";
+            RepositionPanels();
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Edit functionality coming soon!", "Edit Patient", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // ✅ OPEN EDIT FORM
+            EditPatientForm editForm = new EditPatientForm(PatientID);
+
+            if (editForm.ShowDialog() == DialogResult.OK)
+            {
+                // ✅ RELOAD PATIENT DATA
+                LoadPatientDetails(PatientID);
+                MessageBox.Show("Patient updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -491,20 +577,25 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnAddPrescription_Click_1(object sender, EventArgs e)
         {
-            AddPrescriptionDialog addPrescDialog = new AddPrescriptionDialog(PatientID);
+            AddPrescriptionDialog dialog = new AddPrescriptionDialog(PatientID);
 
-            if (addPrescDialog.ShowDialog() == DialogResult.OK)
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
                 LoadMedicalRecords();
+                LoadPatientDetails(PatientID);
                 MessageBox.Show("Prescription added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            // ✅ THIS IS ENOUGH - Force refresh
+            this.Refresh();
+            this.Invalidate();
         }
 
         private void btnToggleMedicalRecords_Click_1(object sender, EventArgs e)
         {
             isMedicalRecordsExpanded = !isMedicalRecordsExpanded;
-            panelMedicalRecords.Visible = isMedicalRecordsExpanded;
             btnToggleMedicalRecords.Text = isMedicalRecordsExpanded ? "Medical Records ▼" : "Medical Records ▲";
+            RepositionPanels();
         }
     }
 }

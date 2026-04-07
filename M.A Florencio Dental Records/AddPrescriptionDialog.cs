@@ -19,12 +19,6 @@ namespace M.A_Florencio_Dental_Records
 
         private void AddPrescriptionDialog_Load(object sender, EventArgs e)
         {
-            var materialSkinManager = MaterialSkinManager.Instance;
-            materialSkinManager.AddFormToManage(this);
-            materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-            materialSkinManager.ColorScheme = new ColorScheme(
-                Primary.Teal500, Primary.Teal700, Primary.Teal200, Accent.Teal200, TextShade.WHITE);
-
             this.StartPosition = FormStartPosition.CenterScreen;
             dtpVisitDate.Value = DateTime.Today;
         }
@@ -113,6 +107,16 @@ namespace M.A_Florencio_Dental_Records
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtMedication_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

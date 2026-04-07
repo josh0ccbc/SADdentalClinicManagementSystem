@@ -187,7 +187,17 @@ namespace M.A_Florencio_Dental_Records
         public void LoadControl(UserControl control)
         {
             FormPnl.Controls.Clear();
+            control.Width = FormPnl.Width;   // ✅ match panel width
+            control.Left = 0;
+            control.Top = 0;
+            // ✅ NO Dock.Fill - let height be dynamic
             FormPnl.Controls.Add(control);
+
+            FormPnl.AutoScroll = false;
+            FormPnl.HorizontalScroll.Maximum = 0;
+            FormPnl.HorizontalScroll.Enabled = false;
+            FormPnl.HorizontalScroll.Visible = false;
+            FormPnl.AutoScroll = true;
         }
 
         private void panelContainer_Paint(object sender, PaintEventArgs e)

@@ -108,7 +108,7 @@
             this.BTNedit.Size = new System.Drawing.Size(20, 20);
             this.BTNedit.TabIndex = 5;
             this.BTNedit.UseVisualStyleBackColor = false;
-            this.BTNedit.Click += new System.EventHandler(this.btnView_Click);
+            this.BTNedit.Click += new System.EventHandler(this.btnEdit_Click);
             this.BTNedit.MouseEnter += new System.EventHandler(this.BTNedit_MouseEnter);
             this.BTNedit.MouseLeave += new System.EventHandler(this.BTNedit_MouseLeave);
             // 

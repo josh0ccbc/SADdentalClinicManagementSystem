@@ -52,6 +52,54 @@ namespace M.A_Florencio_Dental_Records
             mainForm.LoadControl(details);
         }
 
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            EditPatientForm editForm = new EditPatientForm(PatientID);
+
+            if (editForm.ShowDialog() == DialogResult.OK)
+            {
+                // ✅ RELOAD THIS PATIENT CARD WITH UPDATED DATA
+                ReloadPatientCard();
+                MessageBox.Show("Patient updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        // ✅ NEW METHOD - RELOAD PATIENT DATA ON THIS CARD
+        private void ReloadPatientCard()
+        {
+            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@PatientID", PatientID);
+
+                    conn.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        // ✅ REFRESH ALL FIELDS ON THIS CARD
+                        lblName.Text = reader["FullName"].ToString();
+                        lblGenderAge.Text = reader["Gender"].ToString();
+                        lblAge.Text = reader["Age"].ToString();
+                        lblContact.Text = reader["ContactNumber"].ToString();
+                        BDAYage.Text = Convert.ToDateTime(reader["BirthDate"]).ToString("MMM dd, yyyy");
+                        DPpatientid.Text = reader["PatientID"].ToString();
+                    }
+
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error reloading patient: " + ex.Message);
+            }
+        }
+
         private void btnView_MouseEnter(object sender, EventArgs e)
         {
             btnView.BackgroundImage = Properties.Resources.view2;

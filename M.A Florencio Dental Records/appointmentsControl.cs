@@ -14,85 +14,306 @@ namespace M.A_Florencio_Dental_Records
     public partial class appointmentsControl : UserControl
     {
         string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+        private bool isLoading = false;
+
+        // ✅ NEW - PAGINATION VARIABLES
+        private int currentPage = 1;
+        private int appointmentsPerPage = 6;
+        private int totalAppointmentsCount = 0;
+        private int totalPages = 0;
 
         public appointmentsControl()
         {
             InitializeComponent();
-            LoadAppointmentDates();
-
             monthCalendar1.SelectionStart = DateTime.Today;
             monthCalendar1.SelectionEnd = DateTime.Today;
-            LoadAppointments(DateTime.Today);
-
-            LoadAllAppointments();
         }
 
-        private void appointmentsControl_Load(object sender, EventArgs e)
+        private async void appointmentsControl_Load(object sender, EventArgs e)
         {
-            LoadAppointments(DateTime.Today);
-        }
+            if (isLoading) return;
+            isLoading = true;
 
-        private void LoadAllAppointments()
-        {
-            flowAllAppointments.Controls.Clear();
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                // Query ALL appointments (not filtered by date)
-                string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
+                // ✅ Load in sequence
+                await LoadAppointmentDatesAsync();
+                await LoadAppointmentsAsync(DateTime.Today);
+
+                // ✅ Load paginated appointments
+                currentPage = 1;
+                await LoadAllAppointmentsPagedAsync(currentPage);
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+
+        // ✅ GET TOTAL COUNT OF APPOINTMENTS
+        private async Task<int> GetTotalAppointmentsCountAsync()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT COUNT(*) FROM Appointments WHERE Status != 'Cancelled'";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
+
+                    await conn.OpenAsync();
+                    object result = await cmd.ExecuteScalarAsync();
+
+                    return result != null ? Convert.ToInt32(result) : 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+                return 0;
+            }
+        }
+
+        // ✅ LOAD PAGINATED APPOINTMENTS (10 per page)
+        private async Task LoadAllAppointmentsPagedAsync(int pageNumber)
+        {
+            try
+            {
+                // ✅ Get total count first
+                totalAppointmentsCount = await GetTotalAppointmentsCountAsync();
+                totalPages = (int)Math.Ceiling((double)totalAppointmentsCount / appointmentsPerPage);
+
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageNumber > totalPages && totalPages > 0) pageNumber = totalPages;
+
+                currentPage = pageNumber;
+
+                // ✅ Dispose old controls
+                foreach (Control ctrl in panelPagination.Controls)
+                {
+                    ctrl.Dispose();
+                }
+                panelPagination.Controls.Clear();
+
+                // ✅ Suspend layout
+                panelPagination.SuspendLayout();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    // ✅ PAGINATION QUERY: OFFSET/FETCH
+                    string query = @"
+                        SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
                                s.ServiceName, a.Status, a.Notes
                         FROM Appointments a
                         LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
                         WHERE a.Status != 'Cancelled'
-                        ORDER BY a.AppointmentDate DESC, a.AppointmentTime ASC";
+                        ORDER BY a.AppointmentDate DESC, a.AppointmentTime ASC
+                        OFFSET @Offset ROWS
+                        FETCH NEXT @PageSize ROWS ONLY";
 
-                SqlCommand cmd = new SqlCommand(query, conn);
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
 
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
+                    // ✅ Calculate offset
+                    int offset = (pageNumber - 1) * appointmentsPerPage;
+                    cmd.Parameters.AddWithValue("@Offset", offset);
+                    cmd.Parameters.AddWithValue("@PageSize", appointmentsPerPage);
 
-                if (!reader.HasRows)
-                {
-                    Label emptyLabel = new Label();
-                    emptyLabel.Text = "No appointments";
-                    emptyLabel.Font = new Font("Segoe UI", 12);
-                    emptyLabel.ForeColor = Color.Gray;
-                    emptyLabel.AutoSize = true;
-                    flowAllAppointments.Controls.Add(emptyLabel);
-                }
-                else
-                {
-                    while (reader.Read())
+                    await conn.OpenAsync();
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                     {
-                        AppointmentCard card = new AppointmentCard();
+                        if (!reader.HasRows)
+                        {
+                            Label emptyLabel = new Label
+                            {
+                                Text = "No appointments",
+                                Font = new Font("Segoe UI", 12),
+                                ForeColor = Color.Gray,
+                                AutoSize = true
+                            };
+                            panelPagination.Controls.Add(emptyLabel);
+                        }
+                        else
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                AppointmentCard card = new AppointmentCard();
 
-                        card.SetAppointment(
-                            Convert.ToInt32(reader["AppointmentID"]),
-                            reader["PatientName"].ToString(),
-                            Convert.ToDateTime(reader["AppointmentDate"]),
-                            TimeSpan.Parse(reader["AppointmentTime"].ToString()),
-                            reader["ServiceName"].ToString() ?? "N/A",
-                            reader["Status"].ToString(),
-                            reader["Notes"].ToString()
-                        );
+                                card.SetAppointment(
+                                    Convert.ToInt32(reader["AppointmentID"]),
+                                    reader["PatientName"].ToString(),
+                                    Convert.ToDateTime(reader["AppointmentDate"]),
+                                    TimeSpan.Parse(reader["AppointmentTime"].ToString()),
+                                    reader["ServiceName"].ToString() ?? "N/A",
+                                    reader["Status"].ToString(),
+                                    reader["Notes"].ToString()
+                                );
 
-                        // ✅ WIRE EVENT - Same as flowAppointments
-                        card.OnMarkAsDone += Card_OnMarkAsDone;
-
-                        flowAllAppointments.Controls.Add(card);
+                                card.OnMarkAsDone += Card_OnMarkAsDone;
+                                panelPagination.Controls.Add(card);
+                            }
+                        }
                     }
                 }
 
-                conn.Close();
+                // ✅ Resume layout
+                panelPagination.ResumeLayout(true);
+
+                // ✅ UPDATE PAGE INFO LABEL
+                UpdatePaginationInfo();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading appointments: " + ex.Message);
             }
         }
 
-        private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
+        // ✅ NEW - UPDATE PAGE COUNTER LABEL
+        private void UpdatePaginationInfo()
         {
-            LoadAppointments(e.Start);
+            if (totalPages > 0)
+            {
+                lblPageInfo.Text = $"Page {currentPage} of {totalPages}";
+
+                // ✅ Enable/disable buttons based on page
+                btnPrevious.Enabled = currentPage > 1;
+                btnNext.Enabled = currentPage < totalPages;
+            }
+            else
+            {
+                lblPageInfo.Text = "Page 1 of 1";
+                btnPrevious.Enabled = false;
+                btnNext.Enabled = false;
+            }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        // ✅ NEW - PREVIOUS PAGE BUTTON
+        private async void btnPrevious_Click(object sender, EventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage--;
+                await LoadAllAppointmentsPagedAsync(currentPage);
+            }
+        }
+
+        // ✅ NEW - NEXT PAGE BUTTON
+        private async void btnNext_Click(object sender, EventArgs e)
+        {
+            if (currentPage < totalPages)
+            {
+                currentPage++;
+                await LoadAllAppointmentsPagedAsync(currentPage);
+            }
+        }
+
+        private async Task LoadAppointmentDatesAsync()
+        {
+            List<DateTime> appointmentDates = new List<DateTime>();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT DISTINCT CAST(AppointmentDate AS DATE) FROM Appointments WHERE Status != 'Cancelled'";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
+
+                    await conn.OpenAsync();
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            appointmentDates.Add(Convert.ToDateTime(reader[0]));
+                        }
+                    }
+                }
+
+                monthCalendar1.BoldedDates = appointmentDates.ToArray();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading calendar: " + ex.Message);
+            }
+        }
+
+        private async Task LoadAppointmentsAsync(DateTime date)
+        {
+            try
+            {
+                foreach (Control ctrl in flowAppointments.Controls)
+                {
+                    ctrl.Dispose();
+                }
+                flowAppointments.Controls.Clear();
+
+                flowAppointments.SuspendLayout();
+
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
+                                           s.ServiceName, a.Status, a.Notes
+                                    FROM Appointments a
+                                    LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
+                                    WHERE CAST(a.AppointmentDate AS DATE) = @SelectedDate
+                                    ORDER BY a.AppointmentTime ASC";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
+                    cmd.Parameters.AddWithValue("@SelectedDate", date.Date);
+
+                    await conn.OpenAsync();
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (!reader.HasRows)
+                        {
+                            Label emptyLabel = new Label
+                            {
+                                Text = "No appointments for this date",
+                                Font = new Font("Segoe UI", 12),
+                                ForeColor = Color.Gray,
+                                AutoSize = true
+                            };
+                            flowAppointments.Controls.Add(emptyLabel);
+                        }
+                        else
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                AppointmentCard card = new AppointmentCard();
+
+                                card.SetAppointment(
+                                    Convert.ToInt32(reader["AppointmentID"]),
+                                    reader["PatientName"].ToString(),
+                                    Convert.ToDateTime(reader["AppointmentDate"]),
+                                    TimeSpan.Parse(reader["AppointmentTime"].ToString()),
+                                    reader["ServiceName"].ToString() ?? "N/A",
+                                    reader["Status"].ToString(),
+                                    reader["Notes"].ToString()
+                                );
+
+                                card.OnMarkAsDone += Card_OnMarkAsDone;
+                                flowAppointments.Controls.Add(card);
+                            }
+                        }
+                    }
+                }
+
+                flowAppointments.ResumeLayout(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading appointments: " + ex.Message);
+            }
+        }
+
+        private async void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            if (isLoading) return;
+            await LoadAppointmentsAsync(e.Start);
+        }
+
+        private async void button1_Click(object sender, EventArgs e)
         {
             Form1 mainForm = (Form1)this.FindForm();
             mainForm.Hide();
@@ -101,96 +322,34 @@ namespace M.A_Florencio_Dental_Records
             appointmentForm.ShowDialog();
 
             mainForm.Show();
-            LoadAppointmentDates();
-            LoadAppointments(DateTime.Today);
-            LoadAllAppointments();  // ← ADD THIS
-            monthCalendar1.SelectionStart = DateTime.Today;
-        }
 
-        private void LoadAppointmentDates()
-        {
-            List<DateTime> appointmentDates = new List<DateTime>();
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            if (!isLoading)
             {
-                string query = "SELECT DISTINCT CAST(AppointmentDate AS DATE) FROM Appointments WHERE Status != 'Cancelled'";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                isLoading = true;
+                try
                 {
-                    appointmentDates.Add(Convert.ToDateTime(reader[0]));
+                    await LoadAppointmentDatesAsync();
+                    await LoadAppointmentsAsync(DateTime.Today);
+                    currentPage = 1;  // ✅ Reset to page 1
+                    await LoadAllAppointmentsPagedAsync(currentPage);
+                    monthCalendar1.SelectionStart = DateTime.Today;
                 }
-                conn.Close();
-            }
-
-            monthCalendar1.BoldedDates = appointmentDates.ToArray();
-        }
-
-        private void LoadAppointments(DateTime date)
-        {
-            flowAppointments.Controls.Clear();
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
-                                       s.ServiceName, a.Status, a.Notes
-                                FROM Appointments a
-                                LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
-                                WHERE CAST(a.AppointmentDate AS DATE) = @SelectedDate
-                                ORDER BY a.AppointmentTime ASC";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@SelectedDate", date.Date);
-
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                if (!reader.HasRows)
+                finally
                 {
-                    Label emptyLabel = new Label();
-                    emptyLabel.Text = "No appointments for this date";
-                    emptyLabel.Font = new Font("Segoe UI", 12);
-                    emptyLabel.ForeColor = Color.Gray;
-                    emptyLabel.AutoSize = true;
-                    flowAppointments.Controls.Add(emptyLabel);
+                    isLoading = false;
                 }
-                else
-                {
-                    while (reader.Read())
-                    {
-                        AppointmentCard card = new AppointmentCard();
-
-                        card.SetAppointment(
-                            Convert.ToInt32(reader["AppointmentID"]),
-                            reader["PatientName"].ToString(),
-                            Convert.ToDateTime(reader["AppointmentDate"]),
-                            TimeSpan.Parse(reader["AppointmentTime"].ToString()),
-                            reader["ServiceName"].ToString() ?? "N/A",
-                            reader["Status"].ToString(),
-                            reader["Notes"].ToString()
-                        );
-
-                        // ✅ NEW - WIRE EVENT
-                        card.OnMarkAsDone += Card_OnMarkAsDone;
-
-                        flowAppointments.Controls.Add(card);
-                    }
-                }
-
-                conn.Close();
             }
         }
 
-        // ✅ NEW - HANDLE MARK AS DONE
-        private void Card_OnMarkAsDone(int appointmentID)
+        private async void Card_OnMarkAsDone(int appointmentID)
         {
-            var appt = GetAppointmentDetails(appointmentID);
+            if (isLoading) return;
+
+            var appt = await GetAppointmentDetailsAsync(appointmentID);
 
             if (appt != null)
             {
-                int patientID = GetPatientID(appt.PatientName);
+                int patientID = await GetPatientIDAsync(appt.PatientName);
 
                 if (patientID > 0)
                 {
@@ -198,10 +357,18 @@ namespace M.A_Florencio_Dental_Records
 
                     if (completeForm.ShowDialog() == DialogResult.OK)
                     {
-                        // ✅ REFRESH BOTH PANELS
-                        LoadAppointmentDates();
-                        LoadAppointments(monthCalendar1.SelectionStart);
-                        LoadAllAppointments();  // ← ADD THIS
+                        isLoading = true;
+                        try
+                        {
+                            await LoadAppointmentDatesAsync();
+                            await LoadAppointmentsAsync(monthCalendar1.SelectionStart);
+                            currentPage = 1;  // ✅ Reset to page 1
+                            await LoadAllAppointmentsPagedAsync(currentPage);
+                        }
+                        finally
+                        {
+                            isLoading = false;
+                        }
                     }
                 }
                 else
@@ -211,72 +378,99 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ NEW - GET APPOINTMENT DETAILS
-        private AppointmentDetail GetAppointmentDetails(int appointmentID)
+        private async Task<AppointmentDetail> GetAppointmentDetailsAsync(int appointmentID)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                string query = @"SELECT AppointmentID, PatientName, AppointmentDate, AppointmentTime, ServiceName, Status
-                               FROM Appointments a
-                               LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
-                               WHERE AppointmentID = @AppointmentID";
-
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@AppointmentID", appointmentID);
-
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                if (reader.Read())
+                using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    return new AppointmentDetail
-                    {
-                        AppointmentID = Convert.ToInt32(reader["AppointmentID"]),
-                        PatientName = reader["PatientName"].ToString(),
-                        AppointmentDate = Convert.ToDateTime(reader["AppointmentDate"]),
-                        AppointmentTime = TimeSpan.Parse(reader["AppointmentTime"].ToString()),
-                        ServiceName = reader["ServiceName"]?.ToString() ?? "N/A",
-                        Status = reader["Status"].ToString()
-                    };
-                }
+                    string query = @"SELECT AppointmentID, PatientName, AppointmentDate, AppointmentTime, ServiceName, Status
+                                   FROM Appointments a
+                                   LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
+                                   WHERE AppointmentID = @AppointmentID";
 
-                conn.Close();
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
+                    cmd.Parameters.AddWithValue("@AppointmentID", appointmentID);
+
+                    await conn.OpenAsync();
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new AppointmentDetail
+                            {
+                                AppointmentID = Convert.ToInt32(reader["AppointmentID"]),
+                                PatientName = reader["PatientName"].ToString(),
+                                AppointmentDate = Convert.ToDateTime(reader["AppointmentDate"]),
+                                AppointmentTime = TimeSpan.Parse(reader["AppointmentTime"].ToString()),
+                                ServiceName = reader["ServiceName"]?.ToString() ?? "N/A",
+                                Status = reader["Status"].ToString()
+                            };
+                        }
+                    }
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
                 return null;
             }
         }
 
-        // ✅ NEW - GET PATIENT ID
-        private int GetPatientID(string patientName)
+        private async Task<int> GetPatientIDAsync(string patientName)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                string query = "SELECT PatientID FROM Patients WHERE FullName = @PatientName";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@PatientName", patientName);
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT PatientID FROM Patients WHERE FullName = @PatientName";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
+                    cmd.Parameters.AddWithValue("@PatientName", patientName);
 
-                conn.Open();
-                object result = cmd.ExecuteScalar();
-                conn.Close();
+                    await conn.OpenAsync();
+                    object result = await cmd.ExecuteScalarAsync();
 
-                if (result != null)
-                    return Convert.ToInt32(result);
+                    if (result != null)
+                        return Convert.ToInt32(result);
 
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
                 return 0;
             }
         }
 
-        public int GetTodayAppointmentsCount()
+        public async Task<int> GetTodayAppointmentsCountAsync()
         {
-            int count = 0;
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                string query = "SELECT COUNT(*) FROM Appointments WHERE CAST(AppointmentDate AS DATE) = CAST(GETDATE() AS DATE) AND Status != 'Cancelled'";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                conn.Open();
-                count = (int)cmd.ExecuteScalar();
-                conn.Close();
+                int count = 0;
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = "SELECT COUNT(*) FROM Appointments WHERE CAST(AppointmentDate AS DATE) = CAST(GETDATE() AS DATE) AND Status != 'Cancelled'";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.CommandTimeout = 30;
+
+                    await conn.OpenAsync();
+                    object result = await cmd.ExecuteScalarAsync();
+                    if (result != null)
+                    {
+                        count = (int)result;
+                    }
+                }
+                return count;
             }
-            return count;
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+                return 0;
+            }
         }
 
         private void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e)
@@ -285,16 +479,13 @@ namespace M.A_Florencio_Dental_Records
 
         private void flowAppointments_Paint(object sender, PaintEventArgs e)
         {
-
         }
 
         private void FlowAllAppointments_Paint(object sender, PaintEventArgs e)
         {
-
         }
     }
 
-    // ✅ NEW - APPOINTMENT DETAIL CLASS
     public class AppointmentDetail
     {
         public int AppointmentID { get; set; }
