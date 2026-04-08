@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.dtpAppointmentDate = new System.Windows.Forms.DateTimePicker();
-            this.cmbHour = new System.Windows.Forms.ComboBox();
-            this.cmbMinute = new System.Windows.Forms.ComboBox();
-            this.cmbAMPM = new System.Windows.Forms.ComboBox();
+            this.cmbStartHour = new System.Windows.Forms.ComboBox();
+            this.cmbStartMinute = new System.Windows.Forms.ComboBox();
+            this.cmbStartAMPM = new System.Windows.Forms.ComboBox();
             this.cmbService = new System.Windows.Forms.ComboBox();
             this.txtNotes = new System.Windows.Forms.TextBox();
             this.btnBack = new System.Windows.Forms.Button();
@@ -47,39 +47,44 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cmbPatientID = new System.Windows.Forms.ComboBox();
             this.lblPatientID = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.cmbEndAMPM = new System.Windows.Forms.ComboBox();
+            this.cmbEndMinute = new System.Windows.Forms.ComboBox();
+            this.cmbEndHour = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
             this.SuspendLayout();
             // 
             // dtpAppointmentDate
             // 
-            this.dtpAppointmentDate.Location = new System.Drawing.Point(29, 273);
+            this.dtpAppointmentDate.Location = new System.Drawing.Point(237, 223);
             this.dtpAppointmentDate.Name = "dtpAppointmentDate";
             this.dtpAppointmentDate.Size = new System.Drawing.Size(202, 20);
             this.dtpAppointmentDate.TabIndex = 1;
+            this.dtpAppointmentDate.ValueChanged += new System.EventHandler(this.dtpAppointmentDate_ValueChanged);
             // 
-            // cmbHour
+            // cmbStartHour
             // 
-            this.cmbHour.FormattingEnabled = true;
-            this.cmbHour.Location = new System.Drawing.Point(248, 273);
-            this.cmbHour.Name = "cmbHour";
-            this.cmbHour.Size = new System.Drawing.Size(45, 20);
-            this.cmbHour.TabIndex = 2;
+            this.cmbStartHour.FormattingEnabled = true;
+            this.cmbStartHour.Location = new System.Drawing.Point(28, 274);
+            this.cmbStartHour.Name = "cmbStartHour";
+            this.cmbStartHour.Size = new System.Drawing.Size(45, 20);
+            this.cmbStartHour.TabIndex = 2;
             // 
-            // cmbMinute
+            // cmbStartMinute
             // 
-            this.cmbMinute.FormattingEnabled = true;
-            this.cmbMinute.Location = new System.Drawing.Point(303, 273);
-            this.cmbMinute.Name = "cmbMinute";
-            this.cmbMinute.Size = new System.Drawing.Size(74, 20);
-            this.cmbMinute.TabIndex = 3;
+            this.cmbStartMinute.FormattingEnabled = true;
+            this.cmbStartMinute.Location = new System.Drawing.Point(83, 274);
+            this.cmbStartMinute.Name = "cmbStartMinute";
+            this.cmbStartMinute.Size = new System.Drawing.Size(74, 20);
+            this.cmbStartMinute.TabIndex = 3;
             // 
-            // cmbAMPM
+            // cmbStartAMPM
             // 
-            this.cmbAMPM.FormattingEnabled = true;
-            this.cmbAMPM.Location = new System.Drawing.Point(383, 273);
-            this.cmbAMPM.Name = "cmbAMPM";
-            this.cmbAMPM.Size = new System.Drawing.Size(56, 20);
-            this.cmbAMPM.TabIndex = 4;
+            this.cmbStartAMPM.FormattingEnabled = true;
+            this.cmbStartAMPM.Location = new System.Drawing.Point(163, 274);
+            this.cmbStartAMPM.Name = "cmbStartAMPM";
+            this.cmbStartAMPM.Size = new System.Drawing.Size(56, 20);
+            this.cmbStartAMPM.TabIndex = 4;
             // 
             // cmbService
             // 
@@ -180,7 +185,7 @@
             this.label4.AutoSize = true;
             this.label4.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label4.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(26, 251);
+            this.label4.Location = new System.Drawing.Point(234, 201);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(124, 15);
             this.label4.TabIndex = 15;
@@ -191,7 +196,7 @@
             this.label5.AutoSize = true;
             this.label5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label5.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(246, 251);
+            this.label5.Location = new System.Drawing.Point(26, 252);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(39, 15);
             this.label5.TabIndex = 16;
@@ -250,11 +255,50 @@
             this.lblPatientID.Text = "label8";
             this.lblPatientID.Visible = false;
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.label8.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(223, 277);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(20, 15);
+            this.label8.TabIndex = 21;
+            this.label8.Text = "to";
+            // 
+            // cmbEndAMPM
+            // 
+            this.cmbEndAMPM.FormattingEnabled = true;
+            this.cmbEndAMPM.Location = new System.Drawing.Point(382, 274);
+            this.cmbEndAMPM.Name = "cmbEndAMPM";
+            this.cmbEndAMPM.Size = new System.Drawing.Size(56, 20);
+            this.cmbEndAMPM.TabIndex = 24;
+            // 
+            // cmbEndMinute
+            // 
+            this.cmbEndMinute.FormattingEnabled = true;
+            this.cmbEndMinute.Location = new System.Drawing.Point(302, 274);
+            this.cmbEndMinute.Name = "cmbEndMinute";
+            this.cmbEndMinute.Size = new System.Drawing.Size(74, 20);
+            this.cmbEndMinute.TabIndex = 23;
+            // 
+            // cmbEndHour
+            // 
+            this.cmbEndHour.FormattingEnabled = true;
+            this.cmbEndHour.Location = new System.Drawing.Point(247, 274);
+            this.cmbEndHour.Name = "cmbEndHour";
+            this.cmbEndHour.Size = new System.Drawing.Size(45, 20);
+            this.cmbEndHour.TabIndex = 22;
+            // 
             // AppointmentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(466, 447);
+            this.Controls.Add(this.cmbEndAMPM);
+            this.Controls.Add(this.cmbEndMinute);
+            this.Controls.Add(this.cmbEndHour);
+            this.Controls.Add(this.label8);
             this.Controls.Add(this.lblPatientID);
             this.Controls.Add(this.cmbPatientID);
             this.Controls.Add(this.cmbPatientName);
@@ -269,9 +313,9 @@
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.txtNotes);
             this.Controls.Add(this.cmbService);
-            this.Controls.Add(this.cmbAMPM);
-            this.Controls.Add(this.cmbMinute);
-            this.Controls.Add(this.cmbHour);
+            this.Controls.Add(this.cmbStartAMPM);
+            this.Controls.Add(this.cmbStartMinute);
+            this.Controls.Add(this.cmbStartHour);
             this.Controls.Add(this.dtpAppointmentDate);
             this.Controls.Add(this.pictureBox3);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -289,9 +333,9 @@
 
         #endregion
         private System.Windows.Forms.DateTimePicker dtpAppointmentDate;
-        private System.Windows.Forms.ComboBox cmbHour;
-        private System.Windows.Forms.ComboBox cmbMinute;
-        private System.Windows.Forms.ComboBox cmbAMPM;
+        private System.Windows.Forms.ComboBox cmbStartHour;
+        private System.Windows.Forms.ComboBox cmbStartMinute;
+        private System.Windows.Forms.ComboBox cmbStartAMPM;
         private System.Windows.Forms.ComboBox cmbService;
         private System.Windows.Forms.TextBox txtNotes;
         private System.Windows.Forms.Button btnBack;
@@ -307,5 +351,9 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ComboBox cmbPatientID;
         private System.Windows.Forms.Label lblPatientID;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox cmbEndAMPM;
+        private System.Windows.Forms.ComboBox cmbEndMinute;
+        private System.Windows.Forms.ComboBox cmbEndHour;
     }
 }

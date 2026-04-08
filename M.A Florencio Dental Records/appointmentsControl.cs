@@ -16,7 +16,6 @@ namespace M.A_Florencio_Dental_Records
         string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         private bool isLoading = false;
 
-        // ✅ NEW - PAGINATION VARIABLES
         private int currentPage = 1;
         private int appointmentsPerPage = 6;
         private int totalAppointmentsCount = 0;
@@ -36,11 +35,9 @@ namespace M.A_Florencio_Dental_Records
 
             try
             {
-                // ✅ Load in sequence
                 await LoadAppointmentDatesAsync();
                 await LoadAppointmentsAsync(DateTime.Today);
 
-                // ✅ Load paginated appointments
                 currentPage = 1;
                 await LoadAllAppointmentsPagedAsync(currentPage);
             }
@@ -50,14 +47,13 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ GET TOTAL COUNT OF APPOINTMENTS
         private async Task<int> GetTotalAppointmentsCountAsync()
         {
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT COUNT(*) FROM Appointments WHERE Status != 'Cancelled'";
+                    string query = "SELECT COUNT(*) FROM Appointments WHERE Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.CommandTimeout = 30;
 
@@ -74,12 +70,10 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ LOAD PAGINATED APPOINTMENTS (10 per page)
         private async Task LoadAllAppointmentsPagedAsync(int pageNumber)
         {
             try
             {
-                // ✅ Get total count first
                 totalAppointmentsCount = await GetTotalAppointmentsCountAsync();
                 totalPages = (int)Math.Ceiling((double)totalAppointmentsCount / appointmentsPerPage);
 
@@ -88,25 +82,22 @@ namespace M.A_Florencio_Dental_Records
 
                 currentPage = pageNumber;
 
-                // ✅ Dispose old controls
                 foreach (Control ctrl in panelPagination.Controls)
                 {
                     ctrl.Dispose();
                 }
                 panelPagination.Controls.Clear();
 
-                // ✅ Suspend layout
                 panelPagination.SuspendLayout();
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    // ✅ PAGINATION QUERY: OFFSET/FETCH
                     string query = @"
                         SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
                                s.ServiceName, a.Status, a.Notes
                         FROM Appointments a
                         LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
-                        WHERE a.Status != 'Cancelled'
+                        WHERE a.Status != 'Cancelled' AND a.Status != 'Done'
                         ORDER BY a.AppointmentDate DESC, a.AppointmentTime ASC
                         OFFSET @Offset ROWS
                         FETCH NEXT @PageSize ROWS ONLY";
@@ -114,7 +105,6 @@ namespace M.A_Florencio_Dental_Records
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.CommandTimeout = 30;
 
-                    // ✅ Calculate offset
                     int offset = (pageNumber - 1) * appointmentsPerPage;
                     cmd.Parameters.AddWithValue("@Offset", offset);
                     cmd.Parameters.AddWithValue("@PageSize", appointmentsPerPage);
@@ -156,10 +146,7 @@ namespace M.A_Florencio_Dental_Records
                     }
                 }
 
-                // ✅ Resume layout
                 panelPagination.ResumeLayout(true);
-
-                // ✅ UPDATE PAGE INFO LABEL
                 UpdatePaginationInfo();
             }
             catch (Exception ex)
@@ -168,14 +155,11 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ NEW - UPDATE PAGE COUNTER LABEL
         private void UpdatePaginationInfo()
         {
             if (totalPages > 0)
             {
                 lblPageInfo.Text = $"Page {currentPage} of {totalPages}";
-
-                // ✅ Enable/disable buttons based on page
                 btnPrevious.Enabled = currentPage > 1;
                 btnNext.Enabled = currentPage < totalPages;
             }
@@ -187,7 +171,6 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ NEW - PREVIOUS PAGE BUTTON
         private async void btnPrevious_Click(object sender, EventArgs e)
         {
             if (currentPage > 1)
@@ -197,7 +180,6 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ NEW - NEXT PAGE BUTTON
         private async void btnNext_Click(object sender, EventArgs e)
         {
             if (currentPage < totalPages)
@@ -215,7 +197,7 @@ namespace M.A_Florencio_Dental_Records
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT DISTINCT CAST(AppointmentDate AS DATE) FROM Appointments WHERE Status != 'Cancelled'";
+                    string query = "SELECT DISTINCT CAST(AppointmentDate AS DATE) FROM Appointments WHERE Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.CommandTimeout = 30;
 
@@ -256,6 +238,7 @@ namespace M.A_Florencio_Dental_Records
                                     FROM Appointments a
                                     LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
                                     WHERE CAST(a.AppointmentDate AS DATE) = @SelectedDate
+                                    AND a.Status != 'Done'
                                     ORDER BY a.AppointmentTime ASC";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -330,7 +313,7 @@ namespace M.A_Florencio_Dental_Records
                 {
                     await LoadAppointmentDatesAsync();
                     await LoadAppointmentsAsync(DateTime.Today);
-                    currentPage = 1;  // ✅ Reset to page 1
+                    currentPage = 1;
                     await LoadAllAppointmentsPagedAsync(currentPage);
                     monthCalendar1.SelectionStart = DateTime.Today;
                 }
@@ -357,12 +340,14 @@ namespace M.A_Florencio_Dental_Records
 
                     if (completeForm.ShowDialog() == DialogResult.OK)
                     {
+                        await DeleteAppointmentAsync(appointmentID);
+
                         isLoading = true;
                         try
                         {
                             await LoadAppointmentDatesAsync();
                             await LoadAppointmentsAsync(monthCalendar1.SelectionStart);
-                            currentPage = 1;  // ✅ Reset to page 1
+                            currentPage = 1;
                             await LoadAllAppointmentsPagedAsync(currentPage);
                         }
                         finally
@@ -384,10 +369,11 @@ namespace M.A_Florencio_Dental_Records
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    string query = @"SELECT AppointmentID, PatientName, AppointmentDate, AppointmentTime, ServiceName, Status
-                                   FROM Appointments a
-                                   LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
-                                   WHERE AppointmentID = @AppointmentID";
+                    string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
+                                           s.ServiceName, a.Status
+                                    FROM Appointments a
+                                    LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
+                                    WHERE a.AppointmentID = @AppointmentID";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.CommandTimeout = 30;
@@ -416,6 +402,43 @@ namespace M.A_Florencio_Dental_Records
             {
                 MessageBox.Show("Error: " + ex.Message);
                 return null;
+            }
+        }
+
+        private async Task DeleteAppointmentAsync(int appointmentID)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    await conn.OpenAsync();
+
+                    // 1. Delete Prescriptions linked to this appointment's medical records
+                    string deletePrescriptions = @"
+                DELETE FROM Prescription 
+                WHERE record_id IN (
+                    SELECT record_id FROM MedicalRecords WHERE appointment_id = @AppointmentID
+                )";
+                    SqlCommand cmd1 = new SqlCommand(deletePrescriptions, conn);
+                    cmd1.Parameters.AddWithValue("@AppointmentID", appointmentID);
+                    await cmd1.ExecuteNonQueryAsync();
+
+                    // 2. Delete Medical Records linked to this appointment
+                    string deleteMedical = "DELETE FROM MedicalRecords WHERE appointment_id = @AppointmentID";
+                    SqlCommand cmd2 = new SqlCommand(deleteMedical, conn);
+                    cmd2.Parameters.AddWithValue("@AppointmentID", appointmentID);
+                    await cmd2.ExecuteNonQueryAsync();
+
+                    // 3. Now safe to delete the Appointment
+                    string deleteAppointment = "DELETE FROM Appointments WHERE AppointmentID = @AppointmentID";
+                    SqlCommand cmd3 = new SqlCommand(deleteAppointment, conn);
+                    cmd3.Parameters.AddWithValue("@AppointmentID", appointmentID);
+                    await cmd3.ExecuteNonQueryAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error deleting appointment: " + ex.Message);
             }
         }
 
@@ -453,7 +476,7 @@ namespace M.A_Florencio_Dental_Records
                 int count = 0;
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    string query = "SELECT COUNT(*) FROM Appointments WHERE CAST(AppointmentDate AS DATE) = CAST(GETDATE() AS DATE) AND Status != 'Cancelled'";
+                    string query = "SELECT COUNT(*) FROM Appointments WHERE CAST(AppointmentDate AS DATE) = CAST(GETDATE() AS DATE) AND Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.CommandTimeout = 30;
 

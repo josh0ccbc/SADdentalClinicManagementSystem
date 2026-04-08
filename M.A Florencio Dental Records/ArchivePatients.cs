@@ -102,6 +102,7 @@ namespace M.A_Florencio_Dental_Records
                 }
             }
         }
+
         private void PermanentlyDeletePatient()
         {
             try
@@ -110,17 +111,32 @@ namespace M.A_Florencio_Dental_Records
                 {
                     conn.Open();
 
-                    // Then delete patient
-                    string deletePatientQuery = "DELETE FROM Patients WHERE PatientID = @PatientID";
-                    SqlCommand deletePatientCmd = new SqlCommand(deletePatientQuery, conn);
-                    deletePatientCmd.Parameters.AddWithValue("@PatientID", PatientID);
-                    deletePatientCmd.ExecuteNonQuery();
+                    // 1. Delete Prescriptions linked to this patient's medical records
+                    string deletePrescriptions = @"
+                DELETE FROM Prescription 
+                WHERE record_id IN (
+                    SELECT record_id FROM MedicalRecords WHERE patient_id = @PatientID
+                )";
+                    new SqlCommand(deletePrescriptions, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 2. Delete Medical Records
+                    string deleteMedical = "DELETE FROM MedicalRecords WHERE patient_id = @PatientID";
+                    new SqlCommand(deleteMedical, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 3. Delete Medical History
+                    string deleteHistory = "DELETE FROM PatientMedicalHistory WHERE PatientID = @PatientID";
+                    new SqlCommand(deleteHistory, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 4. Delete Appointments  ← THIS WAS MISSING, CAUSING YOUR ERROR
+                    string deleteAppointments = "DELETE FROM Appointments WHERE PatientID = @PatientID";
+                    new SqlCommand(deleteAppointments, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 5. Finally, delete the Patient
+                    string deletePatient = "DELETE FROM Patients WHERE PatientID = @PatientID";
+                    new SqlCommand(deletePatient, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
 
                     conn.Close();
-
                     MessageBox.Show("Patient permanently deleted!");
-
-                    // Remove this card
                     this.Parent.Controls.Remove(this);
                 }
             }

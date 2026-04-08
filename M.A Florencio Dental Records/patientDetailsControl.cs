@@ -537,16 +537,70 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
+        private void PermanentlyDeletePatient()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // 1. Delete Prescriptions linked to this patient's medical records
+                    string deletePrescriptions = @"
+                DELETE FROM Prescription 
+                WHERE record_id IN (
+                    SELECT record_id FROM MedicalRecords WHERE patient_id = @PatientID
+                )";
+                    new SqlCommand(deletePrescriptions, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 2. Delete Medical Records
+                    string deleteMedical = "DELETE FROM MedicalRecords WHERE patient_id = @PatientID";
+                    new SqlCommand(deleteMedical, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 3. Delete Medical History
+                    string deleteHistory = "DELETE FROM PatientMedicalHistory WHERE PatientID = @PatientID";
+                    new SqlCommand(deleteHistory, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 4. Delete Appointments  ← THIS WAS MISSING, CAUSING YOUR ERROR
+                    string deleteAppointments = "DELETE FROM Appointments WHERE PatientID = @PatientID";
+                    new SqlCommand(deleteAppointments, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    // 5. Finally, delete the Patient
+                    string deletePatient = "DELETE FROM Patients WHERE PatientID = @PatientID";
+                    new SqlCommand(deletePatient, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
+
+                    conn.Close();
+                    MessageBox.Show("Patient permanently deleted!");
+                    this.Parent.Controls.Remove(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
         private void btnDelete_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
-                "Archive this patient record?",
-                "Archive Patient",
+                "Are you sure you want to PERMANENTLY DELETE this patient?\n\nThis action CANNOT be undone!",
+                "Permanent Delete",
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
+                MessageBoxIcon.Warning);
+
             if (result == DialogResult.Yes)
             {
-                ArchivePatient();
+                // Double confirmation for safety
+                DialogResult confirm = MessageBox.Show(
+                    "All patient data and appointments will be deleted.\n\nAre you absolutely sure?",
+                    "Confirm Permanent Delete",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (confirm == DialogResult.Yes)
+                {
+                    PermanentlyDeletePatient();
+                }
             }
         }
 

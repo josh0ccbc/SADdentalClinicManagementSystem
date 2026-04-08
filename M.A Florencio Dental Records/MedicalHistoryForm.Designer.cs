@@ -34,9 +34,19 @@
             this.btnSave = new MaterialSkin.Controls.MaterialButton();
             this.tabMedicalHistory = new MaterialSkin.Controls.MaterialTabControl();
             this.tabGeneral = new System.Windows.Forms.TabPage();
+            this.txtHospitalizationDetails = new System.Windows.Forms.TextBox();
+            this.txtIllnessDetails = new System.Windows.Forms.TextBox();
+            this.txtMedicationDetails = new System.Windows.Forms.TextBox();
+            this.chkHospitalized = new System.Windows.Forms.CheckBox();
+            this.chkSeriousIllness = new System.Windows.Forms.CheckBox();
+            this.chkUnderMedication = new System.Windows.Forms.CheckBox();
+            this.chkGoodHealth = new System.Windows.Forms.CheckBox();
             this.cmbBloodType = new System.Windows.Forms.ComboBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
+            this.lblHospitalizationDetails = new System.Windows.Forms.Label();
+            this.lblIllnessDetails = new System.Windows.Forms.Label();
+            this.lblMedicationDetails = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.tabAllergies = new System.Windows.Forms.TabPage();
             this.label21 = new System.Windows.Forms.Label();
@@ -77,16 +87,6 @@
             this.chkPregnant = new System.Windows.Forms.CheckBox();
             this.label27 = new System.Windows.Forms.Label();
             this.label28 = new System.Windows.Forms.Label();
-            this.chkGoodHealth = new System.Windows.Forms.CheckBox();
-            this.chkUnderMedication = new System.Windows.Forms.CheckBox();
-            this.chkSeriousIllness = new System.Windows.Forms.CheckBox();
-            this.chkHospitalized = new System.Windows.Forms.CheckBox();
-            this.lblMedicationDetails = new System.Windows.Forms.Label();
-            this.txtMedicationDetails = new System.Windows.Forms.TextBox();
-            this.txtIllnessDetails = new System.Windows.Forms.TextBox();
-            this.lblIllnessDetails = new System.Windows.Forms.Label();
-            this.lblHospitalizationDetails = new System.Windows.Forms.Label();
-            this.txtHospitalizationDetails = new System.Windows.Forms.TextBox();
             this.tabMedicalHistory.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.tabAllergies.SuspendLayout();
@@ -220,8 +220,73 @@
             this.tabGeneral.UseVisualStyleBackColor = true;
             this.tabGeneral.Click += new System.EventHandler(this.tabGeneral_Click);
             // 
+            // txtHospitalizationDetails
+            // 
+            this.txtHospitalizationDetails.Location = new System.Drawing.Point(263, 175);
+            this.txtHospitalizationDetails.Name = "txtHospitalizationDetails";
+            this.txtHospitalizationDetails.Size = new System.Drawing.Size(157, 23);
+            this.txtHospitalizationDetails.TabIndex = 40;
+            // 
+            // txtIllnessDetails
+            // 
+            this.txtIllnessDetails.Location = new System.Drawing.Point(262, 90);
+            this.txtIllnessDetails.Name = "txtIllnessDetails";
+            this.txtIllnessDetails.Size = new System.Drawing.Size(157, 23);
+            this.txtIllnessDetails.TabIndex = 40;
+            // 
+            // txtMedicationDetails
+            // 
+            this.txtMedicationDetails.Location = new System.Drawing.Point(28, 176);
+            this.txtMedicationDetails.Name = "txtMedicationDetails";
+            this.txtMedicationDetails.Size = new System.Drawing.Size(157, 23);
+            this.txtMedicationDetails.TabIndex = 40;
+            // 
+            // chkHospitalized
+            // 
+            this.chkHospitalized.AutoSize = true;
+            this.chkHospitalized.Location = new System.Drawing.Point(263, 130);
+            this.chkHospitalized.Name = "chkHospitalized";
+            this.chkHospitalized.Size = new System.Drawing.Size(107, 19);
+            this.chkHospitalized.TabIndex = 39;
+            this.chkHospitalized.Text = "Hospitalized";
+            this.chkHospitalized.UseVisualStyleBackColor = true;
+            this.chkHospitalized.CheckedChanged += new System.EventHandler(this.chkHospitalized_CheckedChanged);
+            // 
+            // chkSeriousIllness
+            // 
+            this.chkSeriousIllness.AutoSize = true;
+            this.chkSeriousIllness.Location = new System.Drawing.Point(263, 48);
+            this.chkSeriousIllness.Name = "chkSeriousIllness";
+            this.chkSeriousIllness.Size = new System.Drawing.Size(121, 19);
+            this.chkSeriousIllness.TabIndex = 39;
+            this.chkSeriousIllness.Text = "Serious Illness";
+            this.chkSeriousIllness.UseVisualStyleBackColor = true;
+            this.chkSeriousIllness.CheckedChanged += new System.EventHandler(this.chkSeriousIllness_CheckedChanged);
+            // 
+            // chkUnderMedication
+            // 
+            this.chkUnderMedication.AutoSize = true;
+            this.chkUnderMedication.Location = new System.Drawing.Point(28, 130);
+            this.chkUnderMedication.Name = "chkUnderMedication";
+            this.chkUnderMedication.Size = new System.Drawing.Size(141, 19);
+            this.chkUnderMedication.TabIndex = 39;
+            this.chkUnderMedication.Text = "Under Medication";
+            this.chkUnderMedication.UseVisualStyleBackColor = true;
+            this.chkUnderMedication.CheckedChanged += new System.EventHandler(this.chkUnderMedication_CheckedChanged);
+            // 
+            // chkGoodHealth
+            // 
+            this.chkGoodHealth.AutoSize = true;
+            this.chkGoodHealth.Location = new System.Drawing.Point(27, 48);
+            this.chkGoodHealth.Name = "chkGoodHealth";
+            this.chkGoodHealth.Size = new System.Drawing.Size(106, 19);
+            this.chkGoodHealth.TabIndex = 39;
+            this.chkGoodHealth.Text = "Good Health";
+            this.chkGoodHealth.UseVisualStyleBackColor = true;
+            // 
             // cmbBloodType
             // 
+            this.cmbBloodType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbBloodType.FormattingEnabled = true;
             this.cmbBloodType.Location = new System.Drawing.Point(178, 250);
             this.cmbBloodType.Name = "cmbBloodType";
@@ -248,6 +313,36 @@
             this.label18.TabIndex = 29;
             this.label18.Text = "VITAL INFORMATION";
             // 
+            // lblHospitalizationDetails
+            // 
+            this.lblHospitalizationDetails.AutoSize = true;
+            this.lblHospitalizationDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblHospitalizationDetails.Location = new System.Drawing.Point(262, 153);
+            this.lblHospitalizationDetails.Name = "lblHospitalizationDetails";
+            this.lblHospitalizationDetails.Size = new System.Drawing.Size(158, 15);
+            this.lblHospitalizationDetails.TabIndex = 23;
+            this.lblHospitalizationDetails.Text = "Hospitalization Details:";
+            // 
+            // lblIllnessDetails
+            // 
+            this.lblIllnessDetails.AutoSize = true;
+            this.lblIllnessDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblIllnessDetails.Location = new System.Drawing.Point(260, 71);
+            this.lblIllnessDetails.Name = "lblIllnessDetails";
+            this.lblIllnessDetails.Size = new System.Drawing.Size(102, 15);
+            this.lblIllnessDetails.TabIndex = 23;
+            this.lblIllnessDetails.Text = "Illness Details:";
+            // 
+            // lblMedicationDetails
+            // 
+            this.lblMedicationDetails.AutoSize = true;
+            this.lblMedicationDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMedicationDetails.Location = new System.Drawing.Point(26, 155);
+            this.lblMedicationDetails.Name = "lblMedicationDetails";
+            this.lblMedicationDetails.Size = new System.Drawing.Size(132, 15);
+            this.lblMedicationDetails.TabIndex = 23;
+            this.lblMedicationDetails.Text = "Medication Details:";
+            // 
             // label20
             // 
             this.label20.AutoSize = true;
@@ -268,9 +363,9 @@
             this.tabAllergies.Controls.Add(this.chkPenicillin);
             this.tabAllergies.Controls.Add(this.chkLocalAnesthetic);
             this.tabAllergies.Controls.Add(this.label22);
-            this.tabAllergies.Location = new System.Drawing.Point(4, 24);
+            this.tabAllergies.Location = new System.Drawing.Point(4, 22);
             this.tabAllergies.Name = "tabAllergies";
-            this.tabAllergies.Size = new System.Drawing.Size(615, 302);
+            this.tabAllergies.Size = new System.Drawing.Size(615, 304);
             this.tabAllergies.TabIndex = 1;
             this.tabAllergies.Text = "Allergies";
             this.tabAllergies.UseVisualStyleBackColor = true;
@@ -361,9 +456,9 @@
             this.tabMedication.Controls.Add(this.txtMedicationList);
             this.tabMedication.Controls.Add(this.chkPrescriptionMeds);
             this.tabMedication.Controls.Add(this.label24);
-            this.tabMedication.Location = new System.Drawing.Point(4, 24);
+            this.tabMedication.Location = new System.Drawing.Point(4, 22);
             this.tabMedication.Name = "tabMedication";
-            this.tabMedication.Size = new System.Drawing.Size(615, 302);
+            this.tabMedication.Size = new System.Drawing.Size(615, 304);
             this.tabMedication.TabIndex = 2;
             this.tabMedication.Text = "Medication & Substances";
             this.tabMedication.UseVisualStyleBackColor = true;
@@ -442,9 +537,9 @@
             this.tabCondition.Controls.Add(this.chkLowBP);
             this.tabCondition.Controls.Add(this.chkHighBP);
             this.tabCondition.Controls.Add(this.label26);
-            this.tabCondition.Location = new System.Drawing.Point(4, 24);
+            this.tabCondition.Location = new System.Drawing.Point(4, 22);
             this.tabCondition.Name = "tabCondition";
-            this.tabCondition.Size = new System.Drawing.Size(615, 302);
+            this.tabCondition.Size = new System.Drawing.Size(615, 304);
             this.tabCondition.TabIndex = 3;
             this.tabCondition.Text = "Condition";
             this.tabCondition.UseVisualStyleBackColor = true;
@@ -668,100 +763,6 @@
             this.label28.Size = new System.Drawing.Size(160, 18);
             this.label28.TabIndex = 4;
             this.label28.Text = "FOR WOMEN ONLY";
-            // 
-            // chkGoodHealth
-            // 
-            this.chkGoodHealth.AutoSize = true;
-            this.chkGoodHealth.Location = new System.Drawing.Point(27, 48);
-            this.chkGoodHealth.Name = "chkGoodHealth";
-            this.chkGoodHealth.Size = new System.Drawing.Size(106, 19);
-            this.chkGoodHealth.TabIndex = 39;
-            this.chkGoodHealth.Text = "Good Health";
-            this.chkGoodHealth.UseVisualStyleBackColor = true;
-            // 
-            // chkUnderMedication
-            // 
-            this.chkUnderMedication.AutoSize = true;
-            this.chkUnderMedication.Location = new System.Drawing.Point(28, 130);
-            this.chkUnderMedication.Name = "chkUnderMedication";
-            this.chkUnderMedication.Size = new System.Drawing.Size(141, 19);
-            this.chkUnderMedication.TabIndex = 39;
-            this.chkUnderMedication.Text = "Under Medication";
-            this.chkUnderMedication.UseVisualStyleBackColor = true;
-            this.chkUnderMedication.CheckedChanged += new System.EventHandler(this.chkUnderMedication_CheckedChanged);
-            // 
-            // chkSeriousIllness
-            // 
-            this.chkSeriousIllness.AutoSize = true;
-            this.chkSeriousIllness.Location = new System.Drawing.Point(263, 48);
-            this.chkSeriousIllness.Name = "chkSeriousIllness";
-            this.chkSeriousIllness.Size = new System.Drawing.Size(121, 19);
-            this.chkSeriousIllness.TabIndex = 39;
-            this.chkSeriousIllness.Text = "Serious Illness";
-            this.chkSeriousIllness.UseVisualStyleBackColor = true;
-            this.chkSeriousIllness.CheckedChanged += new System.EventHandler(this.chkSeriousIllness_CheckedChanged);
-            // 
-            // chkHospitalized
-            // 
-            this.chkHospitalized.AutoSize = true;
-            this.chkHospitalized.Location = new System.Drawing.Point(263, 130);
-            this.chkHospitalized.Name = "chkHospitalized";
-            this.chkHospitalized.Size = new System.Drawing.Size(107, 19);
-            this.chkHospitalized.TabIndex = 39;
-            this.chkHospitalized.Text = "Hospitalized";
-            this.chkHospitalized.UseVisualStyleBackColor = true;
-            this.chkHospitalized.CheckedChanged += new System.EventHandler(this.chkHospitalized_CheckedChanged);
-            // 
-            // lblMedicationDetails
-            // 
-            this.lblMedicationDetails.AutoSize = true;
-            this.lblMedicationDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMedicationDetails.Location = new System.Drawing.Point(26, 155);
-            this.lblMedicationDetails.Name = "lblMedicationDetails";
-            this.lblMedicationDetails.Size = new System.Drawing.Size(132, 15);
-            this.lblMedicationDetails.TabIndex = 23;
-            this.lblMedicationDetails.Text = "Medication Details:";
-            // 
-            // txtMedicationDetails
-            // 
-            this.txtMedicationDetails.Location = new System.Drawing.Point(28, 176);
-            this.txtMedicationDetails.Name = "txtMedicationDetails";
-            this.txtMedicationDetails.Size = new System.Drawing.Size(157, 23);
-            this.txtMedicationDetails.TabIndex = 40;
-            // 
-            // txtIllnessDetails
-            // 
-            this.txtIllnessDetails.Location = new System.Drawing.Point(262, 90);
-            this.txtIllnessDetails.Name = "txtIllnessDetails";
-            this.txtIllnessDetails.Size = new System.Drawing.Size(157, 23);
-            this.txtIllnessDetails.TabIndex = 40;
-            // 
-            // lblIllnessDetails
-            // 
-            this.lblIllnessDetails.AutoSize = true;
-            this.lblIllnessDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblIllnessDetails.Location = new System.Drawing.Point(260, 71);
-            this.lblIllnessDetails.Name = "lblIllnessDetails";
-            this.lblIllnessDetails.Size = new System.Drawing.Size(102, 15);
-            this.lblIllnessDetails.TabIndex = 23;
-            this.lblIllnessDetails.Text = "Illness Details:";
-            // 
-            // lblHospitalizationDetails
-            // 
-            this.lblHospitalizationDetails.AutoSize = true;
-            this.lblHospitalizationDetails.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblHospitalizationDetails.Location = new System.Drawing.Point(262, 153);
-            this.lblHospitalizationDetails.Name = "lblHospitalizationDetails";
-            this.lblHospitalizationDetails.Size = new System.Drawing.Size(158, 15);
-            this.lblHospitalizationDetails.TabIndex = 23;
-            this.lblHospitalizationDetails.Text = "Hospitalization Details:";
-            // 
-            // txtHospitalizationDetails
-            // 
-            this.txtHospitalizationDetails.Location = new System.Drawing.Point(263, 175);
-            this.txtHospitalizationDetails.Name = "txtHospitalizationDetails";
-            this.txtHospitalizationDetails.Size = new System.Drawing.Size(157, 23);
-            this.txtHospitalizationDetails.TabIndex = 40;
             // 
             // MedicalHistoryForm
             // 

@@ -125,7 +125,7 @@
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
             this.materialButton1.Icon = null;
-            this.materialButton1.Location = new System.Drawing.Point(9, 559);
+            this.materialButton1.Location = new System.Drawing.Point(9, 574);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
@@ -141,7 +141,7 @@
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(1162, 590);
+            this.ClientSize = new System.Drawing.Size(1178, 585);
             this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button4);

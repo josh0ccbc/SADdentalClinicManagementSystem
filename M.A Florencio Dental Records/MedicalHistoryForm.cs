@@ -10,7 +10,7 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class MedicalHistoryForm : MaterialForm
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
+        string connectionString = @"Data Source=localhost;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int PatientID { get; set; }
         private int currentTab = 0;
         private int totalTabs = 4;
@@ -29,7 +29,6 @@ namespace M.A_Florencio_Dental_Records
             LoadPatientMedicalHistory();
             UpdateNavigation();
             CustomizeTabColors();
-            tabMedicalHistory.ItemSize = new System.Drawing.Size(100, 40);
 
             txtIllnessDetails.Visible = false;
             lblIllnessDetails.Visible = false;
@@ -82,6 +81,27 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
+        private string SafeDecrypt(object dbValue)
+        {
+            if (dbValue == DBNull.Value || dbValue == null)
+                return "";
+
+            string value = dbValue.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            try
+            {
+                return CryptoHelper.Decrypt(value);
+            }
+            catch
+            {
+                // In case old data is not encrypted
+                return value;
+            }
+        }
+
         private void chkGoodHealth_CheckedChanged(object sender, EventArgs e)
         {
                 
@@ -118,59 +138,47 @@ namespace M.A_Florencio_Dental_Records
 
                 if (reader.Read())
                 {
-                    // General Tab
                     chkGoodHealth.Checked = Convert.ToBoolean(reader["is_healthy"]);
                     chkUnderMedication.Checked = Convert.ToBoolean(reader["under_treatment"]);
-                    txtMedicationDetails.Text = reader["treatment_details"].ToString() ?? "";
+                    txtMedicationDetails.Text = SafeDecrypt(reader["treatment_details"]);
+
                     chkSeriousIllness.Checked = Convert.ToBoolean(reader["serious_illness"]);
-                    txtIllnessDetails.Text = reader["illness_details"].ToString() ?? "";
+                    txtIllnessDetails.Text = SafeDecrypt(reader["illness_details"]);
+
                     chkHospitalized.Checked = Convert.ToBoolean(reader["recently_hospitalized"]);
-                    txtHospitalizationDetails.Text = reader["hospitalization_details"].ToString() ?? "";
+                    txtHospitalizationDetails.Text = SafeDecrypt(reader["hospitalization_details"]);
 
-                    txtIllnessDetails.Visible = chkSeriousIllness.Checked;
-                    lblIllnessDetails.Visible = chkSeriousIllness.Checked;
-                    txtMedicationDetails.Visible = chkUnderMedication.Checked;
-                    lblMedicationDetails.Visible = chkUnderMedication.Checked;
-                    txtHospitalizationDetails.Visible = chkHospitalized.Checked;
-                    lblHospitalizationDetails.Visible = chkHospitalized.Checked;
-
-                    // Allergies Tab
                     chkLocalAnesthetic.Checked = Convert.ToBoolean(reader["LocalAestheticAllergy"]);
                     chkPenicillin.Checked = Convert.ToBoolean(reader["PenicillinAllergy"]);
                     chkSulfa.Checked = Convert.ToBoolean(reader["SulfaAllergy"]);
                     chkAspirin.Checked = Convert.ToBoolean(reader["AspirinAllergy"]);
                     chkLatex.Checked = Convert.ToBoolean(reader["LatexAllergy"]);
-                    txtOtherAllergies.Text = reader["OtherAllergies"].ToString() ?? "";
+                    txtOtherAllergies.Text = SafeDecrypt(reader["OtherAllergies"]);
 
-                    // Medications Tab
                     chkPrescriptionMeds.Checked = Convert.ToBoolean(reader["TakingPrescriptionMeds"]);
-                    txtMedicationList.Text = reader["MedicationList"].ToString() ?? "";
+                    txtMedicationList.Text = SafeDecrypt(reader["MedicationList"]);
                     chkUsesTobacco.Checked = Convert.ToBoolean(reader["UsesTobacco"]);
                     chkUsesAlcoholDrugs.Checked = Convert.ToBoolean(reader["UsesAlcoholDrugs"]);
 
-                    // Conditions Tab
-                    chkHighBP.Checked = Convert.ToBoolean(reader["HighBP"] ?? false);
-                    chkLowBP.Checked = Convert.ToBoolean(reader["LowBP"] ?? false);
-                    chkHeartDisease.Checked = Convert.ToBoolean(reader["HeartDisease"] ?? false);
-                    chkHeartMurmur.Checked = Convert.ToBoolean(reader["HeartMurmur"] ?? false);
-                    chkDiabetes.Checked = Convert.ToBoolean(reader["Diabetes"] ?? false);
-                    chkThyroid.Checked = Convert.ToBoolean(reader["Thyroid"] ?? false);
-                    chkAsthma.Checked = Convert.ToBoolean(reader["Asthma"] ?? false);
-                    chkRespiratoryProblems.Checked = Convert.ToBoolean(reader["RespiratoryProblems"] ?? false);
-                    chkArthritis.Checked = Convert.ToBoolean(reader["Arthritis"] ?? false);
-                    chkKidneyDisease.Checked = Convert.ToBoolean(reader["KidneyDisease"] ?? false);
+                    chkHighBP.Checked = Convert.ToBoolean(reader["HighBP"]);
+                    chkLowBP.Checked = Convert.ToBoolean(reader["LowBP"]);
+                    chkHeartDisease.Checked = Convert.ToBoolean(reader["HeartDisease"]);
+                    chkHeartMurmur.Checked = Convert.ToBoolean(reader["HeartMurmur"]);
+                    chkDiabetes.Checked = Convert.ToBoolean(reader["Diabetes"]);
+                    chkThyroid.Checked = Convert.ToBoolean(reader["Thyroid"]);
+                    chkAsthma.Checked = Convert.ToBoolean(reader["Asthma"]);
+                    chkRespiratoryProblems.Checked = Convert.ToBoolean(reader["RespiratoryProblems"]);
+                    chkArthritis.Checked = Convert.ToBoolean(reader["Arthritis"]);
+                    chkKidneyDisease.Checked = Convert.ToBoolean(reader["KidneyDisease"]);
+                    cmbBloodType.Text = SafeDecrypt(reader["BloodType"]);
 
-                    // Women Tab (if female)
                     if (isFemale)
                     {
                         chkPregnant.Checked = Convert.ToBoolean(reader["IsPregnant"]);
                         chkNursing.Checked = Convert.ToBoolean(reader["IsNursing"]);
                         chkBirthControl.Checked = Convert.ToBoolean(reader["OnBirthControl"]);
-                        cmbBloodType.Text = reader["BloodType"].ToString() ?? "";
                     }
                 }
-
-                conn.Close();
             }
         }
 
@@ -252,7 +260,7 @@ namespace M.A_Florencio_Dental_Records
                     IsPregnant = @Pregnant,
                     IsNursing = @Nursing,
                     OnBirthControl = @BirthControl,
-                    BloodType = @BloodType,
+                    BloodType = @BloodType
                     WHERE PatientID = @PatientID";
 
                         SqlCommand updateCmd = new SqlCommand(updateQuery, conn);
@@ -278,6 +286,8 @@ namespace M.A_Florencio_Dental_Records
                      @HighBP, @LowBP, @HeartDisease, @HeartMurmur, @Diabetes, @Thyroid, @Asthma, @RespiratoryProblems, @Arthritis, @KidneyDisease,
                      @Pregnant, @Nursing, @BirthControl, @BloodType)";
 
+
+                        MessageBox.Show("BloodType: " + cmbBloodType.Text);
                         SqlCommand insertCmd = new SqlCommand(insertQuery, conn);
                         AddMedicalHistoryParameters(insertCmd);
                         conn.Open();
@@ -315,21 +325,24 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@PatientID", PatientID);
             cmd.Parameters.AddWithValue("@IsHealthy", chkGoodHealth.Checked);
             cmd.Parameters.AddWithValue("@UnderTreatment", chkUnderMedication.Checked);
-            cmd.Parameters.AddWithValue("@TreatmentDetails", txtMedicationDetails.Text ?? "");
+            cmd.Parameters.AddWithValue("@TreatmentDetails", CryptoHelper.Encrypt(txtMedicationDetails.Text));
             cmd.Parameters.AddWithValue("@SeriousIllness", chkSeriousIllness.Checked);
-            cmd.Parameters.AddWithValue("@IllnessDetails", txtIllnessDetails.Text ?? "");
+            cmd.Parameters.AddWithValue("@IllnessDetails", CryptoHelper.Encrypt(txtIllnessDetails.Text));
             cmd.Parameters.AddWithValue("@Hospitalized", chkHospitalized.Checked);
-            cmd.Parameters.AddWithValue("@HospitalizationDetails", txtHospitalizationDetails.Text ?? "");
+            cmd.Parameters.AddWithValue("@HospitalizationDetails", CryptoHelper.Encrypt(txtHospitalizationDetails.Text));
+
             cmd.Parameters.AddWithValue("@LocalAnesthetic", chkLocalAnesthetic.Checked);
             cmd.Parameters.AddWithValue("@Penicillin", chkPenicillin.Checked);
             cmd.Parameters.AddWithValue("@Sulfa", chkSulfa.Checked);
             cmd.Parameters.AddWithValue("@Aspirin", chkAspirin.Checked);
             cmd.Parameters.AddWithValue("@Latex", chkLatex.Checked);
-            cmd.Parameters.AddWithValue("@OtherAllergies", txtOtherAllergies.Text ?? "");
+            cmd.Parameters.AddWithValue("@OtherAllergies", CryptoHelper.Encrypt(txtOtherAllergies.Text));
+
             cmd.Parameters.AddWithValue("@PrescriptionMeds", chkPrescriptionMeds.Checked);
-            cmd.Parameters.AddWithValue("@MedicationList", txtMedicationList.Text ?? "");
+            cmd.Parameters.AddWithValue("@MedicationList", CryptoHelper.Encrypt(txtMedicationList.Text));
             cmd.Parameters.AddWithValue("@Tobacco", chkUsesTobacco.Checked);
             cmd.Parameters.AddWithValue("@AlcoholDrugs", chkUsesAlcoholDrugs.Checked);
+
             cmd.Parameters.AddWithValue("@HighBP", chkHighBP.Checked);
             cmd.Parameters.AddWithValue("@LowBP", chkLowBP.Checked);
             cmd.Parameters.AddWithValue("@HeartDisease", chkHeartDisease.Checked);
@@ -340,10 +353,11 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@RespiratoryProblems", chkRespiratoryProblems.Checked);
             cmd.Parameters.AddWithValue("@Arthritis", chkArthritis.Checked);
             cmd.Parameters.AddWithValue("@KidneyDisease", chkKidneyDisease.Checked);
-            cmd.Parameters.AddWithValue("@Pregnant", isFemale ? chkPregnant.Checked : false);
-            cmd.Parameters.AddWithValue("@Nursing", isFemale ? chkNursing.Checked : false);
-            cmd.Parameters.AddWithValue("@BirthControl", isFemale ? chkBirthControl.Checked : false);
-            cmd.Parameters.AddWithValue("@BloodType", cmbBloodType.Text ?? "");
+
+            cmd.Parameters.AddWithValue("@Pregnant", isFemale && chkPregnant.Checked);
+            cmd.Parameters.AddWithValue("@Nursing", isFemale && chkNursing.Checked);
+            cmd.Parameters.AddWithValue("@BirthControl", isFemale && chkBirthControl.Checked);
+            cmd.Parameters.AddWithValue("@BloodType", CryptoHelper.Encrypt(cmbBloodType.Text));
         }
 
         private void UpdateNavigation()
