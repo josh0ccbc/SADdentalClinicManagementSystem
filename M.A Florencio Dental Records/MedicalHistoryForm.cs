@@ -40,6 +40,8 @@ namespace M.A_Florencio_Dental_Records
 
         public void LoadBloodTypeCombo()
         {
+            cmbBloodType.Items.Clear();
+            cmbBloodType.Items.Add("-- Select Blood Type --");
             cmbBloodType.Items.Add("O+");
             cmbBloodType.Items.Add("O-");
             cmbBloodType.Items.Add("A+");
@@ -48,6 +50,8 @@ namespace M.A_Florencio_Dental_Records
             cmbBloodType.Items.Add("B-");
             cmbBloodType.Items.Add("AB+");
             cmbBloodType.Items.Add("AB-");
+
+            cmbBloodType.SelectedIndex = 0;
         }
 
         private void CheckGender()
@@ -104,7 +108,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void chkGoodHealth_CheckedChanged(object sender, EventArgs e)
         {
-                
+
         }
 
         private void chkUnderMedication_CheckedChanged(object sender, EventArgs e)
@@ -140,6 +144,8 @@ namespace M.A_Florencio_Dental_Records
                 {
                     chkGoodHealth.Checked = Convert.ToBoolean(reader["is_healthy"]);
                     chkUnderMedication.Checked = Convert.ToBoolean(reader["under_treatment"]);
+
+                    // ===== DECRYPT ENCRYPTED FIELDS =====
                     txtMedicationDetails.Text = SafeDecrypt(reader["treatment_details"]);
 
                     chkSeriousIllness.Checked = Convert.ToBoolean(reader["serious_illness"]);
@@ -153,10 +159,13 @@ namespace M.A_Florencio_Dental_Records
                     chkSulfa.Checked = Convert.ToBoolean(reader["SulfaAllergy"]);
                     chkAspirin.Checked = Convert.ToBoolean(reader["AspirinAllergy"]);
                     chkLatex.Checked = Convert.ToBoolean(reader["LatexAllergy"]);
+                    // ===== DECRYPT OTHER ALLERGIES =====
                     txtOtherAllergies.Text = SafeDecrypt(reader["OtherAllergies"]);
 
                     chkPrescriptionMeds.Checked = Convert.ToBoolean(reader["TakingPrescriptionMeds"]);
+                    // ===== DECRYPT MEDICATION LIST =====
                     txtMedicationList.Text = SafeDecrypt(reader["MedicationList"]);
+
                     chkUsesTobacco.Checked = Convert.ToBoolean(reader["UsesTobacco"]);
                     chkUsesAlcoholDrugs.Checked = Convert.ToBoolean(reader["UsesAlcoholDrugs"]);
 
@@ -170,7 +179,17 @@ namespace M.A_Florencio_Dental_Records
                     chkRespiratoryProblems.Checked = Convert.ToBoolean(reader["RespiratoryProblems"]);
                     chkArthritis.Checked = Convert.ToBoolean(reader["Arthritis"]);
                     chkKidneyDisease.Checked = Convert.ToBoolean(reader["KidneyDisease"]);
-                    cmbBloodType.Text = SafeDecrypt(reader["BloodType"]);
+
+                    // ===== DECRYPT BLOOD TYPE =====
+                    string bloodType = SafeDecrypt(reader["BloodType"]);
+                    if (cmbBloodType.Items.Contains(bloodType))
+                    {
+                        cmbBloodType.SelectedItem = bloodType;
+                    }
+                    else if (!string.IsNullOrEmpty(bloodType))
+                    {
+                        cmbBloodType.Text = bloodType;
+                    }
 
                     if (isFemale)
                     {
@@ -215,6 +234,26 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            // ===== VALIDATION =====
+            if (cmbBloodType.SelectedIndex <= 0 || cmbBloodType.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a valid blood type before saving", "Validation Error");
+                return;
+            }
+
+            // ===== DETAILED DEBUG BEFORE SAVING =====
+            string debugBloodType = cmbBloodType.SelectedItem?.ToString() ?? "NULL";
+            int debugIndex = cmbBloodType.SelectedIndex;
+
+            MessageBox.Show(
+                "DEBUG - Medical History Form:\n" +
+                "SelectedIndex: " + debugIndex + "\n" +
+                "SelectedItem: " + debugBloodType + "\n" +
+                "PatientID: " + PatientID + "\n" +
+                "\nClick OK to proceed with save.",
+                "Debug Info Before Save"
+            );
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
@@ -260,7 +299,9 @@ namespace M.A_Florencio_Dental_Records
                     IsPregnant = @Pregnant,
                     IsNursing = @Nursing,
                     OnBirthControl = @BirthControl,
-                    BloodType = @BloodType
+                    BloodType = @BloodType,
+                    BleedingTime = @BleedingTime,
+                    BloodPressure = @BloodPressure
                     WHERE PatientID = @PatientID";
 
                         SqlCommand updateCmd = new SqlCommand(updateQuery, conn);
@@ -277,17 +318,15 @@ namespace M.A_Florencio_Dental_Records
                      LocalAestheticAllergy, PenicillinAllergy, SulfaAllergy, AspirinAllergy, LatexAllergy,
                      OtherAllergies, TakingPrescriptionMeds, MedicationList, UsesTobacco, UsesAlcoholDrugs,
                      HighBP, LowBP, HeartDisease, HeartMurmur, Diabetes, Thyroid, Asthma, RespiratoryProblems, Arthritis, KidneyDisease,
-                     IsPregnant, IsNursing, OnBirthControl, BloodType)
+                     IsPregnant, IsNursing, OnBirthControl, BloodType, BleedingTime, BloodPressure)
                     VALUES
                     (@PatientID, @IsHealthy, @UnderTreatment, @TreatmentDetails, @SeriousIllness, @IllnessDetails,
                      @Hospitalized, @HospitalizationDetails,
                      @LocalAnesthetic, @Penicillin, @Sulfa, @Aspirin, @Latex,
                      @OtherAllergies, @PrescriptionMeds, @MedicationList, @Tobacco, @AlcoholDrugs,
                      @HighBP, @LowBP, @HeartDisease, @HeartMurmur, @Diabetes, @Thyroid, @Asthma, @RespiratoryProblems, @Arthritis, @KidneyDisease,
-                     @Pregnant, @Nursing, @BirthControl, @BloodType)";
+                     @Pregnant, @Nursing, @BirthControl, @BloodType, @BleedingTime, @BloodPressure)";
 
-
-                        MessageBox.Show("BloodType: " + cmbBloodType.Text);
                         SqlCommand insertCmd = new SqlCommand(insertQuery, conn);
                         AddMedicalHistoryParameters(insertCmd);
                         conn.Open();
@@ -316,7 +355,7 @@ namespace M.A_Florencio_Dental_Records
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                MessageBox.Show("Error: " + ex.Message + "\n\nStack trace:\n" + ex.StackTrace);
             }
         }
 
@@ -325,21 +364,39 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@PatientID", PatientID);
             cmd.Parameters.AddWithValue("@IsHealthy", chkGoodHealth.Checked);
             cmd.Parameters.AddWithValue("@UnderTreatment", chkUnderMedication.Checked);
-            cmd.Parameters.AddWithValue("@TreatmentDetails", CryptoHelper.Encrypt(txtMedicationDetails.Text));
+
+            // ===== ENCRYPTED FIELD: Treatment Details =====
+            cmd.Parameters.AddWithValue("@TreatmentDetails",
+                string.IsNullOrEmpty(txtMedicationDetails.Text) ? "" : CryptoHelper.Encrypt(txtMedicationDetails.Text));
+
             cmd.Parameters.AddWithValue("@SeriousIllness", chkSeriousIllness.Checked);
-            cmd.Parameters.AddWithValue("@IllnessDetails", CryptoHelper.Encrypt(txtIllnessDetails.Text));
+
+            // ===== ENCRYPTED FIELD: Illness Details =====
+            cmd.Parameters.AddWithValue("@IllnessDetails",
+                string.IsNullOrEmpty(txtIllnessDetails.Text) ? "" : CryptoHelper.Encrypt(txtIllnessDetails.Text));
+
             cmd.Parameters.AddWithValue("@Hospitalized", chkHospitalized.Checked);
-            cmd.Parameters.AddWithValue("@HospitalizationDetails", CryptoHelper.Encrypt(txtHospitalizationDetails.Text));
+
+            // ===== ENCRYPTED FIELD: Hospitalization Details =====
+            cmd.Parameters.AddWithValue("@HospitalizationDetails",
+                string.IsNullOrEmpty(txtHospitalizationDetails.Text) ? "" : CryptoHelper.Encrypt(txtHospitalizationDetails.Text));
 
             cmd.Parameters.AddWithValue("@LocalAnesthetic", chkLocalAnesthetic.Checked);
             cmd.Parameters.AddWithValue("@Penicillin", chkPenicillin.Checked);
             cmd.Parameters.AddWithValue("@Sulfa", chkSulfa.Checked);
             cmd.Parameters.AddWithValue("@Aspirin", chkAspirin.Checked);
             cmd.Parameters.AddWithValue("@Latex", chkLatex.Checked);
-            cmd.Parameters.AddWithValue("@OtherAllergies", CryptoHelper.Encrypt(txtOtherAllergies.Text));
+
+            // ===== ENCRYPTED FIELD: Other Allergies =====
+            cmd.Parameters.AddWithValue("@OtherAllergies",
+                string.IsNullOrEmpty(txtOtherAllergies.Text) ? "" : CryptoHelper.Encrypt(txtOtherAllergies.Text));
 
             cmd.Parameters.AddWithValue("@PrescriptionMeds", chkPrescriptionMeds.Checked);
-            cmd.Parameters.AddWithValue("@MedicationList", CryptoHelper.Encrypt(txtMedicationList.Text));
+
+            // ===== ENCRYPTED FIELD: Medication List =====
+            cmd.Parameters.AddWithValue("@MedicationList",
+                string.IsNullOrEmpty(txtMedicationList.Text) ? "" : CryptoHelper.Encrypt(txtMedicationList.Text));
+
             cmd.Parameters.AddWithValue("@Tobacco", chkUsesTobacco.Checked);
             cmd.Parameters.AddWithValue("@AlcoholDrugs", chkUsesAlcoholDrugs.Checked);
 
@@ -357,7 +414,22 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@Pregnant", isFemale && chkPregnant.Checked);
             cmd.Parameters.AddWithValue("@Nursing", isFemale && chkNursing.Checked);
             cmd.Parameters.AddWithValue("@BirthControl", isFemale && chkBirthControl.Checked);
-            cmd.Parameters.AddWithValue("@BloodType", CryptoHelper.Encrypt(cmbBloodType.Text));
+
+            // ===== ENCRYPTED FIELD: Blood Type =====
+            string bloodType = cmbBloodType.SelectedItem?.ToString() ?? "";
+            if (string.IsNullOrEmpty(bloodType) || bloodType == "-- Select Blood Type --")
+            {
+                cmd.Parameters.AddWithValue("@BloodType", "");
+            }
+            else
+            {
+                cmd.Parameters.AddWithValue("@BloodType", CryptoHelper.Encrypt(bloodType));
+            }
+
+            // ===== ENCRYPTED FIELDS: Bleeding Time and Blood Pressure =====
+            // These are optional fields - add empty strings if not filled
+            cmd.Parameters.AddWithValue("@BleedingTime", "");  // Can be added to UI if needed
+            cmd.Parameters.AddWithValue("@BloodPressure", ""); // Can be added to UI if needed
         }
 
         private void UpdateNavigation()

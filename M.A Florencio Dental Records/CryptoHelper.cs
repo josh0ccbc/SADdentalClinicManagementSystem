@@ -13,20 +13,33 @@ public static class CryptoHelper
         if (string.IsNullOrEmpty(plainText))
             return "";
 
-        using (Aes aes = Aes.Create())
+        try
         {
-            aes.Key = Encoding.UTF8.GetBytes(key);
-            aes.IV = Encoding.UTF8.GetBytes(iv);
-
-            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-            using (var ms = new MemoryStream())
-            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-            using (var sw = new StreamWriter(cs))
+            using (Aes aes = Aes.Create())
             {
-                sw.Write(plainText);
-                return Convert.ToBase64String(ms.ToArray());
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = Encoding.UTF8.GetBytes(iv);
+                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (var ms = new MemoryStream())
+                {
+                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (var sw = new StreamWriter(cs))
+                        {
+                            sw.Write(plainText);
+                            sw.Flush();
+                            cs.FlushFinalBlock();
+                        }
+                    }
+                    return Convert.ToBase64String(ms.ToArray());
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("Encryption error: " + ex.Message);
+            return "";
         }
     }
 
@@ -35,19 +48,30 @@ public static class CryptoHelper
         if (string.IsNullOrEmpty(cipherText))
             return "";
 
-        using (Aes aes = Aes.Create())
+        try
         {
-            aes.Key = Encoding.UTF8.GetBytes(key);
-            aes.IV = Encoding.UTF8.GetBytes(iv);
-
-            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-
-            using (var ms = new MemoryStream(Convert.FromBase64String(cipherText)))
-            using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-            using (var sr = new StreamReader(cs))
+            using (Aes aes = Aes.Create())
             {
-                return sr.ReadToEnd();
+                aes.Key = Encoding.UTF8.GetBytes(key);
+                aes.IV = Encoding.UTF8.GetBytes(iv);
+                var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+                using (var ms = new MemoryStream(Convert.FromBase64String(cipherText)))
+                {
+                    using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (var sr = new StreamReader(cs))
+                        {
+                            return sr.ReadToEnd();
+                        }
+                    }
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("Decryption error: " + ex.Message);
+            return "";
         }
     }
 }

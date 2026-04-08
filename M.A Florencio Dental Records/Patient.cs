@@ -21,6 +21,27 @@ namespace M.A_Florencio_Dental_Records
             lblName.Font = new Font("Segoe UI", 12, FontStyle.Bold);
         }
 
+        private string SafeDecrypt(object dbValue)
+        {
+            if (dbValue == DBNull.Value || dbValue == null)
+                return "";
+
+            string value = dbValue.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            try
+            {
+                return CryptoHelper.Decrypt(value);
+            }
+            catch
+            {
+                // If decryption fails, return the value as-is (for old unencrypted data)
+                return value;
+            }
+        }
+
         private void Patient_Load(object sender, EventArgs e)
         {
         }
@@ -86,7 +107,7 @@ namespace M.A_Florencio_Dental_Records
                         lblName.Text = reader["FullName"].ToString();
                         lblGenderAge.Text = reader["Gender"].ToString();
                         lblAge.Text = reader["Age"].ToString();
-                        lblContact.Text = reader["ContactNumber"].ToString();
+                        lblContact.Text = SafeDecrypt(reader["ContactNumber"]);
                         BDAYage.Text = Convert.ToDateTime(reader["BirthDate"]).ToString("MMM dd, yyyy");
                         DPpatientid.Text = reader["PatientID"].ToString();
                     }

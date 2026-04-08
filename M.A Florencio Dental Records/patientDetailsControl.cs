@@ -37,6 +37,27 @@ namespace M.A_Florencio_Dental_Records
             this.AutoScroll = true;
         }
 
+        private string SafeDecrypt(object dbValue)
+        {
+            if (dbValue == DBNull.Value || dbValue == null)
+                return "";
+
+            string value = dbValue.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            try
+            {
+                return CryptoHelper.Decrypt(value);
+            }
+            catch
+            {
+                // If decryption fails, return the value as-is (for old unencrypted data)
+                return value;
+            }
+        }
+
         public void LoadPatientDetails(int patientID)
         {
             PatientID = patientID;
@@ -55,7 +76,7 @@ namespace M.A_Florencio_Dental_Records
             RepositionPanels(); // ✅ initial layout
         }
 
-        // ✅ PERSONAL INFORMATION (EXISTING - NO CHANGES)
+        // ✅ PERSONAL INFORMATION WITH DECRYPTION
         private void LoadPersonalInformation()
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -71,27 +92,29 @@ namespace M.A_Florencio_Dental_Records
                 {
                     lblPatientID.Text = reader["PatientID"].ToString();
                     lblFullName.Text = reader["FullName"].ToString();
-                    lblGender.Text = reader["Gender"].ToString();
+                    lblGender.Text = SafeDecrypt(reader["Gender"]);
 
                     DateTime birthDate = Convert.ToDateTime(reader["BirthDate"]);
                     lblBirthDate.Text = birthDate.ToString("MMM dd, yyyy");
                     lblAge.Text = reader["Age"].ToString();
 
-                    lblContactNumber.Text = reader["ContactNumber"].ToString();
-                    lblAddress.Text = reader["Address"].ToString();
-                    lblCivilStatus.Text = reader["CivilStatus"].ToString();
-                    lblReligion.Text = reader["Religion"].ToString();
+                    // ===== DECRYPT SENSITIVE FIELDS =====
+                    lblContactNumber.Text = SafeDecrypt(reader["ContactNumber"]);
+                    lblAddress.Text = SafeDecrypt(reader["Address"]);
+                    lblCivilStatus.Text = SafeDecrypt(reader["CivilStatus"]);
+                    lblReligion.Text = SafeDecrypt(reader["Religion"]);
 
                     DateTime dateReg = Convert.ToDateTime(reader["DateRegistered"]);
                     lblDateRegistered.Text = dateReg.ToString("MMM dd, yyyy");
 
-                    string guardianName = reader["GuardianName"].ToString();
+                    // ===== DECRYPT GUARDIAN FIELDS =====
+                    string guardianName = SafeDecrypt(reader["GuardianName"]);
                     if (!string.IsNullOrEmpty(guardianName))
                     {
                         panelGuardian.Visible = true;
                         lblGuardianName.Text = guardianName;
-                        lblGuardianContact.Text = reader["GuardianContact"].ToString();
-                        lblGuardianRelationship.Text = reader["GuardianRelationship"].ToString();
+                        lblGuardianContact.Text = SafeDecrypt(reader["GuardianContact"]);
+                        lblGuardianRelationship.Text = SafeDecrypt(reader["GuardianRelationship"]);
                     }
                     else
                     {
@@ -175,7 +198,7 @@ namespace M.A_Florencio_Dental_Records
             this.AutoScroll = false;
         }
 
-        // ✅ MEDICAL HISTORY (EXISTING - NO CHANGES)
+        // ✅ MEDICAL HISTORY WITH DECRYPTION
         private void LoadMedicalHistory()
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -199,7 +222,8 @@ namespace M.A_Florencio_Dental_Records
                     if (reader["under_treatment"] != DBNull.Value && Convert.ToBoolean(reader["under_treatment"]))
                     {
                         generalHealth.Add("✓ Under Medical Treatment");
-                        string treatmentDetails = reader["treatment_details"].ToString();
+                        // ===== DECRYPT =====
+                        string treatmentDetails = SafeDecrypt(reader["treatment_details"]);
                         if (!string.IsNullOrEmpty(treatmentDetails))
                             generalHealth.Add("   Details: " + treatmentDetails + "\n");
                     }
@@ -207,7 +231,8 @@ namespace M.A_Florencio_Dental_Records
                     if (reader["serious_illness"] != DBNull.Value && Convert.ToBoolean(reader["serious_illness"]))
                     {
                         generalHealth.Add("✓ Serious Illness");
-                        string illnessDetails = reader["illness_details"].ToString();
+                        // ===== DECRYPT =====
+                        string illnessDetails = SafeDecrypt(reader["illness_details"]);
                         if (!string.IsNullOrEmpty(illnessDetails))
                             generalHealth.Add("   Details: " + illnessDetails + "\n");
                     }
@@ -215,7 +240,8 @@ namespace M.A_Florencio_Dental_Records
                     if (reader["recently_hospitalized"] != DBNull.Value && Convert.ToBoolean(reader["recently_hospitalized"]))
                     {
                         generalHealth.Add("✓ Recently Hospitalized");
-                        string hospitalizationDetails = reader["hospitalization_details"].ToString();
+                        // ===== DECRYPT =====
+                        string hospitalizationDetails = SafeDecrypt(reader["hospitalization_details"]);
                         if (!string.IsNullOrEmpty(hospitalizationDetails))
                             generalHealth.Add("   Details: " + hospitalizationDetails + "\n");
                     }
@@ -229,14 +255,16 @@ namespace M.A_Florencio_Dental_Records
                     if (Convert.ToBoolean(reader["AspirinAllergy"] ?? false)) allergies.Add("Aspirin");
                     if (Convert.ToBoolean(reader["LatexAllergy"] ?? false)) allergies.Add("Latex");
 
-                    string otherAllergies = reader["OtherAllergies"].ToString();
+                    // ===== DECRYPT OTHER ALLERGIES =====
+                    string otherAllergies = SafeDecrypt(reader["OtherAllergies"]);
                     if (!string.IsNullOrEmpty(otherAllergies)) allergies.Add(otherAllergies);
 
                     lblAllergies.Text = allergies.Count > 0 ? string.Join(", ", allergies) : "None";
 
                     lblTakingMeds.Text = Convert.ToBoolean(reader["TakingPrescriptionMeds"] ?? false) ? "Yes" : "No";
 
-                    string medicationList = reader["MedicationList"].ToString() ?? "";
+                    // ===== DECRYPT MEDICATION LIST =====
+                    string medicationList = SafeDecrypt(reader["MedicationList"]);
                     if (!string.IsNullOrEmpty(medicationList))
                     {
                         string[] medications = medicationList.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -267,7 +295,8 @@ namespace M.A_Florencio_Dental_Records
 
                     lblMedicalConditions.Text = conditions.Count > 0 ? string.Join(", ", conditions) : "None";
 
-                    lblBloodType.Text = reader["BloodType"].ToString() ?? "Not recorded";
+                    // ===== DECRYPT BLOOD TYPE =====
+                    lblBloodType.Text = SafeDecrypt(reader["BloodType"]) ?? "Not recorded";
 
                     if (GetPatientGender() == "Female")
                     {
@@ -290,7 +319,7 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ MEDICAL RECORDS WITH PRESCRIPTION SUPPORT
+        // ✅ MEDICAL RECORDS WITH DECRYPTION AND PRESCRIPTION SUPPORT
         private void LoadMedicalRecords()
         {
             panelMedicalRecords.Controls.Clear();
@@ -328,8 +357,9 @@ namespace M.A_Florencio_Dental_Records
                     {
                         int recordID = Convert.ToInt32(reader["record_id"]);
                         DateTime visitDate = Convert.ToDateTime(reader["visit_date"]);
-                        string diagnosis = reader["diagnosis"]?.ToString() ?? "N/A";
-                        string procedure = reader["procedure"]?.ToString() ?? "N/A";
+                        // ===== DECRYPT DIAGNOSIS AND PROCEDURE =====
+                        string diagnosis = SafeDecrypt(reader["diagnosis"]);
+                        string procedure = SafeDecrypt(reader["procedure"]);
                         string serviceType = reader["ServiceType"]?.ToString() ?? "N/A";
 
                         Label lblRecord = new Label();
@@ -359,7 +389,7 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ VIEW RECORD DETAILS WITH PRESCRIPTIONS
+        // ✅ VIEW RECORD DETAILS WITH PRESCRIPTIONS AND DECRYPTION
         private void ViewRecordDetails(int recordID)
         {
             SelectedRecordID = recordID;
@@ -367,10 +397,10 @@ namespace M.A_Florencio_Dental_Records
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 string query = @"
-            SELECT mr.*, a.ServiceType, a.AppointmentDate
-            FROM MedicalRecords mr
-            LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
-            WHERE mr.record_id = @RecordID";
+        SELECT mr.*, a.ServiceType, a.AppointmentDate
+        FROM MedicalRecords mr
+        LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
+        WHERE mr.record_id = @RecordID";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@RecordID", recordID);
@@ -385,9 +415,12 @@ namespace M.A_Florencio_Dental_Records
                     string thinDivider = new string('─', lineWidth);
 
                     string serviceType = reader["ServiceType"]?.ToString();
-                    string diagnosis = reader["diagnosis"]?.ToString();
-                    string procedure = reader["procedure"]?.ToString();
-                    string notes = reader["notes"]?.ToString();
+                    // ===== DECRYPT DIAGNOSIS =====
+                    string diagnosis = SafeDecrypt(reader["diagnosis"]);
+                    // ===== DECRYPT PROCEDURE =====
+                    string procedure = SafeDecrypt(reader["procedure"]);
+                    // ===== DECRYPT NOTES =====
+                    string notes = SafeDecrypt(reader["notes"]);
 
                     string details = "";
                     details += divider + "\n";
@@ -410,11 +443,12 @@ namespace M.A_Florencio_Dental_Records
 
                     reader.Close();
 
+                    // ===== DECRYPT PRESCRIPTION DETAILS =====
                     string prescQuery = @"
-                SELECT medication, prescription_date, med_instructions 
-                FROM Prescription 
-                WHERE record_id = @RecordID 
-                ORDER BY prescription_date DESC";
+            SELECT medication, prescription_date, med_instructions 
+            FROM Prescription 
+            WHERE record_id = @RecordID 
+            ORDER BY prescription_date DESC";
 
                     SqlCommand prescCmd = new SqlCommand(prescQuery, conn);
                     prescCmd.Parameters.AddWithValue("@RecordID", recordID);
@@ -426,10 +460,11 @@ namespace M.A_Florencio_Dental_Records
                         int count = 1;
                         while (prescReader.Read())
                         {
-                            string medication = prescReader["medication"]?.ToString() ?? "N/A";
-                            string instructions = prescReader["med_instructions"]?.ToString();
+                            // ===== DECRYPT MEDICATION AND INSTRUCTIONS =====
+                            string medication = SafeDecrypt(prescReader["medication"]);
+                            string instructions = SafeDecrypt(prescReader["med_instructions"]);
 
-                            details += $"  [{count}] {medication}\n";
+                            details += $"  [{count}] {(string.IsNullOrEmpty(medication) ? "N/A" : medication)}\n";
                             details += $"      Date: {Convert.ToDateTime(prescReader["prescription_date"]).ToString("MMM dd, yyyy")}\n";
                             details += $"      Instructions:\n";
                             details += $"      {WrapText(string.IsNullOrEmpty(instructions) ? "None" : instructions, lineWidth - 6)}\n\n";
@@ -561,7 +596,7 @@ namespace M.A_Florencio_Dental_Records
                     string deleteHistory = "DELETE FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                     new SqlCommand(deleteHistory, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
 
-                    // 4. Delete Appointments  ← THIS WAS MISSING, CAUSING YOUR ERROR
+                    // 4. Delete Appointments
                     string deleteAppointments = "DELETE FROM Appointments WHERE PatientID = @PatientID";
                     new SqlCommand(deleteAppointments, conn) { Parameters = { new SqlParameter("@PatientID", PatientID) } }.ExecuteNonQuery();
 

@@ -14,6 +14,7 @@ namespace M.A_Florencio_Dental_Records
     public partial class AddPatientInfo : UserControl
     {
         public PatientData patientData;
+        private string connectionString = @"Data Source=localhost;Initial Catalog=DentalClinicDB;Integrated Security=True";
 
         public AddPatientInfo()
         {
@@ -57,6 +58,27 @@ namespace M.A_Florencio_Dental_Records
                 label12.Visible = false;
                 Grelationship.Visible = false;
                 label13.Visible = false;
+            }
+        }
+
+        private string SafeDecrypt(object dbValue)
+        {
+            if (dbValue == DBNull.Value || dbValue == null)
+                return "";
+
+            string value = dbValue.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            try
+            {
+                return CryptoHelper.Decrypt(value);
+            }
+            catch
+            {
+                // In case old data is not encrypted
+                return value;
             }
         }
 
@@ -170,7 +192,7 @@ namespace M.A_Florencio_Dental_Records
         private void button2_Click(object sender, EventArgs e)
         {
             Form2 form2 = (Form2)this.FindForm();
-            form2.returningToMain = true; 
+            form2.returningToMain = true;
 
             Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
             if (mainForm != null)
@@ -189,6 +211,42 @@ namespace M.A_Florencio_Dental_Records
         private void button2_MouseLeave(object sender, EventArgs e)
         {
             button2.BackgroundImage = Properties.Resources.Button3;
+        }
+
+        private void LoadPatientInfo(int patientID)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@PatientID", patientID);
+
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    txtFullName.Text = reader["FullName"].ToString();
+                    cmbGender.SelectedItem = reader["Gender"].ToString();
+                    dtpBirthDate.Value = Convert.ToDateTime(reader["BirthDate"]);
+                    txtAge.Text = reader["Age"].ToString();
+
+                    // ✅ CORRECT DECRYPTION
+                    txtContact.Text = SafeDecrypt(reader["ContactNumber"]);
+                    txtAddress.Text = SafeDecrypt(reader["Address"]);
+                    cmbCivilStatus.SelectedItem = reader["CivilStatus"].ToString();
+                    txtReligion.Text = reader["Religion"].ToString(); // NOT encrypted
+
+                    Gname.Text = SafeDecrypt(reader["GuardianName"]);
+                    Gcontact.Text = SafeDecrypt(reader["GuardianContact"]);
+                    Grelationship.Text = SafeDecrypt(reader["GuardianRelationship"]);
+                }
+
+                conn.Close();
+            }
+
+            // ✅ Re-trigger UI logic (important)
+            dateTimePicker1_ValueChanged(null, null);
         }
 
         private void btnNext_Click(object sender, EventArgs e)
@@ -242,8 +300,6 @@ namespace M.A_Florencio_Dental_Records
 
         private int SavePatientToDB()
         {
-            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
@@ -259,17 +315,20 @@ namespace M.A_Florencio_Dental_Records
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@FullName", patientData.FullName);
-                    cmd.Parameters.AddWithValue("@Gender", patientData.Gender);
-                    cmd.Parameters.AddWithValue("@BirthDate", patientData.BirthDate);
-                    cmd.Parameters.AddWithValue("@Age", patientData.Age);
-                    cmd.Parameters.AddWithValue("@ContactNumber", patientData.ContactNumber);
-                    cmd.Parameters.AddWithValue("@Address", patientData.Address);
-                    cmd.Parameters.AddWithValue("@CivilStatus", patientData.CivilStatus);
-                    cmd.Parameters.AddWithValue("@Religion", patientData.Religion);
-                    cmd.Parameters.AddWithValue("@GuardianName", patientData.GuardianName ?? "");
-                    cmd.Parameters.AddWithValue("@GuardianContact", patientData.GuardianContact ?? "");
-                    cmd.Parameters.AddWithValue("@GuardianRelationship", patientData.GuardianRelationship ?? "");
+                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text);  // Can encrypt if needed
+                    cmd.Parameters.AddWithValue("@Gender", string.IsNullOrEmpty(cmbGender.Text) ? "" : CryptoHelper.Encrypt(cmbGender.Text));
+
+                    cmd.Parameters.AddWithValue("@BirthDate", dtpBirthDate.Value);
+                    cmd.Parameters.AddWithValue("@Age", int.Parse(txtAge.Text));
+
+                    // ===== ENCRYPT SENSITIVE INFO =====
+                    cmd.Parameters.AddWithValue("@ContactNumber", CryptoHelper.Encrypt(txtContact.Text));
+                    cmd.Parameters.AddWithValue("@Address", CryptoHelper.Encrypt(txtAddress.Text));
+                    cmd.Parameters.AddWithValue("@CivilStatus", string.IsNullOrEmpty(cmbCivilStatus.Text) ? "" : CryptoHelper.Encrypt(cmbCivilStatus.Text));
+                    cmd.Parameters.AddWithValue("@Religion", string.IsNullOrEmpty(txtReligion.Text) ? "" : CryptoHelper.Encrypt(txtReligion.Text));
+                    cmd.Parameters.AddWithValue("@GuardianName", string.IsNullOrEmpty(Gname.Text) ? "" : CryptoHelper.Encrypt(Gname.Text));
+                    cmd.Parameters.AddWithValue("@GuardianContact", string.IsNullOrEmpty(Gcontact.Text) ? "" : CryptoHelper.Encrypt(Gcontact.Text));
+                    cmd.Parameters.AddWithValue("@GuardianRelationship", string.IsNullOrEmpty(Grelationship.Text) ? "" : CryptoHelper.Encrypt(Grelationship.Text));
                     cmd.Parameters.AddWithValue("@DateRegistered", DateTime.Now);
 
                     conn.Open();
@@ -288,7 +347,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void txtFullName_TextChanged(object sender, EventArgs e)
         {
-
+            // Event handler for txtFullName text changes
         }
     }
 }
