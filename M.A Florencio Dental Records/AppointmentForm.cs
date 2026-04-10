@@ -9,7 +9,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class AppointmentForm : MaterialForm
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int SelectedPatientID { get; set; }
         private bool isLoadingPatientID = false;  // ✅ ADD THIS FLAG
 
@@ -43,7 +42,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ LOAD PATIENT NAMES TO DROPDOWN
         private void LoadPatientNames()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT DISTINCT FullName FROM Patients WHERE IsArchived = 0 ORDER BY FullName ASC";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -76,7 +75,7 @@ namespace M.A_Florencio_Dental_Records
         {
             isLoadingPatientID = true;
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT PatientID, FullName FROM Patients WHERE FullName = @FullName AND IsArchived = 0 ORDER BY PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -187,7 +186,7 @@ namespace M.A_Florencio_Dental_Records
 
             List<TimeRange> existing = new List<TimeRange>();
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using(SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"SELECT AppointmentTime, AppointmentEndTime 
                                  FROM Appointments 
@@ -240,7 +239,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoadServices()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT ServiceID, ServiceName FROM DentalServices";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -275,7 +274,7 @@ namespace M.A_Florencio_Dental_Records
                 return;
             }
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"INSERT INTO Appointments 
                 (PatientID, PatientName, AppointmentDate, AppointmentTime, AppointmentEndTime, ServiceID, ServiceType, Status, Notes)
@@ -303,7 +302,7 @@ namespace M.A_Florencio_Dental_Records
 
         private bool IsOverlapping(TimeSpan newStart, TimeSpan newEnd)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"SELECT COUNT(*) FROM Appointments
                                  WHERE AppointmentDate=@date

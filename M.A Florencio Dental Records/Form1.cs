@@ -41,9 +41,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void LogAuditTrail(int userID, string action)
         {
-            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -225,6 +223,29 @@ namespace M.A_Florencio_Dental_Records
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
 
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            string originalText = "Patient allergic to Penicillin";
+
+            System.Diagnostics.Debug.WriteLine("=== CRYPTO TEST ===");
+            System.Diagnostics.Debug.WriteLine($"Original: {originalText}");
+
+            string encrypted = CryptoHelper.Encrypt(originalText);
+            System.Diagnostics.Debug.WriteLine($"Encrypted: {encrypted}");
+
+            string decrypted = CryptoHelper.Decrypt(encrypted);
+            System.Diagnostics.Debug.WriteLine($"Decrypted: {decrypted}");
+
+            if (decrypted == originalText)
+            {
+                MessageBox.Show("✅ Encryption/Decryption works!", "Test Passed");
+            }
+            else
+            {
+                MessageBox.Show("❌ Mismatch!", "Test Failed");
+            }
         }
     }
 }

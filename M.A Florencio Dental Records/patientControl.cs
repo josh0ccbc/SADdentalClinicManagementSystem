@@ -13,8 +13,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class patientControl : UserControl
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
         private List<PatientInfo> allPatients = new List<PatientInfo>();
         private int currentPage = 1;
         private int patientsPerPage = 10;
@@ -35,7 +33,7 @@ namespace M.A_Florencio_Dental_Records
         {
             allPatients.Clear();
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT PatientID, FullName, Gender, BirthDate, Age, ContactNumber FROM Patients WHERE IsArchived = 0";
                 SqlCommand cmd = new SqlCommand(query, conn);

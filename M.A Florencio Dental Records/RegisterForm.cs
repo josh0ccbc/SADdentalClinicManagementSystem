@@ -8,8 +8,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class RegisterForm : MaterialForm
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
         public RegisterForm()
         {
             InitializeComponent();
@@ -48,7 +46,7 @@ namespace M.A_Florencio_Dental_Records
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = @"
                 INSERT INTO Users (Username, Email, PasswordHash, FullName, Role, IsActive)
@@ -81,7 +79,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ CHECK IF USER EXISTS
         private bool UserExists(string username, string email)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT COUNT(*) FROM Users WHERE Username = @Username OR Email = @Email";
                 SqlCommand cmd = new SqlCommand(query, conn);

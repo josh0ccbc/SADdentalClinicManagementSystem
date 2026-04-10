@@ -13,7 +13,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class patientDetailsControl : UserControl
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int PatientID { get; set; }
 
         public bool IsArchived { get; set; } = false;
@@ -79,7 +78,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ PERSONAL INFORMATION WITH DECRYPTION
         private void LoadPersonalInformation()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -201,7 +200,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ MEDICAL HISTORY WITH DECRYPTION
         private void LoadMedicalHistory()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using(SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT * FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -324,7 +323,7 @@ namespace M.A_Florencio_Dental_Records
         {
             panelMedicalRecords.Controls.Clear();
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"
                     SELECT mr.record_id, mr.visit_date, mr.diagnosis, mr.[procedure], mr.notes, mr.appointment_id,
@@ -394,13 +393,13 @@ namespace M.A_Florencio_Dental_Records
         {
             SelectedRecordID = recordID;
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"
-        SELECT mr.*, a.ServiceType, a.AppointmentDate
-        FROM MedicalRecords mr
-        LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
-        WHERE mr.record_id = @RecordID";
+                SELECT mr.*, a.ServiceType, a.AppointmentDate
+                FROM MedicalRecords mr
+                LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
+                WHERE mr.record_id = @RecordID";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@RecordID", recordID);
@@ -445,10 +444,10 @@ namespace M.A_Florencio_Dental_Records
 
                     // ===== DECRYPT PRESCRIPTION DETAILS =====
                     string prescQuery = @"
-            SELECT medication, prescription_date, med_instructions 
-            FROM Prescription 
-            WHERE record_id = @RecordID 
-            ORDER BY prescription_date DESC";
+                    SELECT medication, prescription_date, med_instructions 
+                    FROM Prescription 
+                    WHERE record_id = @RecordID 
+                    ORDER BY prescription_date DESC";
 
                     SqlCommand prescCmd = new SqlCommand(prescQuery, conn);
                     prescCmd.Parameters.AddWithValue("@RecordID", recordID);
@@ -516,7 +515,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ HELPER METHODS
         private string GetPatientGender()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT Gender FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -576,7 +575,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     conn.Open();
 
@@ -643,7 +642,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "UPDATE Patients SET IsArchived = 1 WHERE PatientID = @PatientID";
                     SqlCommand cmd = new SqlCommand(query, conn);

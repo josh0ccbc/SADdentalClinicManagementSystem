@@ -8,7 +8,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class LoginForm : MaterialForm
     {
-        string connectionString = @"Data Source=localhost;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int LoggedInUserID { get; set; }
         public string LoggedInUsername { get; set; }
 
@@ -58,7 +57,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ AUTHENTICATE USER
         private bool AuthenticateUser(string username, string password)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT UserID, PasswordHash, FullName FROM Users WHERE Username = @Username AND IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -94,7 +93,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ LOG AUDIT TRAIL
         private void LogAuditTrail(int userID, string action)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)";
                 SqlCommand cmd = new SqlCommand(query, conn);

@@ -52,8 +52,8 @@ namespace M.A_Florencio_Dental_Records
             DPpatientid.Text = PatientID;
             lblName.Text = name;
             lblAge.Text = age + "";
-            lblGenderAge.Text = gender;
-            lblContact.Text = contact;
+            lblGenderAge.Text = SafeDecrypt(gender);    // ✅ Decrypt
+            lblContact.Text = SafeDecrypt(contact);      // ✅ Decrypt
             BDAYage.Text = BirthDate.ToString("MMM dd, yyyy");
         }
 
@@ -88,11 +88,9 @@ namespace M.A_Florencio_Dental_Records
         // ✅ NEW METHOD - RELOAD PATIENT DATA ON THIS CARD
         private void ReloadPatientCard()
         {
-            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -105,7 +103,7 @@ namespace M.A_Florencio_Dental_Records
                     {
                         // ✅ REFRESH ALL FIELDS ON THIS CARD
                         lblName.Text = reader["FullName"].ToString();
-                        lblGenderAge.Text = reader["Gender"].ToString();
+                        lblGenderAge.Text = SafeDecrypt(reader["Gender"].ToString()); // ✅ was missing SafeDecrypt
                         lblAge.Text = reader["Age"].ToString();
                         lblContact.Text = SafeDecrypt(reader["ContactNumber"]);
                         BDAYage.Text = Convert.ToDateTime(reader["BirthDate"]).ToString("MMM dd, yyyy");
@@ -133,10 +131,9 @@ namespace M.A_Florencio_Dental_Records
 
         private void ArchivePatient()
         {
-            string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "UPDATE Patients SET IsArchived = 1 WHERE PatientID = @PatientID";
                     SqlCommand cmd = new SqlCommand(query, conn);

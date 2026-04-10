@@ -14,7 +14,6 @@ namespace M.A_Florencio_Dental_Records
     public partial class AddPatientInfo : UserControl
     {
         public PatientData patientData;
-        private string connectionString = @"Data Source=localhost;Initial Catalog=DentalClinicDB;Integrated Security=True";
 
         public AddPatientInfo()
         {
@@ -215,7 +214,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoadPatientInfo(int patientID)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -302,7 +301,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = @"
                 INSERT INTO Patients 

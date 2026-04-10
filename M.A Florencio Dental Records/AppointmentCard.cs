@@ -13,8 +13,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class AppointmentCard : UserControl
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
         public int AppointmentID { get; set; }
         public string PatientName { get; set; }
         public DateTime AppointmentDate { get; set; }
@@ -92,7 +90,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "UPDATE Appointments SET Status = 'Cancelled' WHERE AppointmentID = @AppointmentID";
                     SqlCommand cmd = new SqlCommand(query, conn);

@@ -16,8 +16,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class DBcontrol : UserControl
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
         public DBcontrol()
         {
             InitializeComponent();
@@ -65,12 +63,12 @@ namespace M.A_Florencio_Dental_Records
         {
             int count = 0;
 
-            using (SqlConnection con = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 try
                 {
-                    con.Open();
-                    SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Patients", con);
+                    conn.Open();
+                    SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Patients", conn);
                     count = (int)cmd.ExecuteScalar();
                 }
                 catch (Exception ex)
@@ -110,7 +108,7 @@ namespace M.A_Florencio_Dental_Records
         {
             int count = 0;
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT COUNT(*) FROM Appointments WHERE AppointmentDate = @today";
 
@@ -128,7 +126,7 @@ namespace M.A_Florencio_Dental_Records
         {
             int count = 0;
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"SELECT COUNT(*) 
                          FROM Appointments

@@ -14,7 +14,6 @@ namespace M.A_Florencio_Dental_Records
     public partial class ArchivePatients : UserControl
     {
         public int PatientID;
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
 
         public ArchivePatients()
         {
@@ -57,7 +56,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     // Set IsArchived back to 0
                     string query = "UPDATE Patients SET IsArchived = 0 WHERE PatientID = @PatientID";
@@ -107,7 +106,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     conn.Open();
 

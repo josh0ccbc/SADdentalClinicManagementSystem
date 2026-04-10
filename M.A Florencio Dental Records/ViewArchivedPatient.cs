@@ -13,7 +13,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class ViewArchivedPatient : UserControl
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int PatientID { get; set; }
 
         public ViewArchivedPatient()
@@ -29,7 +28,7 @@ namespace M.A_Florencio_Dental_Records
         {
             PatientID = patientID;
 
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -105,7 +104,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "UPDATE Patients SET IsArchived = 0 WHERE PatientID = @PatientID";
                     SqlCommand cmd = new SqlCommand(query, conn);

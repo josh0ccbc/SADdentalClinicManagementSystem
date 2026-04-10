@@ -13,7 +13,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class appointmentsControl : UserControl
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
         private bool isLoading = false;
 
         private int currentPage = 1;
@@ -51,7 +50,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "SELECT COUNT(*) FROM Appointments WHERE Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -90,7 +89,7 @@ namespace M.A_Florencio_Dental_Records
 
                 panelPagination.SuspendLayout();
 
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = @"
                         SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
@@ -195,7 +194,7 @@ namespace M.A_Florencio_Dental_Records
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "SELECT DISTINCT CAST(AppointmentDate AS DATE) FROM Appointments WHERE Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -231,7 +230,7 @@ namespace M.A_Florencio_Dental_Records
 
                 flowAppointments.SuspendLayout();
 
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
                                            s.ServiceName, a.Status, a.Notes
@@ -332,34 +331,31 @@ namespace M.A_Florencio_Dental_Records
 
             if (appt != null)
             {
-                int patientID = await GetPatientIDAsync(appt.PatientName);
+                // ✅ Use PatientID directly from appointment - no name lookup needed
+                CompleteAppointmentForm completeForm = new CompleteAppointmentForm(appointmentID, appt, appt.PatientID);
 
-                if (patientID > 0)
+                if (completeForm.ShowDialog() == DialogResult.OK)
                 {
-                    CompleteAppointmentForm completeForm = new CompleteAppointmentForm(appointmentID, appt, patientID);
+                    // ✅ Only delete the appointment row - NEVER delete medical records
+                    await DeleteAppointmentAsync(appointmentID);
 
-                    if (completeForm.ShowDialog() == DialogResult.OK)
+                    isLoading = true;
+                    try
                     {
-                        await DeleteAppointmentAsync(appointmentID);
-
-                        isLoading = true;
-                        try
-                        {
-                            await LoadAppointmentDatesAsync();
-                            await LoadAppointmentsAsync(monthCalendar1.SelectionStart);
-                            currentPage = 1;
-                            await LoadAllAppointmentsPagedAsync(currentPage);
-                        }
-                        finally
-                        {
-                            isLoading = false;
-                        }
+                        await LoadAppointmentDatesAsync();
+                        await LoadAppointmentsAsync(monthCalendar1.SelectionStart);
+                        currentPage = 1;
+                        await LoadAllAppointmentsPagedAsync(currentPage);
+                    }
+                    finally
+                    {
+                        isLoading = false;
                     }
                 }
-                else
-                {
-                    MessageBox.Show("Patient not found");
-                }
+            }
+            else
+            {
+                MessageBox.Show("Appointment not found");
             }
         }
 
@@ -367,10 +363,11 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
-                    string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
-                                           s.ServiceName, a.Status
+                    // ✅ Include PatientID directly from Appointments table
+                    string query = @"SELECT a.AppointmentID, a.PatientID, a.PatientName, a.AppointmentDate, 
+                                           a.AppointmentTime, s.ServiceName, a.Status
                                     FROM Appointments a
                                     LEFT JOIN DentalServices s ON a.ServiceID = s.ServiceID
                                     WHERE a.AppointmentID = @AppointmentID";
@@ -387,6 +384,7 @@ namespace M.A_Florencio_Dental_Records
                             return new AppointmentDetail
                             {
                                 AppointmentID = Convert.ToInt32(reader["AppointmentID"]),
+                                PatientID = Convert.ToInt32(reader["PatientID"]),  // ✅ Direct from DB
                                 PatientName = reader["PatientName"].ToString(),
                                 AppointmentDate = Convert.ToDateTime(reader["AppointmentDate"]),
                                 AppointmentTime = TimeSpan.Parse(reader["AppointmentTime"].ToString()),
@@ -405,35 +403,26 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
+        // ✅ FIXED: Only deletes the appointment - medical records are NEVER deleted
         private async Task DeleteAppointmentAsync(int appointmentID)
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     await conn.OpenAsync();
 
-                    // 1. Delete Prescriptions linked to this appointment's medical records
-                    string deletePrescriptions = @"
-                DELETE FROM Prescription 
-                WHERE record_id IN (
-                    SELECT record_id FROM MedicalRecords WHERE appointment_id = @AppointmentID
-                )";
-                    SqlCommand cmd1 = new SqlCommand(deletePrescriptions, conn);
+                    // ✅ First: unlink medical records from this appointment
+                    string unlinkMedical = "UPDATE MedicalRecords SET appointment_id = NULL WHERE appointment_id = @AppointmentID";
+                    SqlCommand cmd1 = new SqlCommand(unlinkMedical, conn);
                     cmd1.Parameters.AddWithValue("@AppointmentID", appointmentID);
                     await cmd1.ExecuteNonQueryAsync();
 
-                    // 2. Delete Medical Records linked to this appointment
-                    string deleteMedical = "DELETE FROM MedicalRecords WHERE appointment_id = @AppointmentID";
-                    SqlCommand cmd2 = new SqlCommand(deleteMedical, conn);
+                    // ✅ Then: safe to delete the appointment
+                    string deleteAppointment = "DELETE FROM Appointments WHERE AppointmentID = @AppointmentID";
+                    SqlCommand cmd2 = new SqlCommand(deleteAppointment, conn);
                     cmd2.Parameters.AddWithValue("@AppointmentID", appointmentID);
                     await cmd2.ExecuteNonQueryAsync();
-
-                    // 3. Now safe to delete the Appointment
-                    string deleteAppointment = "DELETE FROM Appointments WHERE AppointmentID = @AppointmentID";
-                    SqlCommand cmd3 = new SqlCommand(deleteAppointment, conn);
-                    cmd3.Parameters.AddWithValue("@AppointmentID", appointmentID);
-                    await cmd3.ExecuteNonQueryAsync();
                 }
             }
             catch (Exception ex)
@@ -442,39 +431,12 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        private async Task<int> GetPatientIDAsync(string patientName)
-        {
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    string query = "SELECT PatientID FROM Patients WHERE FullName = @PatientName";
-                    SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.CommandTimeout = 30;
-                    cmd.Parameters.AddWithValue("@PatientName", patientName);
-
-                    await conn.OpenAsync();
-                    object result = await cmd.ExecuteScalarAsync();
-
-                    if (result != null)
-                        return Convert.ToInt32(result);
-
-                    return 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-                return 0;
-            }
-        }
-
         public async Task<int> GetTodayAppointmentsCountAsync()
         {
             try
             {
                 int count = 0;
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string query = "SELECT COUNT(*) FROM Appointments WHERE CAST(AppointmentDate AS DATE) = CAST(GETDATE() AS DATE) AND Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -512,6 +474,7 @@ namespace M.A_Florencio_Dental_Records
     public class AppointmentDetail
     {
         public int AppointmentID { get; set; }
+        public int PatientID { get; set; }      // ✅ Added - direct from Appointments table
         public string PatientName { get; set; }
         public DateTime AppointmentDate { get; set; }
         public TimeSpan AppointmentTime { get; set; }

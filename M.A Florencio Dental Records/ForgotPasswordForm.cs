@@ -8,8 +8,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class ForgotPasswordForm : MaterialForm
     {
-        string connectionString = @"Data Source=DESKTOP-ASL74A6;Initial Catalog=DentalClinicDB;Integrated Security=True";
-
         public ForgotPasswordForm()
         {
             InitializeComponent();
@@ -63,7 +61,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ GET USER ID BY EMAIL
         private int GetUserIDByEmail(string email)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT UserID FROM Users WHERE Email = @Email AND IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -89,7 +87,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ STORE RESET TOKEN
         private bool StoreResetToken(int userID, string token)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = @"
                     INSERT INTO PasswordResetTokens (UserID, Token, ExpiryDate)

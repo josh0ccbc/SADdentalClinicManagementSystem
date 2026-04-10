@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using M.A_Florencio_Dental_Records;
 
 namespace M.A_Florencio_Dental_Records
 {
@@ -11,11 +12,56 @@ namespace M.A_Florencio_Dental_Records
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // ✅ KEEP SHOWING LOGIN FORM UNTIL USER SUCCESSFULLY LOGS IN
+            // ✅ STEP 1: Check if connection settings exist
+            // If not, show setup wizard (only once on first run)
+            if (!ConnectionSettings.Exists())
+            {
+                ConnectionSetupForm setupForm = new ConnectionSetupForm();
+                if (setupForm.ShowDialog() != DialogResult.OK)
+                {
+                    // User cancelled setup
+                    MessageBox.Show(
+                        "Database connection setup is required to run this application.",
+                        "Setup Required",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    Application.Exit();
+                    return;
+                }
+            }
+
+            // ✅ STEP 2: Load connection settings globally
+            try
+            {
+                ConnectionSettings.Current = ConnectionSettings.Load();
+
+                // Test connection is valid
+                if (!ServerDiscovery.TestConnection(ConnectionSettings.Current.GetConnectionString()))
+                {
+                    MessageBox.Show(
+                        "Cannot connect to database. Please check your connection settings.",
+                        "Connection Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error loading connection settings: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
+
+            // ✅ STEP 3: LOGIN LOOP - Keep showing until successful login
             while (true)
             {
                 LoginForm loginForm = new LoginForm();
-
                 DialogResult result = loginForm.ShowDialog();
 
                 if (result == DialogResult.OK)
@@ -26,13 +72,13 @@ namespace M.A_Florencio_Dental_Records
                 else if (result == DialogResult.Cancel)
                 {
                     // User clicked X button or closed form
-                    Application.Exit();  // ✅ EXIT APPLICATION
+                    Application.Exit();
                     return;
                 }
                 // If anything else, loop continues (show login again)
             }
 
-            // After successful login, show main form
+            // ✅ STEP 4: After successful login, show main form
             Application.Run(new Form1());
         }
     }

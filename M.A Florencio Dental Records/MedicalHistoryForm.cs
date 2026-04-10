@@ -10,7 +10,6 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class MedicalHistoryForm : MaterialForm
     {
-        string connectionString = @"Data Source=localhost;Initial Catalog=DentalClinicDB;Integrated Security=True";
         public int PatientID { get; set; }
         private int currentTab = 0;
         private int totalTabs = 4;
@@ -56,7 +55,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void CheckGender()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT Gender FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -131,7 +130,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoadPatientMedicalHistory()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
                 string query = "SELECT * FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -256,7 +255,7 @@ namespace M.A_Florencio_Dental_Records
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
                 {
                     string checkQuery = "SELECT COUNT(*) FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                     SqlCommand checkCmd = new SqlCommand(checkQuery, conn);
@@ -299,9 +298,7 @@ namespace M.A_Florencio_Dental_Records
                     IsPregnant = @Pregnant,
                     IsNursing = @Nursing,
                     OnBirthControl = @BirthControl,
-                    BloodType = @BloodType,
-                    BleedingTime = @BleedingTime,
-                    BloodPressure = @BloodPressure
+                    BloodType = @BloodType
                     WHERE PatientID = @PatientID";
 
                         SqlCommand updateCmd = new SqlCommand(updateQuery, conn);
@@ -318,14 +315,14 @@ namespace M.A_Florencio_Dental_Records
                      LocalAestheticAllergy, PenicillinAllergy, SulfaAllergy, AspirinAllergy, LatexAllergy,
                      OtherAllergies, TakingPrescriptionMeds, MedicationList, UsesTobacco, UsesAlcoholDrugs,
                      HighBP, LowBP, HeartDisease, HeartMurmur, Diabetes, Thyroid, Asthma, RespiratoryProblems, Arthritis, KidneyDisease,
-                     IsPregnant, IsNursing, OnBirthControl, BloodType, BleedingTime, BloodPressure)
+                     IsPregnant, IsNursing, OnBirthControl, BloodType)
                     VALUES
                     (@PatientID, @IsHealthy, @UnderTreatment, @TreatmentDetails, @SeriousIllness, @IllnessDetails,
                      @Hospitalized, @HospitalizationDetails,
                      @LocalAnesthetic, @Penicillin, @Sulfa, @Aspirin, @Latex,
                      @OtherAllergies, @PrescriptionMeds, @MedicationList, @Tobacco, @AlcoholDrugs,
                      @HighBP, @LowBP, @HeartDisease, @HeartMurmur, @Diabetes, @Thyroid, @Asthma, @RespiratoryProblems, @Arthritis, @KidneyDisease,
-                     @Pregnant, @Nursing, @BirthControl, @BloodType, @BleedingTime, @BloodPressure)";
+                     @Pregnant, @Nursing, @BirthControl, @BloodType)";
 
                         SqlCommand insertCmd = new SqlCommand(insertQuery, conn);
                         AddMedicalHistoryParameters(insertCmd);
@@ -425,11 +422,6 @@ namespace M.A_Florencio_Dental_Records
             {
                 cmd.Parameters.AddWithValue("@BloodType", CryptoHelper.Encrypt(bloodType));
             }
-
-            // ===== ENCRYPTED FIELDS: Bleeding Time and Blood Pressure =====
-            // These are optional fields - add empty strings if not filled
-            cmd.Parameters.AddWithValue("@BleedingTime", "");  // Can be added to UI if needed
-            cmd.Parameters.AddWithValue("@BloodPressure", ""); // Can be added to UI if needed
         }
 
         private void UpdateNavigation()

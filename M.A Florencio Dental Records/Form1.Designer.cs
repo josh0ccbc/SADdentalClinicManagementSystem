@@ -35,6 +35,7 @@
             this.button3 = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -138,10 +139,21 @@
             this.materialButton1.UseVisualStyleBackColor = true;
             this.materialButton1.Click += new System.EventHandler(this.btnLogout_Click);
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(81, 301);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 10;
+            this.button5.Text = "TEST";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(1178, 585);
+            this.ClientSize = new System.Drawing.Size(1194, 624);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button4);
@@ -173,6 +185,7 @@
         public System.Windows.Forms.Panel FormPnl;
         private System.Windows.Forms.Button button3;
         private MaterialSkin.Controls.MaterialButton materialButton1;
+        private System.Windows.Forms.Button button5;
     }
 }
 
