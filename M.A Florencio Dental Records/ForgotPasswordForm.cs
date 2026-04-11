@@ -33,7 +33,9 @@ namespace M.A_Florencio_Dental_Records
                 return;
             }
 
-            int userID = GetUserIDByEmail(txtEmail.Text);
+            // ✅ Check if email exists and get user info
+            string role = "";
+            int userID = GetUserIDByEmail(txtEmail.Text, out role);
 
             if (userID == 0)
             {
@@ -41,39 +43,80 @@ namespace M.A_Florencio_Dental_Records
                 return;
             }
 
-            // Generate reset token
-            string resetToken = GenerateResetToken();
-
-            // Store token in database
-            if (StoreResetToken(userID, resetToken))
+            // ✅ Block admin from using forgot password
+            if (role == "Admin")
             {
-                MessageBox.Show(
-                    "Password reset token: " + resetToken + "\n\nUse this token to reset your password.\n(In production, this would be sent via email)",
-                    "Reset Token",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageBox.Show("Admin accounts cannot use forgot password.\nContact your system administrator.",
+                    "Not Allowed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                // ✅ CLOSE THIS FORM (returns to LoginForm)
-                this.Close();
+            // ✅ Staff — require admin password to authorize reset
+            AdminPasswordDialog adminPrompt = new AdminPasswordDialog();
+            if (adminPrompt.ShowDialog() != DialogResult.OK)
+            {
+                MessageBox.Show("Password reset cancelled. Admin authorization required.",
+                    "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // ✅ Admin authorized — prompt for new password
+            SetNewPasswordDialog setPassword = new SetNewPasswordDialog();
+            if (setPassword.ShowDialog() == DialogResult.OK)
+            {
+                string newHash = PasswordHelper.HashPassword(setPassword.NewPassword);
+                ResetStaffPassword(userID, newHash);
+            }
+        }
+
+        private void ResetStaffPassword(int userID, string newHash)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                {
+                    string query = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@PasswordHash", newHash);
+                    cmd.Parameters.AddWithValue("@UserID", userID);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+
+                    MessageBox.Show("Password reset successfully! The staff member can now log in with the new password.",
+                        "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error resetting password: " + ex.Message);
             }
         }
 
         // ✅ GET USER ID BY EMAIL
-        private int GetUserIDByEmail(string email)
+        private int GetUserIDByEmail(string email, out string role)
         {
+            role = "";
             using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
-                string query = "SELECT UserID FROM Users WHERE Email = @Email AND IsActive = 1";
+                string query = "SELECT UserID, Role FROM Users WHERE Email = @Email AND IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@Email", email);
 
                 conn.Open();
-                object result = cmd.ExecuteScalar();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    role = reader["Role"].ToString();
+                    int id = Convert.ToInt32(reader["UserID"]);
+                    conn.Close();
+                    return id;
+                }
+
                 conn.Close();
-
-                if (result != null)
-                    return Convert.ToInt32(result);
-
                 return 0;
             }
         }

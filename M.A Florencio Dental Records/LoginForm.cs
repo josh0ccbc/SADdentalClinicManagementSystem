@@ -18,7 +18,6 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            // Set MaterialSkin theme
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
@@ -26,6 +25,13 @@ namespace M.A_Florencio_Dental_Records
                 Primary.Teal500, Primary.Teal700, Primary.Teal200, Accent.Teal200, TextShade.WHITE);
 
             this.StartPosition = FormStartPosition.CenterScreen;
+
+            // ✅ Apply fonts AFTER MaterialSkin loads (it overrides form-level fonts)
+            txtUsername.Font = new System.Drawing.Font("Segoe UI", 10f);
+            txtPassword.Font = new System.Drawing.Font("Segoe UI", 10f);
+            // Add any other controls you want styled here
+
+            this.Shown += LoginForm_Shown;
         }
 
         // ✅ LOGIN BUTTON
@@ -59,7 +65,7 @@ namespace M.A_Florencio_Dental_Records
         {
             using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
             {
-                string query = "SELECT UserID, PasswordHash, FullName FROM Users WHERE Username = @Username AND IsActive = 1";
+                string query = "SELECT UserID, PasswordHash, FullName, Role FROM Users WHERE Username = @Username AND IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@Username", username);
 
@@ -75,6 +81,10 @@ namespace M.A_Florencio_Dental_Records
                     {
                         LoggedInUserID = Convert.ToInt32(reader["UserID"]);
                         LoggedInUsername = username;
+
+                        LoginForm.CurrentUserID = LoggedInUserID;
+                        LoginForm.CurrentUsername = username;
+                        LoginForm.CurrentUserRole = reader["Role"].ToString();
 
                         conn.Close();
 
@@ -162,5 +172,13 @@ namespace M.A_Florencio_Dental_Records
 
         public static int CurrentUserID { get; set; }
         public static string CurrentUsername { get; set; }
+        public static string CurrentUserRole { get; set; }
+
+        private void LoginForm_Shown(object sender, EventArgs e)
+        {
+            txtUsername.Font = new System.Drawing.Font("Segoe UI", 10f);
+            txtPassword.Font = new System.Drawing.Font("Segoe UI", 10f);
+            // Add whatever other controls need styling
+        }
     }
 }

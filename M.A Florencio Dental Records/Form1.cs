@@ -247,5 +247,30 @@ namespace M.A_Florencio_Dental_Records
                 MessageBox.Show("❌ Mismatch!", "Test Failed");
             }
         }
+
+        private void btnSecurityKeyBackup_Click(object sender, EventArgs e)
+        {
+            // Only allow admin users
+            if (LoginForm.CurrentUserRole != "Admin")
+            {
+                MessageBox.Show("Access denied. Admin privileges required.",
+                    "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var form = new AdminKeyBackupForm();
+            form.ShowDialog();
+        }
+
+        private void btnMockData_Click(object sender, EventArgs e)
+        {
+            if (LoginForm.CurrentUserRole != "Admin")
+            {
+                MessageBox.Show("Admin only.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            var form = new MockDataForm();
+            form.ShowDialog();
+        }
     }
 }

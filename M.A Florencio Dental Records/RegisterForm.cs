@@ -57,7 +57,7 @@ namespace M.A_Florencio_Dental_Records
                     cmd.Parameters.AddWithValue("@Email", email);
                     cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
                     cmd.Parameters.AddWithValue("@FullName", fullName);
-                    cmd.Parameters.AddWithValue("@Role", "Dentist");
+                    cmd.Parameters.AddWithValue("@Role", "Staff");
                     cmd.Parameters.AddWithValue("@IsActive", 1);
 
                     conn.Open();

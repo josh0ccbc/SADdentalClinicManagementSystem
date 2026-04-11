@@ -75,11 +75,23 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
+            // ✅ If Staff, require admin password before editing
+            if (LoginForm.CurrentUserRole == "Staff")
+            {
+                AdminPasswordDialog adminPrompt = new AdminPasswordDialog();
+                if (adminPrompt.ShowDialog() != DialogResult.OK)
+                {
+                    MessageBox.Show("Edit cancelled. Admin authorization required.",
+                        "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+
+            // ✅ Proceed with edit
             EditPatientForm editForm = new EditPatientForm(PatientID);
 
             if (editForm.ShowDialog() == DialogResult.OK)
             {
-                // ✅ RELOAD THIS PATIENT CARD WITH UPDATED DATA
                 ReloadPatientCard();
                 MessageBox.Show("Patient updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

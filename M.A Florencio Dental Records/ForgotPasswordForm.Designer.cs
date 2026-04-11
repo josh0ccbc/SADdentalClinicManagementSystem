@@ -45,14 +45,14 @@
             // 
             // txtEmail
             // 
-            this.txtEmail.Location = new System.Drawing.Point(24, 115);
+            this.txtEmail.Location = new System.Drawing.Point(24, 108);
             this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(100, 25);
+            this.txtEmail.Size = new System.Drawing.Size(238, 25);
             this.txtEmail.TabIndex = 1;
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(24, 156);
+            this.btnReset.Location = new System.Drawing.Point(187, 149);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(75, 23);
             this.btnReset.TabIndex = 2;
@@ -62,7 +62,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(24, 185);
+            this.btnCancel.Location = new System.Drawing.Point(106, 149);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -74,17 +74,19 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1200, 588);
+            this.ClientSize = new System.Drawing.Size(302, 202);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.txtEmail);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.MaximizeBox = false;
             this.Name = "ForgotPasswordForm";
             this.Padding = new System.Windows.Forms.Padding(4, 84, 4, 4);
+            this.Sizable = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "ForgotPasswordForm";
+            this.Text = "Reset Staff Password";
             this.Load += new System.EventHandler(this.ForgotPasswordForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

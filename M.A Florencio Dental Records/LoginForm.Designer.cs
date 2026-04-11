@@ -126,8 +126,7 @@
             // 
             // LoginForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(473, 375);
             this.Controls.Add(this.materialButton2);
             this.Controls.Add(this.materialButton1);
@@ -142,9 +141,11 @@
             this.MinimizeBox = false;
             this.Name = "LoginForm";
             this.Padding = new System.Windows.Forms.Padding(4, 84, 4, 4);
+            this.Sizable = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "M.A Florencio Dental Clinic";
             this.Load += new System.EventHandler(this.LoginForm_Load);
+            this.Shown += new System.EventHandler(this.LoginForm_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

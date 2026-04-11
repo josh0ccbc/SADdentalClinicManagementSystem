@@ -34,7 +34,6 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnMarkAsDone = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
-            this.btnEdit = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblPatientName
@@ -80,7 +79,7 @@
             this.btnMarkAsDone.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.btnMarkAsDone.FlatAppearance.BorderSize = 0;
             this.btnMarkAsDone.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnMarkAsDone.Location = new System.Drawing.Point(728, 9);
+            this.btnMarkAsDone.Location = new System.Drawing.Point(761, 8);
             this.btnMarkAsDone.Name = "btnMarkAsDone";
             this.btnMarkAsDone.Size = new System.Drawing.Size(25, 25);
             this.btnMarkAsDone.TabIndex = 8;
@@ -104,28 +103,12 @@
             this.btnDelete.MouseEnter += new System.EventHandler(this.btnDelete_MouseEnter_1);
             this.btnDelete.MouseLeave += new System.EventHandler(this.btnDelete_MouseLeave_1);
             // 
-            // btnEdit
-            // 
-            this.btnEdit.BackgroundImage = global::M.A_Florencio_Dental_Records.Properties.Resources.edit;
-            this.btnEdit.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.btnEdit.FlatAppearance.BorderSize = 0;
-            this.btnEdit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEdit.Location = new System.Drawing.Point(765, 7);
-            this.btnEdit.Name = "btnEdit";
-            this.btnEdit.Size = new System.Drawing.Size(25, 25);
-            this.btnEdit.TabIndex = 6;
-            this.btnEdit.UseVisualStyleBackColor = true;
-            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
-            this.btnEdit.MouseEnter += new System.EventHandler(this.btnEdit_MouseEnter_1);
-            this.btnEdit.MouseLeave += new System.EventHandler(this.btnEdit_MouseLeave_1);
-            // 
             // AppointmentCard
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Controls.Add(this.btnMarkAsDone);
             this.Controls.Add(this.btnDelete);
-            this.Controls.Add(this.btnEdit);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.lblDateTime);
             this.Controls.Add(this.lblService);
@@ -144,7 +127,6 @@
         private System.Windows.Forms.Label lblService;
         private System.Windows.Forms.Label lblDateTime;
         private System.Windows.Forms.Label lblStatus;
-        private System.Windows.Forms.Button btnEdit;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnMarkAsDone;
     }

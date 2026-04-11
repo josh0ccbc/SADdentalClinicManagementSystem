@@ -75,6 +75,11 @@ namespace M.A_Florencio_Dental_Records
             RepositionPanels(); // ✅ initial layout
         }
 
+        private string GetCurrentUserRole()
+        {
+            return LoginForm.CurrentUserRole;
+        }
+
         // ✅ PERSONAL INFORMATION WITH DECRYPTION
         private void LoadPersonalInformation()
         {
@@ -560,12 +565,23 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            // ✅ OPEN EDIT FORM
+            // ✅ If Staff, require admin password before editing
+            if (GetCurrentUserRole() == "Staff")
+            {
+                AdminPasswordDialog adminPrompt = new AdminPasswordDialog();
+                if (adminPrompt.ShowDialog() != DialogResult.OK)
+                {
+                    MessageBox.Show("Edit cancelled. Admin authorization required.",
+                        "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+
+            // ✅ Proceed with edit
             EditPatientForm editForm = new EditPatientForm(PatientID);
 
             if (editForm.ShowDialog() == DialogResult.OK)
             {
-                // ✅ RELOAD PATIENT DATA
                 LoadPatientDetails(PatientID);
                 MessageBox.Show("Patient updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -617,25 +633,35 @@ namespace M.A_Florencio_Dental_Records
         private void btnDelete_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
-                "Are you sure you want to PERMANENTLY DELETE this patient?\n\nThis action CANNOT be undone!",
-                "Permanent Delete",
+        "Are you sure you want to PERMANENTLY DELETE this patient?\n\nThis action CANNOT be undone!",
+        "Permanent Delete",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Warning);
+
+            if (result != DialogResult.Yes) return;
+
+            DialogResult confirm = MessageBox.Show(
+                "All patient data and appointments will be deleted.\n\nAre you absolutely sure?",
+                "Confirm Permanent Delete",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-            if (result == DialogResult.Yes)
-            {
-                // Double confirmation for safety
-                DialogResult confirm = MessageBox.Show(
-                    "All patient data and appointments will be deleted.\n\nAre you absolutely sure?",
-                    "Confirm Permanent Delete",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
+            if (confirm != DialogResult.Yes) return;
 
-                if (confirm == DialogResult.Yes)
+            // ✅ If Staff, require admin password
+            if (GetCurrentUserRole() == "Staff")
+            {
+                AdminPasswordDialog adminPrompt = new AdminPasswordDialog();
+                if (adminPrompt.ShowDialog() != DialogResult.OK)
                 {
-                    PermanentlyDeletePatient();
+                    MessageBox.Show("Delete cancelled. Admin authorization required.",
+                        "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
             }
+
+            // ✅ Proceed with deletion
+            PermanentlyDeletePatient();
         }
 
         private void ArchivePatient()
@@ -685,5 +711,10 @@ namespace M.A_Florencio_Dental_Records
             btnToggleMedicalRecords.Text = isMedicalRecordsExpanded ? "Medical Records ▼" : "Medical Records ▲";
             RepositionPanels();
         }
+    }
+    public static class UserSession
+    {
+        public static string CurrentUsername { get; set; }
+        public static string CurrentRole { get; set; }
     }
 }

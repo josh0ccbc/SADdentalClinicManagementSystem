@@ -91,6 +91,15 @@
     <Compile Include="AddPrescriptionDialog.Designer.cs">
       <DependentUpon>AddPrescriptionDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="AdminKeyBackupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdminPasswordDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdminPasswordDialog.Designer.cs">
+      <DependentUpon>AdminPasswordDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="AppointmentCard.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -162,6 +171,7 @@
     <Compile Include="Form2.Designer.cs">
       <DependentUpon>Form2.cs</DependentUpon>
     </Compile>
+    <Compile Include="KeyBackupManager.cs" />
     <Compile Include="LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -173,6 +183,12 @@
     </Compile>
     <Compile Include="MedicalHistoryForm.Designer.cs">
       <DependentUpon>MedicalHistoryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MockDataForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MockDataForm.Designer.cs">
+      <DependentUpon>MockDataForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PasswordHelper.cs" />
     <Compile Include="Patient.cs">
@@ -203,6 +219,12 @@
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ServerDiscovery.cs" />
+    <Compile Include="SetNewPasswordDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetNewPasswordDialog.Designer.cs">
+      <DependentUpon>SetNewPasswordDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ViewArchivedPatient.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -214,6 +236,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddPrescriptionDialog.resx">
       <DependentUpon>AddPrescriptionDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdminPasswordDialog.resx">
+      <DependentUpon>AdminPasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AppointmentCard.resx">
       <DependentUpon>AppointmentCard.cs</DependentUpon>
@@ -254,6 +279,9 @@
     <EmbeddedResource Include="MedicalHistoryForm.resx">
       <DependentUpon>MedicalHistoryForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MockDataForm.resx">
+      <DependentUpon>MockDataForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Patient.resx">
       <DependentUpon>Patient.cs</DependentUpon>
     </EmbeddedResource>
@@ -275,6 +303,9 @@
     </Compile>
     <EmbeddedResource Include="RegisterForm.resx">
       <DependentUpon>RegisterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SetNewPasswordDialog.resx">
+      <DependentUpon>SetNewPasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ViewArchivedPatient.resx">
       <DependentUpon>ViewArchivedPatient.cs</DependentUpon>

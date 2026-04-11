@@ -68,11 +68,6 @@ namespace M.A_Florencio_Dental_Records
             OnMarkAsDone?.Invoke(AppointmentID);
         }
 
-        private void btnEdit_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Edit appointment ID: " + AppointmentID);
-        }
-
         private void btnDelete_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
@@ -107,11 +102,6 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        private void btnEdit_MouseEnter(object sender, EventArgs e)
-        {
-            btnEdit.BackgroundImage = Properties.Resources.edit2;
-        }
-
         private void btnEdit_MouseLeave(object sender, EventArgs e)
         {
         }
@@ -142,16 +132,6 @@ namespace M.A_Florencio_Dental_Records
         private void btnDelete_MouseLeave_1(object sender, EventArgs e)
         {
             btnDelete.BackgroundImage = Properties.Resources.cancel;
-        }
-
-        private void btnEdit_MouseEnter_1(object sender, EventArgs e)
-        {
-            btnEdit.BackgroundImage = Properties.Resources.edit2;
-        }
-
-        private void btnEdit_MouseLeave_1(object sender, EventArgs e)
-        {
-            btnEdit.BackgroundImage = Properties.Resources.edit;
         }
 
         private void btnMarkAsDone_MouseEnter(object sender, EventArgs e)

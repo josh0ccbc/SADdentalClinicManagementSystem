@@ -28,13 +28,8 @@ public static class CryptoHelper
             System.Diagnostics.Debug.WriteLine("[ENCRYPT] Starting encryption");
 
             // Step 1: Get or create the protected key
+            // ✅ No null check needed — GetOrCreateAesKey() now throws instead of returning null
             byte[] aesKey = GetOrCreateAesKey();
-            if (aesKey == null || aesKey.Length == 0)
-            {
-                System.Diagnostics.Debug.WriteLine("[ENCRYPT] ❌ Failed to get AES key");
-                throw new Exception("Failed to initialize encryption key");
-            }
-
             System.Diagnostics.Debug.WriteLine($"[ENCRYPT] AES key size: {aesKey.Length} bytes");
 
             // Step 2: Use AES with random IV
@@ -72,9 +67,30 @@ public static class CryptoHelper
                 }
             }
         }
+        catch (CryptographicException ex)
+        {
+            // ✅ DPAPI failure — cannot access key on this machine/user
+            System.Diagnostics.Debug.WriteLine($"[ENCRYPT] ❌ DPAPI/Crypto failure: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ENCRYPT] Stack: {ex.StackTrace}");
+
+            System.Windows.Forms.MessageBox.Show(
+                "❌ Cannot encrypt patient data.\n\n" +
+                "This may happen if:\n" +
+                "  • The app was moved to a new PC without restoring the key backup\n" +
+                "  • You are logged in as a different Windows user\n" +
+                "  • The encryption key was corrupted\n\n" +
+                "Go to: Admin Panel → Security → Import Key Backup\n\n" +
+                "Contact your system administrator if this persists.",
+                "Encryption Error — Action Required",
+                System.Windows.Forms.MessageBoxButtons.OK,
+                System.Windows.Forms.MessageBoxIcon.Error);
+
+            return ""; // ✅ Return empty — do NOT save corrupted/unencrypted data
+        }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ENCRYPT] ❌ Error: {ex.Message}");
+            // ✅ Unexpected error — log it but don't crash the app
+            System.Diagnostics.Debug.WriteLine($"[ENCRYPT] ❌ Unexpected error: {ex.Message}");
             System.Diagnostics.Debug.WriteLine($"[ENCRYPT] Stack: {ex.StackTrace}");
             return "";
         }
@@ -94,13 +110,8 @@ public static class CryptoHelper
             System.Diagnostics.Debug.WriteLine("[DECRYPT] Starting decryption");
 
             // Step 1: Get the protected key
+            // ✅ No null check needed — GetOrCreateAesKey() now throws instead of returning null
             byte[] aesKey = GetOrCreateAesKey();
-            if (aesKey == null || aesKey.Length == 0)
-            {
-                System.Diagnostics.Debug.WriteLine("[DECRYPT] ❌ Failed to get AES key");
-                throw new Exception("Failed to initialize encryption key");
-            }
-
             System.Diagnostics.Debug.WriteLine($"[DECRYPT] AES key size: {aesKey.Length} bytes");
 
             // Step 2: Decode from base64 and extract IV
@@ -108,9 +119,7 @@ public static class CryptoHelper
             System.Diagnostics.Debug.WriteLine($"[DECRYPT] Decoded {buffer.Length} bytes from base64");
 
             if (buffer.Length < 16)
-            {
                 throw new Exception("Invalid ciphertext: too short (no IV)");
-            }
 
             // ✅ Extract IV from first 16 bytes
             byte[] iv = new byte[16];
@@ -138,9 +147,37 @@ public static class CryptoHelper
                 }
             }
         }
+        catch (CryptographicException ex)
+        {
+            // ✅ DPAPI failure — wrong machine or wrong Windows user
+            // This is the most dangerous failure — data exists but key cannot be unprotected
+            System.Diagnostics.Debug.WriteLine($"[DECRYPT] ❌ DPAPI/Crypto failure: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[DECRYPT] Stack: {ex.StackTrace}");
+
+            System.Windows.Forms.MessageBox.Show(
+                "❌ Cannot decrypt patient data.\n\n" +
+                "This may happen if:\n" +
+                "  • The app was moved to a new PC without restoring the key backup\n" +
+                "  • You are logged in as a different Windows user\n" +
+                "  • The encryption key was corrupted\n\n" +
+                "Go to: Admin Panel → Security → Import Key Backup\n\n" +
+                "Contact your system administrator if this persists.",
+                "Decryption Error — Action Required",
+                System.Windows.Forms.MessageBoxButtons.OK,
+                System.Windows.Forms.MessageBoxIcon.Error);
+
+            return "[ENCRYPTED - KEY MISMATCH]"; // ✅ Visible placeholder, not silent empty string
+        }
+        catch (FormatException ex)
+        {
+            // ✅ Base64 decode failed — data is corrupt or was never encrypted (legacy data)
+            System.Diagnostics.Debug.WriteLine($"[DECRYPT] ❌ Base64 format error: {ex.Message}");
+            return cipherText; // ✅ Return as-is (SafeDecrypt fallback behavior for legacy data)
+        }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[DECRYPT] ❌ Error: {ex.Message}");
+            // ✅ Unexpected error — log it but don't crash the app
+            System.Diagnostics.Debug.WriteLine($"[DECRYPT] ❌ Unexpected error: {ex.Message}");
             System.Diagnostics.Debug.WriteLine($"[DECRYPT] Stack: {ex.StackTrace}");
             return "";
         }
@@ -152,58 +189,62 @@ public static class CryptoHelper
     /// </summary>
     private static byte[] GetOrCreateAesKey()
     {
-        try
+        System.Diagnostics.Debug.WriteLine("[KEY] GetOrCreateAesKey() called");
+
+        // Step 1: Check if key exists in database
+        byte[] protectedKeyData = GetProtectedKeyFromDatabase(KEY_NAME);
+
+        if (protectedKeyData != null && protectedKeyData.Length > 0)
         {
-            System.Diagnostics.Debug.WriteLine("[KEY] GetOrCreateAesKey() called");
+            System.Diagnostics.Debug.WriteLine("[KEY] ✅ Found existing protected key in database");
 
-            // Step 1: Check if key exists in database
-            byte[] protectedKeyData = GetProtectedKeyFromDatabase(KEY_NAME);
+            // ✅ NO try-catch here — if DPAPI fails, we MUST NOT silently create a new key
+            // A failure here means: wrong machine, wrong user, or corrupt key
+            // Generating a new key would make ALL existing patient data permanently unreadable
+            byte[] unprotectedKey = ProtectedData.Unprotect(
+                protectedKeyData,
+                null,
+                DataProtectionScope.CurrentUser);
 
-            if (protectedKeyData != null && protectedKeyData.Length > 0)
-            {
-                System.Diagnostics.Debug.WriteLine("[KEY] ✅ Found existing protected key in database");
-
-                // Unprotect with DPAPI
-                byte[] unprotectedKey = ProtectedData.Unprotect(
-                    protectedKeyData,
-                    null, // No additional entropy
-                    DataProtectionScope.CurrentUser); // ⭐ Per-user isolation
-
-                System.Diagnostics.Debug.WriteLine($"[KEY] ✅ Unprotected key: {unprotectedKey.Length} bytes");
-                return unprotectedKey;
-            }
-
-            // Step 2: Key doesn't exist, create new one
-            System.Diagnostics.Debug.WriteLine("[KEY] ⚠️ No existing key found, generating new one");
-
-            byte[] newKey = new byte[KEY_SIZE_BYTES];
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(newKey);
-            }
-
-            System.Diagnostics.Debug.WriteLine($"[KEY] ✅ Generated new AES key: {newKey.Length} bytes");
-
-            // Step 3: Protect with DPAPI
-            byte[] protectedNewKey = ProtectedData.Protect(
-                newKey,
-                null, // No additional entropy
-                DataProtectionScope.CurrentUser); // ⭐ Per-user isolation
-
-            System.Diagnostics.Debug.WriteLine($"[KEY] ✅ Protected key: {protectedNewKey.Length} bytes");
-
-            // Step 4: Store in database
-            SaveProtectedKeyToDatabase(KEY_NAME, protectedNewKey, "CurrentUser");
-            System.Diagnostics.Debug.WriteLine("[KEY] ✅ Saved protected key to database");
-
-            return newKey;
+            System.Diagnostics.Debug.WriteLine($"[KEY] ✅ Unprotected key: {unprotectedKey.Length} bytes");
+            return unprotectedKey;
         }
-        catch (Exception ex)
+
+        // Step 2: Only reaches here on a FRESH INSTALL (no key in DB at all)
+        System.Diagnostics.Debug.WriteLine("[KEY] ⚠️ No existing key found — this should only happen on first run");
+
+        byte[] newKey = new byte[KEY_SIZE_BYTES];
+        using (var rng = new RNGCryptoServiceProvider())
         {
-            System.Diagnostics.Debug.WriteLine($"[KEY] ❌ Error: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"[KEY] Stack: {ex.StackTrace}");
-            return null;
+            rng.GetBytes(newKey);
         }
+
+        System.Diagnostics.Debug.WriteLine($"[KEY] ✅ Generated new AES key: {newKey.Length} bytes");
+
+        // Step 3: Protect with DPAPI
+        byte[] protectedNewKey = ProtectedData.Protect(
+            newKey,
+            null,
+            DataProtectionScope.CurrentUser);
+
+        System.Diagnostics.Debug.WriteLine($"[KEY] ✅ Protected key: {protectedNewKey.Length} bytes");
+
+        // Step 4: Store in database
+        SaveProtectedKeyToDatabase(KEY_NAME, protectedNewKey, "CurrentUser");
+        System.Diagnostics.Debug.WriteLine("[KEY] ✅ Saved protected key to database");
+
+        // ✅ PROMPT ADMIN TO BACK UP KEY IMMEDIATELY AFTER FIRST CREATION
+        System.Windows.Forms.MessageBox.Show(
+            "⚠️ First-Time Setup Detected\n\n" +
+            "An encryption key has been generated to protect all patient data.\n\n" +
+            "IMPORTANT: You must export a key backup immediately.\n" +
+            "Go to: Admin Panel → Security → Export Key Backup\n\n" +
+            "Without this backup, data cannot be recovered if this PC is replaced.",
+            "Action Required: Key Backup",
+            System.Windows.Forms.MessageBoxButtons.OK,
+            System.Windows.Forms.MessageBoxIcon.Warning);
+
+        return newKey;
     }
 
     /// <summary>
@@ -291,4 +332,38 @@ public static class CryptoHelper
             throw;
         }
     }
+    /// <summary>
+    /// Exposes the raw AES key for backup purposes only.
+    /// Only callable from KeyBackupManager.
+    /// </summary>
+    internal static byte[] GetAesKeyForBackup()
+    {
+        return GetOrCreateAesKey(); // Now throws on DPAPI failure — safe
+    }
+
+    /// <summary>
+    /// Deactivates all existing key records before restoring a backup.
+    /// </summary>
+    internal static void DeactivateExistingKeys()
+    {
+        using (var conn = new SqlConnection(GetConnectionString()))
+        {
+            conn.Open();
+            string sql = "UPDATE EncryptionKeys SET IsActive = 0 WHERE KeyName = @KeyName";
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@KeyName", KEY_NAME);
+                cmd.ExecuteNonQuery();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Saves a restored key after successful backup import.
+    /// </summary>
+    internal static void SaveRestoredKey(byte[] protectedKeyData)
+    {
+        SaveProtectedKeyToDatabase(KEY_NAME, protectedKeyData, "CurrentUser-Restored");
+    }
 }
+

@@ -27,16 +27,42 @@ namespace M.A_Florencio_Dental_Records
             btnView.BackgroundImage = Properties.Resources.view;
         }
 
+        private string GetCurrentUserRole()
+        {
+            return LoginForm.CurrentUserRole;
+        }
+
         public void SetPatient(string PatientID, string name, string gender, int age, string contact)
         {
             this.PatientID = Convert.ToInt32(PatientID);
             lblName.Text = name;
-            lblContact.Text = contact;
+            lblContact.Text = SafeDecrypt(contact);
         }
 
         private void ArchivePatients_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private string SafeDecrypt(object dbValue)
+        {
+            if (dbValue == DBNull.Value || dbValue == null)
+                return "";
+
+            string value = dbValue.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            try
+            {
+                return CryptoHelper.Decrypt(value);
+            }
+            catch
+            {
+                // If decryption fails, return the value as-is (for old unencrypted data)
+                return value;
+            }
         }
 
         private void btnUnarchive_Click(object sender, EventArgs e)
@@ -81,25 +107,35 @@ namespace M.A_Florencio_Dental_Records
         private void btnDelete_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
-                "Are you sure you want to PERMANENTLY DELETE this patient?\n\nThis action CANNOT be undone!",
-                "Permanent Delete",
+        "Are you sure you want to PERMANENTLY DELETE this patient?\n\nThis action CANNOT be undone!",
+        "Permanent Delete",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Warning);
+
+            if (result != DialogResult.Yes) return;
+
+            DialogResult confirm = MessageBox.Show(
+                "All patient data and appointments will be deleted.\n\nAre you absolutely sure?",
+                "Confirm Permanent Delete",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
-            if (result == DialogResult.Yes)
-            {
-                // Double confirmation for safety
-                DialogResult confirm = MessageBox.Show(
-                    "All patient data and appointments will be deleted.\n\nAre you absolutely sure?",
-                    "Confirm Permanent Delete",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
+            if (confirm != DialogResult.Yes) return;
 
-                if (confirm == DialogResult.Yes)
+            // ✅ If Staff, require admin password before deleting
+            if (GetCurrentUserRole() == "Staff")
+            {
+                AdminPasswordDialog adminPrompt = new AdminPasswordDialog();
+                if (adminPrompt.ShowDialog() != DialogResult.OK)
                 {
-                    PermanentlyDeletePatient();
+                    MessageBox.Show("Delete cancelled. Admin authorization required.",
+                        "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
             }
+
+            // ✅ Proceed with deletion
+            PermanentlyDeletePatient();
         }
 
         private void PermanentlyDeletePatient()
