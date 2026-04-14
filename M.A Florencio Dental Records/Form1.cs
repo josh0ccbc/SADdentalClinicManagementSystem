@@ -19,7 +19,9 @@ namespace M.A_Florencio_Dental_Records
 
         public int LoggedInUserID { get; set; }
         public string LoggedInUsername { get; set; }
-
+        private System.Windows.Forms.Timer _inactivityTimer;
+        private const int INACTIVITY_TIMEOUT_SECONDS = 300;
+        private int _inactivitySecondsRemaining;
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
@@ -31,32 +33,27 @@ namespace M.A_Florencio_Dental_Records
 
             if (result == DialogResult.Yes)
             {
-                // Log logout
                 LogAuditTrail(LoggedInUserID, "LOGOUT");
-
-                // ✅ CLOSE FORM1 - Program.cs will show login again
-                this.Close();
+                this.Close(); // Returns to the while loop in Program.cs → login shown again
             }
         }
 
         private void LogAuditTrail(int userID, string action)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            try
             {
-                string query = "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@UserID", userID);
-                cmd.Parameters.AddWithValue("@Action", action);
-                cmd.Parameters.AddWithValue("@IPAddress", "127.0.0.1");
-
-                try
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
+                    string query = "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)";
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@UserID", userID);
+                    cmd.Parameters.AddWithValue("@Action", action);
+                    cmd.Parameters.AddWithValue("@IPAddress", "127.0.0.1");
                     conn.Open();
                     cmd.ExecuteNonQuery();
-                    conn.Close();
                 }
-                catch { }
             }
+            catch { }
         }
 
         public Form1()
@@ -111,13 +108,53 @@ namespace M.A_Florencio_Dental_Records
         {
             LoggedInUserID = LoginForm.CurrentUserID;
             LoggedInUsername = LoginForm.CurrentUsername;
-
-            // Show username in form (optional)
             this.Text = "M.A. Florencio Dental Records - " + LoggedInUsername;
 
             LoadControl(new DBcontrol());
             FormPnl.Visible = true;
             ActivateButton(button1);
+
+            // ✅ Start inactivity timer
+            StartInactivityTimer();
+
+            // ✅ Hook mouse/keyboard activity on the form
+            this.MouseMove += ResetInactivityTimer;
+            this.KeyPress += ResetInactivityTimer;
+            Application.AddMessageFilter(new ActivityFilter(ResetInactivityTimer));
+        }
+
+        private void ResetInactivityTimer(object sender, EventArgs e)
+        {
+            _inactivitySecondsRemaining = INACTIVITY_TIMEOUT_SECONDS;
+        }
+
+        private void StartInactivityTimer()
+        {
+            _inactivitySecondsRemaining = INACTIVITY_TIMEOUT_SECONDS;
+
+            _inactivityTimer = new System.Windows.Forms.Timer();
+            _inactivityTimer.Interval = 1000;
+            _inactivityTimer.Tick += (s, e) =>
+            {
+                _inactivitySecondsRemaining--;
+
+                // ✅ Warn user 60 seconds before logout
+                if (_inactivitySecondsRemaining == 60)
+                {
+                    MessageBox.Show(
+                        "You will be automatically logged out in 60 seconds due to inactivity.",
+                        "Inactivity Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                if (_inactivitySecondsRemaining <= 0)
+                {
+                    _inactivityTimer.Stop();
+                    LogAuditTrail(LoggedInUserID, "AUTO_LOGOUT_INACTIVITY");
+                    this.Close();
+                }
+            };
+
+            _inactivityTimer.Start();
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -220,9 +257,23 @@ namespace M.A_Florencio_Dental_Records
 
         }
 
+        private class ActivityFilter : IMessageFilter
+        {
+            private readonly EventHandler _resetCallback;
+            public ActivityFilter(EventHandler callback) { _resetCallback = callback; }
+
+            public bool PreFilterMessage(ref Message m)
+            {
+                // WM_MOUSEMOVE = 0x200, WM_KEYDOWN = 0x100, WM_LBUTTONDOWN = 0x201
+                if (m.Msg == 0x200 || m.Msg == 0x100 || m.Msg == 0x201)
+                    _resetCallback(this, EventArgs.Empty);
+                return false;
+            }
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-
+            _inactivityTimer?.Stop();
         }
 
         private void button5_Click(object sender, EventArgs e)
@@ -271,6 +322,21 @@ namespace M.A_Florencio_Dental_Records
             }
             var form = new MockDataForm();
             form.ShowDialog();
+        }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            if (LoginForm.CurrentUserRole != "Admin")
+            {
+                MessageBox.Show("Access denied. Admins only.", "Restricted",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (DatabaseViewerForm viewer = new DatabaseViewerForm())
+            {
+                viewer.ShowDialog();
+            }
         }
     }
 }

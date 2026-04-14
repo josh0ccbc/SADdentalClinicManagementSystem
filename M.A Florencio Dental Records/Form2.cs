@@ -27,13 +27,9 @@ namespace M.A_Florencio_Dental_Records
         public Form2()
         {
             InitializeComponent();
-
             var materialSkinManager = MaterialSkinManager.Instance;
             materialSkinManager.AddFormToManage(this);
-
             materialSkinManager.Theme = MaterialSkinManager.Themes.LIGHT;
-
-
         }
 
         public void LoadControl(UserControl control)
@@ -50,9 +46,12 @@ namespace M.A_Florencio_Dental_Records
         private void button1_Click(object sender, EventArgs e)
         {
             returningToMain = true;
-
-            mainForm.LoadControl(new DBcontrol());
-            mainForm.Show();
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new DBcontrol());
+                mainForm.Show();
+                mainForm.BringToFront();
+            }
             this.Close();
         }
 
@@ -66,59 +65,36 @@ namespace M.A_Florencio_Dental_Records
             button1.BackgroundImage = Properties.Resources.ArrowBack;
         }
 
-        private void label5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label9_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox4_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        private void label5_Click(object sender, EventArgs e) { }
+        private void label9_Click(object sender, EventArgs e) { }
+        private void textBox4_TextChanged(object sender, EventArgs e) { }
 
         private void button2_Click(object sender, EventArgs e)
         {
             returningToMain = true;
-
-            mainForm.LoadControl(new DBcontrol());
-            mainForm.Show();
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new DBcontrol());
+                mainForm.Show();
+                mainForm.BringToFront();
+            }
             this.Close();
         }
 
-        private void button2_MouseHover(object sender, EventArgs e)
-        {
+        private void button2_MouseHover(object sender, EventArgs e) { }
+        private void Form2_MouseEnter(object sender, EventArgs e) { }
+        private void Form2_FormClosing(object sender, FormClosingEventArgs e) { }
 
+        private void Form2_FormClosing_1(object sender, FormClosingEventArgs e)
+        {
+            //// ✅ REMOVED Application.Exit() — it was killing the app on every close.
+            // Form2 should simply close. Form1 is always alive in the background.
+            // No special handling needed here anymore.
         }
 
-        private void Form2_MouseEnter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Form2_FormClosing(object sender, FormClosingEventArgs e)
-        {
-
-        }
-
-        private void cmbGender_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtFullName_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtAge_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        private void cmbGender_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void txtFullName_TextChanged(object sender, EventArgs e) { }
+        private void txtAge_TextChanged(object sender, EventArgs e) { }
 
         private void txtAge_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -126,24 +102,12 @@ namespace M.A_Florencio_Dental_Records
                 e.Handled = true;
         }
 
-        private void txtContact_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+        private void txtContact_TextChanged(object sender, EventArgs e) { }
 
         private void txtContact_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back)
                 e.Handled = true;
-        }
-
-        private void Form2_FormClosing_1(object sender, FormClosingEventArgs e)
-        {
-            if (!returningToMain && e.CloseReason == CloseReason.UserClosing)
-            {
-                e.Cancel = true;  // Cancel the close
-                Application.Exit();
-            }
         }
     }
 }

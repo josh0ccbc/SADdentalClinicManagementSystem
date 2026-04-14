@@ -52,7 +52,7 @@ namespace M.A_Florencio_Dental_Records
                 System.Diagnostics.Debug.WriteLine($"DEBUG: Saving standalone prescription");
                 System.Diagnostics.Debug.WriteLine($"  PatientID: {PatientID}");
 
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     System.Diagnostics.Debug.WriteLine($"CONNECTION: {conn.ConnectionString}");
                     conn.Open();

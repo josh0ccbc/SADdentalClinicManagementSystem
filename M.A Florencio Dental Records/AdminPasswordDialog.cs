@@ -24,7 +24,7 @@ namespace M.A_Florencio_Dental_Records
         {
             string enteredPassword = txtAdminPassword.Text;
 
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT PasswordHash FROM Users WHERE Role = 'Admin' AND IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, conn);

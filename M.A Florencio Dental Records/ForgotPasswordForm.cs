@@ -73,7 +73,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -99,7 +99,7 @@ namespace M.A_Florencio_Dental_Records
         private int GetUserIDByEmail(string email, out string role)
         {
             role = "";
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT UserID, Role FROM Users WHERE Email = @Email AND IsActive = 1";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -130,7 +130,7 @@ namespace M.A_Florencio_Dental_Records
         // ✅ STORE RESET TOKEN
         private bool StoreResetToken(int userID, string token)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = @"
                     INSERT INTO PasswordResetTokens (UserID, Token, ExpiryDate)

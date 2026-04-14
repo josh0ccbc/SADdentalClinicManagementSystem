@@ -33,7 +33,7 @@ namespace M.A_Florencio_Dental_Records
         {
             allPatients.Clear();
 
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT PatientID, FullName, Gender, BirthDate, Age, ContactNumber FROM Patients WHERE IsArchived = 0";
                 SqlCommand cmd = new SqlCommand(query, conn);

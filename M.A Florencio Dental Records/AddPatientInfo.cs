@@ -76,7 +76,6 @@ namespace M.A_Florencio_Dental_Records
             }
             catch
             {
-                // In case old data is not encrypted
                 return value;
             }
         }
@@ -139,7 +138,6 @@ namespace M.A_Florencio_Dental_Records
                 return false;
             }
 
-            // Guardian validation - only if age < 18
             int age = int.Parse(txtAge.Text);
             if (age < 18)
             {
@@ -214,7 +212,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoadPatientInfo(int patientID)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -230,11 +228,10 @@ namespace M.A_Florencio_Dental_Records
                     dtpBirthDate.Value = Convert.ToDateTime(reader["BirthDate"]);
                     txtAge.Text = reader["Age"].ToString();
 
-                    // ✅ CORRECT DECRYPTION
                     txtContact.Text = SafeDecrypt(reader["ContactNumber"]);
                     txtAddress.Text = SafeDecrypt(reader["Address"]);
                     cmbCivilStatus.SelectedItem = reader["CivilStatus"].ToString();
-                    txtReligion.Text = reader["Religion"].ToString(); // NOT encrypted
+                    txtReligion.Text = reader["Religion"].ToString();
 
                     Gname.Text = SafeDecrypt(reader["GuardianName"]);
                     Gcontact.Text = SafeDecrypt(reader["GuardianContact"]);
@@ -244,7 +241,6 @@ namespace M.A_Florencio_Dental_Records
                 conn.Close();
             }
 
-            // ✅ Re-trigger UI logic (important)
             dateTimePicker1_ValueChanged(null, null);
         }
 
@@ -265,43 +261,46 @@ namespace M.A_Florencio_Dental_Records
             patientData.GuardianContact = Gcontact.Text;
             patientData.GuardianRelationship = Grelationship.Text;
 
-            // ✅ SAVE PATIENT FIRST
             int newPatientID = SavePatientToDB();
 
+            if (newPatientID <= 0)
+            {
+                MessageBox.Show("Failed to save patient. Cannot proceed.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
             Form2 form2 = (Form2)this.FindForm();
 
+            // ✅ Hide Form2 while MedicalHistoryForm is open
             form2.Hide();
 
-            MedicalHistoryForm mhForm = new MedicalHistoryForm(newPatientID);
-            DialogResult result = mhForm.ShowDialog();
-
-            if (result == DialogResult.OK)
+            // ✅ Show MedicalHistoryForm as dialog over Form1
+            using (MedicalHistoryForm mhForm = new MedicalHistoryForm(newPatientID))
             {
-                Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+                mhForm.ShowDialog(mainForm);
+            }
 
-                if (mainForm == null)
-                {
-                    mainForm = new Form1();
-                }
-
+            // ✅ MedicalHistoryForm is now closed — show Form1 with DBcontrol
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new DBcontrol());
                 mainForm.Show();
                 mainForm.WindowState = FormWindowState.Normal;
                 mainForm.BringToFront();
-                mainForm.LoadControl(new DBcontrol());
+            }
 
-                form2.Close(); // closes Form2 AFTER Form1 is visible
-            }
-            else
-            {
-                form2.Show();
-            }
+            // ✅ Now safe to close Form2 — Form1 is already visible
+            form2.returningToMain = true;
+            form2.Close();
         }
 
         private int SavePatientToDB()
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = @"
                 INSERT INTO Patients 
@@ -314,13 +313,10 @@ namespace M.A_Florencio_Dental_Records
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text);  // Can encrypt if needed
+                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text);
                     cmd.Parameters.AddWithValue("@Gender", string.IsNullOrEmpty(cmbGender.Text) ? "" : CryptoHelper.Encrypt(cmbGender.Text));
-
                     cmd.Parameters.AddWithValue("@BirthDate", dtpBirthDate.Value);
                     cmd.Parameters.AddWithValue("@Age", int.Parse(txtAge.Text));
-
-                    // ===== ENCRYPT SENSITIVE INFO =====
                     cmd.Parameters.AddWithValue("@ContactNumber", CryptoHelper.Encrypt(txtContact.Text));
                     cmd.Parameters.AddWithValue("@Address", CryptoHelper.Encrypt(txtAddress.Text));
                     cmd.Parameters.AddWithValue("@CivilStatus", string.IsNullOrEmpty(cmbCivilStatus.Text) ? "" : CryptoHelper.Encrypt(cmbCivilStatus.Text));
@@ -346,7 +342,6 @@ namespace M.A_Florencio_Dental_Records
 
         private void txtFullName_TextChanged(object sender, EventArgs e)
         {
-            // Event handler for txtFullName text changes
         }
     }
 }

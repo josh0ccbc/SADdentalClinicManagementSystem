@@ -1,6 +1,6 @@
-﻿using System;
+﻿// Program.cs
+using System;
 using System.Windows.Forms;
-using M.A_Florencio_Dental_Records;
 
 namespace M.A_Florencio_Dental_Records
 {
@@ -12,74 +12,126 @@ namespace M.A_Florencio_Dental_Records
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // ✅ STEP 1: Check if connection settings exist
-            // If not, show setup wizard (only once on first run)
-            if (!ConnectionSettings.Exists())
+            // ── STEP 1: First-run setup wizard ────────────────────────────
+            if (!ConnectionHelper.SettingsExist())
             {
-                ConnectionSetupForm setupForm = new ConnectionSetupForm();
-                if (setupForm.ShowDialog() != DialogResult.OK)
+                using (ConnectionSetupForm setupForm = new ConnectionSetupForm())
                 {
-                    // User cancelled setup
-                    MessageBox.Show(
-                        "Database connection setup is required to run this application.",
-                        "Setup Required",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
-                    Application.Exit();
-                    return;
+                    if (setupForm.ShowDialog() != DialogResult.OK)
+                    {
+                        MessageBox.Show(
+                            "Database connection setup is required to run this application.",
+                            "Setup Required",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        return;
+                    }
                 }
             }
 
-            // ✅ STEP 2: Load connection settings globally
+            // ── STEP 2: Verify saved connection still works ───────────────
             try
             {
-                ConnectionSettings.Current = ConnectionSettings.Load();
+                string connectionString = ConnectionHelper.GetConnectionString();
 
-                // Test connection is valid
-                if (!ServerDiscovery.TestConnection(ConnectionSettings.Current.GetConnectionString()))
+                if (string.IsNullOrEmpty(connectionString))
                 {
                     MessageBox.Show(
-                        "Cannot connect to database. Please check your connection settings.",
+                        "Failed to load connection settings.\nSetup will run again.",
                         "Connection Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
-                    Application.Exit();
+
+                    ConnectionHelper.DeleteSettings();
                     return;
+                }
+
+                string server = GetServerFromConnectionString(connectionString);
+                var (success, error) = ServerDiscovery.TestConnectionDetailed(server, "master");
+
+                if (!success)
+                {
+                    var retry = MessageBox.Show(
+                        $"Cannot connect to database:\n\n{error}\n\nRun setup again?",
+                        "Connection Error",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Error);
+
+                    ConnectionHelper.DeleteSettings();
+
+                    if (retry == DialogResult.Yes)
+                    {
+                        using (ConnectionSetupForm setupForm = new ConnectionSetupForm())
+                        {
+                            if (setupForm.ShowDialog() != DialogResult.OK)
+                                return;
+                        }
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Error loading connection settings: {ex.Message}",
+                    $"Error loading connection settings:\n\n{ex.Message}",
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-                Application.Exit();
                 return;
             }
 
-            // ✅ STEP 3: LOGIN LOOP - Keep showing until successful login
-            while (true)
+            // ── STEP 3: Ensure all DB tables + admin account exist ────────
+            try
             {
-                LoginForm loginForm = new LoginForm();
-                DialogResult result = loginForm.ShowDialog();
-
-                if (result == DialogResult.OK)
-                {
-                    // User logged in successfully
-                    break;  // Exit loop and show main form
-                }
-                else if (result == DialogResult.Cancel)
-                {
-                    // User clicked X button or closed form
-                    Application.Exit();
-                    return;
-                }
-                // If anything else, loop continues (show login again)
+                DatabaseInitializer.Initialize();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Database initialization failed:\n\n{ex.Message}\n\n" +
+                    "Please check that SQL Server is running and the database is accessible.",
+                    "Initialization Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
             }
 
-            // ✅ STEP 4: After successful login, show main form
-            Application.Run(new Form1());
+            // ── STEP 4 & 5: Login → Main Form loop ───────────────────────
+            while (true)
+            {
+                // Show login form
+                using (LoginForm loginForm = new LoginForm())
+                {
+                    DialogResult result = loginForm.ShowDialog();
+
+                    if (result == DialogResult.Cancel)
+                        return; // User closed login window — exit app
+
+                    if (result != DialogResult.OK)
+                        return; // Any other non-OK result — exit app
+                }
+
+                // Show main form
+                using (Form1 mainForm = new Form1())
+                {
+                    Application.Run(mainForm);
+                }
+                // When Form1 closes (logout), loop repeats → login shown again
+            }
+        }
+
+        private static string GetServerFromConnectionString(string connectionString)
+        {
+            foreach (string part in connectionString.Split(';'))
+            {
+                string trimmed = part.Trim();
+                if (trimmed.StartsWith("Server=", StringComparison.OrdinalIgnoreCase))
+                    return trimmed.Substring("Server=".Length).Trim();
+            }
+            return ".\\SQLEXPRESS";
         }
     }
 }

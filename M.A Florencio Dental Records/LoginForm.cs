@@ -8,8 +8,16 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class LoginForm : MaterialForm
     {
-        public int LoggedInUserID { get; set; }
-        public string LoggedInUsername { get; set; }
+        public static int CurrentUserID { get; set; }
+        public static string CurrentUsername { get; set; }
+        public static string CurrentUserRole { get; set; }
+
+        // ✅ Brute force protection
+        private int _failedAttempts = 0;
+        private const int MAX_ATTEMPTS = 5;
+        private bool _isLocked = false;
+        private System.Windows.Forms.Timer _lockoutTimer;
+        private int _lockoutSecondsRemaining = 30;
 
         public LoginForm()
         {
@@ -25,160 +33,209 @@ namespace M.A_Florencio_Dental_Records
                 Primary.Teal500, Primary.Teal700, Primary.Teal200, Accent.Teal200, TextShade.WHITE);
 
             this.StartPosition = FormStartPosition.CenterScreen;
-
-            // ✅ Apply fonts AFTER MaterialSkin loads (it overrides form-level fonts)
             txtUsername.Font = new System.Drawing.Font("Segoe UI", 10f);
             txtPassword.Font = new System.Drawing.Font("Segoe UI", 10f);
-            // Add any other controls you want styled here
 
             this.Shown += LoginForm_Shown;
         }
 
-        // ✅ LOGIN BUTTON
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            if (!ValidateLoginFields())
+            // ✅ Block login if locked out
+            if (_isLocked)
+            {
+                MessageBox.Show(
+                    $"Too many failed attempts.\nPlease wait {_lockoutSecondsRemaining} seconds.",
+                    "Account Locked", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
 
-            string username = txtUsername.Text;
+            if (!ValidateLoginFields()) return;
+
+            string username = txtUsername.Text.Trim();
             string password = txtPassword.Text;
 
             if (AuthenticateUser(username, password))
             {
-                // ✅ SET DIALOGRESULT.OK to signal successful login
+                _failedAttempts = 0;
                 this.DialogResult = DialogResult.OK;
-
-                // Pass data to Form1 (we'll get it from properties)
                 this.Close();
             }
             else
             {
-                MessageBox.Show("Invalid username or password!", "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _failedAttempts++;
+                int remaining = MAX_ATTEMPTS - _failedAttempts;
+
+                if (_failedAttempts >= MAX_ATTEMPTS)
+                {
+                    StartLockout();
+                }
+                else
+                {
+                    MessageBox.Show(
+                        $"Invalid username or password!\n\n{remaining} attempt(s) remaining before lockout.",
+                        "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
                 txtPassword.Clear();
                 txtUsername.Focus();
-                // ✅ DON'T close the form - keep it open
             }
         }
 
-        // ✅ AUTHENTICATE USER
+        private void StartLockout()
+        {
+            _isLocked = true;
+            _lockoutSecondsRemaining = 30;
+            btnLogin.Enabled = false;
+            txtUsername.Enabled = false;
+            txtPassword.Enabled = false;
+
+            // ✅ Log the lockout event
+            TryLogAudit(0, $"LOGIN_LOCKOUT: {txtUsername.Text.Trim()}");
+
+            _lockoutTimer = new System.Windows.Forms.Timer();
+            _lockoutTimer.Interval = 1000; // 1 second
+            _lockoutTimer.Tick += (s, e) =>
+            {
+                _lockoutSecondsRemaining--;
+                btnLogin.Text = $"Wait {_lockoutSecondsRemaining}s...";
+
+                if (_lockoutSecondsRemaining <= 0)
+                {
+                    _lockoutTimer.Stop();
+                    _isLocked = false;
+                    _failedAttempts = 0;
+                    btnLogin.Enabled = true;
+                    btnLogin.Text = "Login";
+                    txtUsername.Enabled = true;
+                    txtPassword.Enabled = true;
+                    txtPassword.Clear();
+                    txtUsername.Focus();
+                }
+            };
+
+            _lockoutTimer.Start();
+            MessageBox.Show(
+                $"Too many failed login attempts.\nAccount locked for {_lockoutSecondsRemaining} seconds.",
+                "Account Locked", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
         private bool AuthenticateUser(string username, string password)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            try
             {
-                string query = "SELECT UserID, PasswordHash, FullName, Role FROM Users WHERE Username = @Username AND IsActive = 1";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@Username", username);
-
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
-
-                if (reader.Read())
+                string connStr = ConnectionHelper.GetConnectionString();
+                if (string.IsNullOrEmpty(connStr))
                 {
-                    string storedHash = reader["PasswordHash"].ToString();
+                    MessageBox.Show("Database not configured. Please run setup again.");
+                    return false;
+                }
 
-                    // Verify password
-                    if (PasswordHelper.VerifyPassword(password, storedHash))
+                using (SqlConnection conn = new SqlConnection(connStr))
+                {
+                    conn.Open();
+
+                    // ✅ Also check IsActive so disabled accounts can't login
+                    string query = @"SELECT UserID, PasswordHash, Role 
+                                     FROM Users 
+                                     WHERE Username = @Username AND IsActive = 1";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        LoggedInUserID = Convert.ToInt32(reader["UserID"]);
-                        LoggedInUsername = username;
+                        cmd.Parameters.AddWithValue("@Username", username);
 
-                        LoginForm.CurrentUserID = LoggedInUserID;
-                        LoginForm.CurrentUsername = username;
-                        LoginForm.CurrentUserRole = reader["Role"].ToString();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (!reader.Read()) return false;
 
-                        conn.Close();
+                            string storedHash = reader["PasswordHash"]?.ToString();
+                            if (string.IsNullOrEmpty(storedHash)) return false;
 
-                        // Log the login
-                        LogAuditTrail(LoggedInUserID, "LOGIN");
+                            if (PasswordHelper.VerifyPassword(password, storedHash))
+                            {
+                                CurrentUserID = Convert.ToInt32(reader["UserID"]);
+                                CurrentUsername = username;
+                                CurrentUserRole = reader["Role"]?.ToString();
 
-                        return true;
+                                TryLogAudit(CurrentUserID, "LOGIN");
+                                return true;
+                            }
+                        }
                     }
                 }
 
-                conn.Close();
+                return false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Login error: " + ex.Message);
                 return false;
             }
         }
 
-        // ✅ LOG AUDIT TRAIL
-        private void LogAuditTrail(int userID, string action)
+        private void TryLogAudit(int userID, string action)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            try
             {
-                string query = "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@UserID", userID);
-                cmd.Parameters.AddWithValue("@Action", action);
-                cmd.Parameters.AddWithValue("@IPAddress", GetIPAddress());
+                string connStr = ConnectionHelper.GetConnectionString();
+                if (string.IsNullOrEmpty(connStr)) return;
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
-                conn.Close();
+                using (SqlConnection conn = new SqlConnection(connStr))
+                using (SqlCommand cmd = new SqlCommand(
+                    "INSERT INTO AuditLog (UserID, Action, IPAddress) VALUES (@UserID, @Action, @IPAddress)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserID", userID);
+                    cmd.Parameters.AddWithValue("@Action", action);
+                    cmd.Parameters.AddWithValue("@IPAddress", "127.0.0.1");
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
             }
+            catch { }
         }
 
-        private string GetIPAddress()
-        {
-            return "127.0.0.1"; // Localhost for now
-        }
-
-        // ✅ VALIDATE LOGIN FIELDS
         private bool ValidateLoginFields()
         {
-            if (string.IsNullOrEmpty(txtUsername.Text))
+            if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
-                MessageBox.Show("Enter username!");
-                return false;
+                MessageBox.Show("Enter username!"); return false;
             }
-
-            if (string.IsNullOrEmpty(txtPassword.Text))
+            if (string.IsNullOrWhiteSpace(txtPassword.Text))
             {
-                MessageBox.Show("Enter password!");
-                return false;
+                MessageBox.Show("Enter password!"); return false;
             }
-
             return true;
         }
 
-        // ✅ REGISTER BUTTON
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            RegisterForm registerForm = new RegisterForm();
-            registerForm.ShowDialog();  // Wait for RegisterForm to close
+            using (RegisterForm registerForm = new RegisterForm())
+                registerForm.ShowDialog();
 
-            // Refresh if new user registered
             txtUsername.Clear();
             txtPassword.Clear();
         }
 
-        // ✅ FORGOT PASSWORD BUTTON
         private void btnForgotPassword_Click(object sender, EventArgs e)
         {
-            ForgotPasswordForm forgotForm = new ForgotPasswordForm();
-            forgotForm.ShowDialog();  // Wait for ForgotPasswordForm to close
+            using (ForgotPasswordForm forgotForm = new ForgotPasswordForm())
+                forgotForm.ShowDialog();
         }
 
-        // ✅ CLEAR PASSWORD WHEN FORM CLOSES
         private void LoginForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // If user clicks X button (not logging in), allow exit
+            _lockoutTimer?.Stop();
+
             if (this.DialogResult != DialogResult.OK)
-            {
-                this.DialogResult = DialogResult.Cancel;  // Signal to Program.cs to exit
-            }
+                this.DialogResult = DialogResult.Cancel;
 
             txtPassword.Clear();
         }
-
-        public static int CurrentUserID { get; set; }
-        public static string CurrentUsername { get; set; }
-        public static string CurrentUserRole { get; set; }
 
         private void LoginForm_Shown(object sender, EventArgs e)
         {
             txtUsername.Font = new System.Drawing.Font("Segoe UI", 10f);
             txtPassword.Font = new System.Drawing.Font("Segoe UI", 10f);
-            // Add whatever other controls need styling
         }
     }
 }

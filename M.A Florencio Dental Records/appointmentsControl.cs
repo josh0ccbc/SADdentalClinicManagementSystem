@@ -50,7 +50,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = "SELECT COUNT(*) FROM Appointments WHERE Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -89,7 +89,7 @@ namespace M.A_Florencio_Dental_Records
 
                 panelPagination.SuspendLayout();
 
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = @"
                         SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
@@ -194,7 +194,7 @@ namespace M.A_Florencio_Dental_Records
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = "SELECT DISTINCT CAST(AppointmentDate AS DATE) FROM Appointments WHERE Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -230,7 +230,7 @@ namespace M.A_Florencio_Dental_Records
 
                 flowAppointments.SuspendLayout();
 
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = @"SELECT a.AppointmentID, a.PatientName, a.AppointmentDate, a.AppointmentTime, 
                                            s.ServiceName, a.Status, a.Notes
@@ -363,7 +363,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     // ✅ Include PatientID directly from Appointments table
                     string query = @"SELECT a.AppointmentID, a.PatientID, a.PatientName, a.AppointmentDate, 
@@ -408,7 +408,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     await conn.OpenAsync();
 
@@ -436,7 +436,7 @@ namespace M.A_Florencio_Dental_Records
             try
             {
                 int count = 0;
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = "SELECT COUNT(*) FROM Appointments WHERE CAST(AppointmentDate AS DATE) = CAST(GETDATE() AS DATE) AND Status != 'Cancelled' AND Status != 'Done'";
                     SqlCommand cmd = new SqlCommand(query, conn);

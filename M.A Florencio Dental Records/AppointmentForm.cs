@@ -10,7 +10,7 @@ namespace M.A_Florencio_Dental_Records
     public partial class AppointmentForm : MaterialForm
     {
         public int SelectedPatientID { get; set; }
-        private bool isLoadingPatientID = false;  // ✅ ADD THIS FLAG
+        private bool isLoadingPatientID = false;
 
         public AppointmentForm()
         {
@@ -39,10 +39,9 @@ namespace M.A_Florencio_Dental_Records
             LoadAvailableTimes();
         }
 
-        // ✅ LOAD PATIENT NAMES TO DROPDOWN
         private void LoadPatientNames()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT DISTINCT FullName FROM Patients WHERE IsArchived = 0 ORDER BY FullName ASC";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -52,16 +51,13 @@ namespace M.A_Florencio_Dental_Records
                 cmbPatientName.Items.Clear();
 
                 while (reader.Read())
-                {
                     cmbPatientName.Items.Add(reader["FullName"].ToString());
-                }
             }
 
             cmbPatientName.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             cmbPatientName.AutoCompleteSource = AutoCompleteSource.ListItems;
             cmbPatientName.DropDownStyle = ComboBoxStyle.DropDown;
         }
-
 
         private void cmbPatientName_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -75,7 +71,7 @@ namespace M.A_Florencio_Dental_Records
         {
             isLoadingPatientID = true;
 
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT PatientID, FullName FROM Patients WHERE FullName = @FullName AND IsArchived = 0 ORDER BY PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -102,7 +98,7 @@ namespace M.A_Florencio_Dental_Records
                     lblPatientID.Visible = true;
                     lblPatientID.Text = patientIDs[0].PatientID.ToString();
                 }
-                else
+                else if (patientIDs.Count > 1)
                 {
                     cmbPatientID.Items.Clear();
                     foreach (var item in patientIDs)
@@ -111,15 +107,13 @@ namespace M.A_Florencio_Dental_Records
                     cmbPatientID.Visible = true;
                     lblPatientID.Visible = false;
                     cmbPatientID.SelectedIndex = 0;
+                    SelectedPatientID = patientIDs[0].PatientID;
                 }
             }
 
             isLoadingPatientID = false;
         }
 
-
-
-        // ✅ PATIENT ID SELECTED FROM COMBOBOX
         private void cmbPatientID_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (isLoadingPatientID) return;
@@ -133,22 +127,17 @@ namespace M.A_Florencio_Dental_Records
             cmbStartHour.Items.Clear();
             cmbStartMinute.Items.Clear();
             cmbStartAMPM.Items.Clear();
-
             cmbEndHour.Items.Clear();
             cmbEndMinute.Items.Clear();
             cmbEndAMPM.Items.Clear();
 
-            // 10AM–5PM
             for (int hour = 10; hour <= 17; hour++)
             {
                 int display = hour > 12 ? hour - 12 : hour;
-                string ampm = hour >= 12 ? "PM" : "AM";
-
                 cmbStartHour.Items.Add(display.ToString("00"));
                 cmbEndHour.Items.Add(display.ToString("00"));
             }
 
-            // 🔥 CLEAN SLOTS: 00 & 30 only
             cmbStartMinute.Items.AddRange(new[] { "00", "30" });
             cmbEndMinute.Items.AddRange(new[] { "00", "30" });
 
@@ -166,6 +155,9 @@ namespace M.A_Florencio_Dental_Records
 
         private TimeSpan GetTime(ComboBox h, ComboBox m, ComboBox a)
         {
+            if (string.IsNullOrEmpty(h.Text) || string.IsNullOrEmpty(m.Text) || string.IsNullOrEmpty(a.Text))
+                throw new Exception("Please select a complete time (hour, minute, AM/PM).");
+
             int hour = int.Parse(h.Text);
 
             if (a.Text == "PM" && hour != 12) hour += 12;
@@ -183,18 +175,16 @@ namespace M.A_Florencio_Dental_Records
         private void LoadAvailableTimes()
         {
             DateTime date = dtpAppointmentDate.Value.Date;
-
             List<TimeRange> existing = new List<TimeRange>();
 
-            using(SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = @"SELECT AppointmentTime, AppointmentEndTime 
                                  FROM Appointments 
-                                 WHERE AppointmentDate=@date AND Status!='Cancelled'";
+                                 WHERE AppointmentDate = @date AND Status != 'Cancelled'";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@date", date);
-
                 conn.Open();
                 var reader = cmd.ExecuteReader();
 
@@ -216,7 +206,6 @@ namespace M.A_Florencio_Dental_Records
                 TimeSpan slotEnd = slotStart.Add(TimeSpan.FromMinutes(30));
 
                 bool conflict = false;
-
                 foreach (var appt in existing)
                 {
                     if (slotStart < appt.End && slotEnd > appt.Start)
@@ -239,13 +228,14 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoadServices()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
-                string query = "SELECT ServiceID, ServiceName FROM DentalServices";
+                string query = "SELECT ServiceID, ServiceName FROM DentalServices ORDER BY ServiceName";
                 SqlCommand cmd = new SqlCommand(query, conn);
-
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
+
+                cmbService.Items.Clear();
 
                 while (reader.Read())
                 {
@@ -258,92 +248,172 @@ namespace M.A_Florencio_Dental_Records
             }
 
             cmbService.DisplayMember = "ServiceName";
+
+            // ✅ FIX: Auto-select first item so SelectedItem is never null
+            if (cmbService.Items.Count > 0)
+                cmbService.SelectedIndex = 0;
+            else
+            {
+                // No services in DB — warn the user
+                MessageBox.Show(
+                    "No dental services found in the database.\n\n" +
+                    "Please add services first before scheduling appointments.",
+                    "No Services Found",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (!ValidateFields()) return;
-
-            TimeSpan start = GetTime(cmbStartHour, cmbStartMinute, cmbStartAMPM);
-            TimeSpan end = GetTime(cmbEndHour, cmbEndMinute, cmbEndAMPM);
-
-            // 🔥 FINAL OVERLAP CHECK (IMPORTANT)
-            if (IsOverlapping(start, end))
+            // ✅ GUARD: patient selected
+            if (SelectedPatientID <= 0)
             {
-                MessageBox.Show("Time slot already occupied!");
+                MessageBox.Show("Please select a patient.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            // ✅ GUARD: service selected
+            if (cmbService.SelectedItem == null)
             {
-                string query = @"INSERT INTO Appointments 
-                (PatientID, PatientName, AppointmentDate, AppointmentTime, AppointmentEndTime, ServiceID, ServiceType, Status, Notes)
-                VALUES
-                (@PID,@Name,@Date,@Start,@End,@SID,@SType,'Scheduled',@Notes)";
+                MessageBox.Show(
+                    "Please select a service.\n\nIf the list is empty, add dental services first.",
+                    "Validation",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
 
-                SqlCommand cmd = new SqlCommand(query, conn);
+            if (!ValidateFields()) return;
 
-                cmd.Parameters.AddWithValue("@PID", SelectedPatientID);
-                cmd.Parameters.AddWithValue("@Name", cmbPatientName.Text);
-                cmd.Parameters.AddWithValue("@Date", dtpAppointmentDate.Value.Date);
-                cmd.Parameters.AddWithValue("@Start", start);
-                cmd.Parameters.AddWithValue("@End", end);
-                cmd.Parameters.AddWithValue("@SID", ((ServiceItem)cmbService.SelectedItem).ServiceID);
-                cmd.Parameters.AddWithValue("@SType", ((ServiceItem)cmbService.SelectedItem).ServiceName);
-                cmd.Parameters.AddWithValue("@Notes", txtNotes.Text ?? "");
+            TimeSpan start, end;
+            try
+            {
+                start = GetTime(cmbStartHour, cmbStartMinute, cmbStartAMPM);
+                end = GetTime(cmbEndHour, cmbEndMinute, cmbEndAMPM);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Time Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                conn.Open();
-                cmd.ExecuteNonQuery();
+            if (IsOverlapping(start, end))
+            {
+                MessageBox.Show("That time slot is already occupied. Please choose another time.",
+                    "Time Conflict", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                MessageBox.Show("Appointment scheduled!");
+            ServiceItem selectedService = (ServiceItem)cmbService.SelectedItem;
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
+                {
+                    string query = @"
+                        INSERT INTO Appointments 
+                            (PatientID, PatientName, AppointmentDate, AppointmentTime, 
+                             AppointmentEndTime, ServiceID, ServiceType, Status, Notes)
+                        VALUES
+                            (@PID, @Name, @Date, @Start, @End, @SID, @SType, 'Scheduled', @Notes)";
+
+                    SqlCommand cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@PID", SelectedPatientID);
+                    cmd.Parameters.AddWithValue("@Name", cmbPatientName.Text);
+                    cmd.Parameters.AddWithValue("@Date", dtpAppointmentDate.Value.Date);
+                    cmd.Parameters.AddWithValue("@Start", start);
+                    cmd.Parameters.AddWithValue("@End", end);
+                    cmd.Parameters.AddWithValue("@SID", selectedService.ServiceID);
+                    cmd.Parameters.AddWithValue("@SType", selectedService.ServiceName);
+                    cmd.Parameters.AddWithValue("@Notes", txtNotes.Text ?? "");
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
+                MessageBox.Show("Appointment scheduled successfully!", "Success",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.DialogResult = DialogResult.OK;
                 this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving appointment:\n\n" + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private bool IsOverlapping(TimeSpan newStart, TimeSpan newEnd)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = @"SELECT COUNT(*) FROM Appointments
-                                 WHERE AppointmentDate=@date
-                                 AND Status!='Cancelled'
+                                 WHERE AppointmentDate = @date
+                                 AND Status != 'Cancelled'
                                  AND @newStart < AppointmentEndTime
                                  AND @newEnd > AppointmentTime";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
-
                 cmd.Parameters.AddWithValue("@date", dtpAppointmentDate.Value.Date);
                 cmd.Parameters.AddWithValue("@newStart", newStart);
                 cmd.Parameters.AddWithValue("@newEnd", newEnd);
 
                 conn.Open();
-                int count = (int)cmd.ExecuteScalar();
-
-                return count > 0;
+                return (int)cmd.ExecuteScalar() > 0;
             }
         }
 
         private bool ValidateFields()
         {
-            if (dtpAppointmentDate.Value.DayOfWeek == DayOfWeek.Wednesday ||
-                dtpAppointmentDate.Value.DayOfWeek == DayOfWeek.Sunday)
+            if (string.IsNullOrWhiteSpace(cmbPatientName.Text))
             {
-                MessageBox.Show("Clinic closed.");
+                MessageBox.Show("Please select a patient.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
-            TimeSpan start = GetTime(cmbStartHour, cmbStartMinute, cmbStartAMPM);
-            TimeSpan end = GetTime(cmbEndHour, cmbEndMinute, cmbEndAMPM);
+            if (dtpAppointmentDate.Value.DayOfWeek == DayOfWeek.Wednesday ||
+                dtpAppointmentDate.Value.DayOfWeek == DayOfWeek.Sunday)
+            {
+                MessageBox.Show("Clinic is closed on Wednesday and Sunday.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (dtpAppointmentDate.Value.Date < DateTime.Today)
+            {
+                MessageBox.Show("Cannot schedule appointments in the past.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            TimeSpan start, end;
+            try
+            {
+                start = GetTime(cmbStartHour, cmbStartMinute, cmbStartAMPM);
+                end = GetTime(cmbEndHour, cmbEndMinute, cmbEndAMPM);
+            }
+            catch
+            {
+                MessageBox.Show("Please select valid start and end times.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
 
             if (start < new TimeSpan(10, 0, 0) || end > new TimeSpan(17, 0, 0))
             {
-                MessageBox.Show("10AM–5PM only.");
+                MessageBox.Show("Appointments must be between 10:00 AM and 5:00 PM.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
             if (end <= start)
             {
-                MessageBox.Show("Invalid time.");
+                MessageBox.Show("End time must be after start time.", "Validation",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 

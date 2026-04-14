@@ -102,7 +102,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = "SELECT * FROM Patients WHERE PatientID = @PatientID";
                     SqlCommand cmd = new SqlCommand(query, conn);
@@ -145,7 +145,7 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = "UPDATE Patients SET IsArchived = 1 WHERE PatientID = @PatientID";
                     SqlCommand cmd = new SqlCommand(query, conn);

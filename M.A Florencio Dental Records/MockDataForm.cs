@@ -259,7 +259,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void InsertMockPatients()
         {
-            string connStr = ConnectionSettings.Current.GetConnectionString();
+            string connStr = ConnectionHelper.GetConnectionString();
 
             for (int i = 1; i <= 50; i++)
             {

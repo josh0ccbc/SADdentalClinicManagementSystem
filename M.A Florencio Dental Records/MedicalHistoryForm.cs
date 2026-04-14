@@ -1,10 +1,15 @@
 ﻿using System;
-using System.Windows.Forms;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Drawing;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using MaterialSkin;
 using MaterialSkin.Controls;
-using System.Linq;
 
 namespace M.A_Florencio_Dental_Records
 {
@@ -49,13 +54,12 @@ namespace M.A_Florencio_Dental_Records
             cmbBloodType.Items.Add("B-");
             cmbBloodType.Items.Add("AB+");
             cmbBloodType.Items.Add("AB-");
-
             cmbBloodType.SelectedIndex = 0;
         }
 
         private void CheckGender()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT Gender FROM Patients WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -64,10 +68,11 @@ namespace M.A_Florencio_Dental_Records
                 conn.Open();
                 object result = cmd.ExecuteScalar();
 
-                if (result != null)
+                if (result != null && result != DBNull.Value)
                 {
-                    string gender = result.ToString();
-                    isFemale = (gender.ToLower() == "female");
+                    // ✅ Decrypt before comparing
+                    string gender = SafeDecrypt(result);
+                    isFemale = gender.Trim().ToLower() == "female";
 
                     if (!isFemale)
                     {
@@ -79,35 +84,17 @@ namespace M.A_Florencio_Dental_Records
                         totalTabs = 5;
                     }
                 }
-
-                conn.Close();
             }
         }
 
         private string SafeDecrypt(object dbValue)
         {
-            if (dbValue == DBNull.Value || dbValue == null)
-                return "";
-
+            if (dbValue == DBNull.Value || dbValue == null) return "";
             string value = dbValue.ToString();
+            if (string.IsNullOrEmpty(value)) return "";
 
-            if (string.IsNullOrEmpty(value))
-                return "";
-
-            try
-            {
-                return CryptoHelper.Decrypt(value);
-            }
-            catch
-            {
-                // In case old data is not encrypted
-                return value;
-            }
-        }
-
-        private void chkGoodHealth_CheckedChanged(object sender, EventArgs e)
-        {
-
+            try { return CryptoHelper.Decrypt(value); }
+            catch { return value; }
         }
 
         private void chkUnderMedication_CheckedChanged(object sender, EventArgs e)
@@ -130,7 +117,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoadPatientMedicalHistory()
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT * FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                 SqlCommand cmd = new SqlCommand(query, conn);
@@ -143,8 +130,6 @@ namespace M.A_Florencio_Dental_Records
                 {
                     chkGoodHealth.Checked = Convert.ToBoolean(reader["is_healthy"]);
                     chkUnderMedication.Checked = Convert.ToBoolean(reader["under_treatment"]);
-
-                    // ===== DECRYPT ENCRYPTED FIELDS =====
                     txtMedicationDetails.Text = SafeDecrypt(reader["treatment_details"]);
 
                     chkSeriousIllness.Checked = Convert.ToBoolean(reader["serious_illness"]);
@@ -158,11 +143,9 @@ namespace M.A_Florencio_Dental_Records
                     chkSulfa.Checked = Convert.ToBoolean(reader["SulfaAllergy"]);
                     chkAspirin.Checked = Convert.ToBoolean(reader["AspirinAllergy"]);
                     chkLatex.Checked = Convert.ToBoolean(reader["LatexAllergy"]);
-                    // ===== DECRYPT OTHER ALLERGIES =====
                     txtOtherAllergies.Text = SafeDecrypt(reader["OtherAllergies"]);
 
                     chkPrescriptionMeds.Checked = Convert.ToBoolean(reader["TakingPrescriptionMeds"]);
-                    // ===== DECRYPT MEDICATION LIST =====
                     txtMedicationList.Text = SafeDecrypt(reader["MedicationList"]);
 
                     chkUsesTobacco.Checked = Convert.ToBoolean(reader["UsesTobacco"]);
@@ -179,16 +162,11 @@ namespace M.A_Florencio_Dental_Records
                     chkArthritis.Checked = Convert.ToBoolean(reader["Arthritis"]);
                     chkKidneyDisease.Checked = Convert.ToBoolean(reader["KidneyDisease"]);
 
-                    // ===== DECRYPT BLOOD TYPE =====
                     string bloodType = SafeDecrypt(reader["BloodType"]);
                     if (cmbBloodType.Items.Contains(bloodType))
-                    {
                         cmbBloodType.SelectedItem = bloodType;
-                    }
                     else if (!string.IsNullOrEmpty(bloodType))
-                    {
                         cmbBloodType.Text = bloodType;
-                    }
 
                     if (isFemale)
                     {
@@ -233,29 +211,16 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            // ===== VALIDATION =====
             if (cmbBloodType.SelectedIndex <= 0 || cmbBloodType.SelectedItem == null)
             {
-                MessageBox.Show("Please select a valid blood type before saving", "Validation Error");
+                MessageBox.Show("Please select a valid blood type before saving.", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // ===== DETAILED DEBUG BEFORE SAVING =====
-            string debugBloodType = cmbBloodType.SelectedItem?.ToString() ?? "NULL";
-            int debugIndex = cmbBloodType.SelectedIndex;
-
-            MessageBox.Show(
-                "DEBUG - Medical History Form:\n" +
-                "SelectedIndex: " + debugIndex + "\n" +
-                "SelectedItem: " + debugBloodType + "\n" +
-                "PatientID: " + PatientID + "\n" +
-                "\nClick OK to proceed with save.",
-                "Debug Info Before Save"
-            );
-
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string checkQuery = "SELECT COUNT(*) FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                     SqlCommand checkCmd = new SqlCommand(checkQuery, conn);
@@ -268,37 +233,37 @@ namespace M.A_Florencio_Dental_Records
                     {
                         string updateQuery = @"
                     UPDATE PatientMedicalHistory SET
-                    is_healthy = @IsHealthy,
-                    under_treatment = @UnderTreatment,
-                    treatment_details = @TreatmentDetails,
-                    serious_illness = @SeriousIllness,
-                    illness_details = @IllnessDetails,
-                    recently_hospitalized = @Hospitalized,
-                    hospitalization_details = @HospitalizationDetails,
-                    LocalAestheticAllergy = @LocalAnesthetic,
-                    PenicillinAllergy = @Penicillin,
-                    SulfaAllergy = @Sulfa,
-                    AspirinAllergy = @Aspirin,
-                    LatexAllergy = @Latex,
-                    OtherAllergies = @OtherAllergies,
-                    TakingPrescriptionMeds = @PrescriptionMeds,
-                    MedicationList = @MedicationList,
-                    UsesTobacco = @Tobacco,
-                    UsesAlcoholDrugs = @AlcoholDrugs,
-                    HighBP = @HighBP,
-                    LowBP = @LowBP,
-                    HeartDisease = @HeartDisease,
-                    HeartMurmur = @HeartMurmur,
-                    Diabetes = @Diabetes,
-                    Thyroid = @Thyroid,
-                    Asthma = @Asthma,
-                    RespiratoryProblems = @RespiratoryProblems,
-                    Arthritis = @Arthritis,
-                    KidneyDisease = @KidneyDisease,
-                    IsPregnant = @Pregnant,
-                    IsNursing = @Nursing,
-                    OnBirthControl = @BirthControl,
-                    BloodType = @BloodType
+                        is_healthy = @IsHealthy,
+                        under_treatment = @UnderTreatment,
+                        treatment_details = @TreatmentDetails,
+                        serious_illness = @SeriousIllness,
+                        illness_details = @IllnessDetails,
+                        recently_hospitalized = @Hospitalized,
+                        hospitalization_details = @HospitalizationDetails,
+                        LocalAestheticAllergy = @LocalAnesthetic,
+                        PenicillinAllergy = @Penicillin,
+                        SulfaAllergy = @Sulfa,
+                        AspirinAllergy = @Aspirin,
+                        LatexAllergy = @Latex,
+                        OtherAllergies = @OtherAllergies,
+                        TakingPrescriptionMeds = @PrescriptionMeds,
+                        MedicationList = @MedicationList,
+                        UsesTobacco = @Tobacco,
+                        UsesAlcoholDrugs = @AlcoholDrugs,
+                        HighBP = @HighBP,
+                        LowBP = @LowBP,
+                        HeartDisease = @HeartDisease,
+                        HeartMurmur = @HeartMurmur,
+                        Diabetes = @Diabetes,
+                        Thyroid = @Thyroid,
+                        Asthma = @Asthma,
+                        RespiratoryProblems = @RespiratoryProblems,
+                        Arthritis = @Arthritis,
+                        KidneyDisease = @KidneyDisease,
+                        IsPregnant = @Pregnant,
+                        IsNursing = @Nursing,
+                        OnBirthControl = @BirthControl,
+                        BloodType = @BloodType
                     WHERE PatientID = @PatientID";
 
                         SqlCommand updateCmd = new SqlCommand(updateQuery, conn);
@@ -310,49 +275,42 @@ namespace M.A_Florencio_Dental_Records
                     {
                         string insertQuery = @"
                     INSERT INTO PatientMedicalHistory
-                    (PatientID, is_healthy, under_treatment, treatment_details, serious_illness, illness_details, 
-                     recently_hospitalized, hospitalization_details,
-                     LocalAestheticAllergy, PenicillinAllergy, SulfaAllergy, AspirinAllergy, LatexAllergy,
-                     OtherAllergies, TakingPrescriptionMeds, MedicationList, UsesTobacco, UsesAlcoholDrugs,
-                     HighBP, LowBP, HeartDisease, HeartMurmur, Diabetes, Thyroid, Asthma, RespiratoryProblems, Arthritis, KidneyDisease,
-                     IsPregnant, IsNursing, OnBirthControl, BloodType)
+                        (PatientID, is_healthy, under_treatment, treatment_details,
+                         serious_illness, illness_details, recently_hospitalized,
+                         hospitalization_details, LocalAestheticAllergy, PenicillinAllergy,
+                         SulfaAllergy, AspirinAllergy, LatexAllergy, OtherAllergies,
+                         TakingPrescriptionMeds, MedicationList, UsesTobacco, UsesAlcoholDrugs,
+                         HighBP, LowBP, HeartDisease, HeartMurmur, Diabetes, Thyroid,
+                         Asthma, RespiratoryProblems, Arthritis, KidneyDisease,
+                         IsPregnant, IsNursing, OnBirthControl, BloodType)
                     VALUES
-                    (@PatientID, @IsHealthy, @UnderTreatment, @TreatmentDetails, @SeriousIllness, @IllnessDetails,
-                     @Hospitalized, @HospitalizationDetails,
-                     @LocalAnesthetic, @Penicillin, @Sulfa, @Aspirin, @Latex,
-                     @OtherAllergies, @PrescriptionMeds, @MedicationList, @Tobacco, @AlcoholDrugs,
-                     @HighBP, @LowBP, @HeartDisease, @HeartMurmur, @Diabetes, @Thyroid, @Asthma, @RespiratoryProblems, @Arthritis, @KidneyDisease,
-                     @Pregnant, @Nursing, @BirthControl, @BloodType)";
+                        (@PatientID, @IsHealthy, @UnderTreatment, @TreatmentDetails,
+                         @SeriousIllness, @IllnessDetails, @Hospitalized,
+                         @HospitalizationDetails, @LocalAnesthetic, @Penicillin,
+                         @Sulfa, @Aspirin, @Latex, @OtherAllergies,
+                         @PrescriptionMeds, @MedicationList, @Tobacco, @AlcoholDrugs,
+                         @HighBP, @LowBP, @HeartDisease, @HeartMurmur, @Diabetes, @Thyroid,
+                         @Asthma, @RespiratoryProblems, @Arthritis, @KidneyDisease,
+                         @Pregnant, @Nursing, @BirthControl, @BloodType)";
 
                         SqlCommand insertCmd = new SqlCommand(insertQuery, conn);
                         AddMedicalHistoryParameters(insertCmd);
                         conn.Open();
                         insertCmd.ExecuteNonQuery();
                     }
-
-                    MessageBox.Show("Patient Recorded Successfully");
-                    conn.Close();
-
-                    Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
-
-                    if (mainForm != null)
-                    {
-                        mainForm.Show();
-                        mainForm.WindowState = FormWindowState.Normal;
-                        mainForm.BringToFront();
-                        mainForm.LoadControl(new DBcontrol());
-                    }
-                    else
-                    {
-                        mainForm = new Form1();
-                        mainForm.Show();
-                        mainForm.LoadControl(new DBcontrol());
-                    }
                 }
+
+                MessageBox.Show("Patient medical history saved successfully!", "Success",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // ✅ Just close — Form1 navigation is handled by AddPatientInfo
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message + "\n\nStack trace:\n" + ex.StackTrace);
+                MessageBox.Show("Error saving medical history:\n\n" + ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -362,19 +320,14 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@IsHealthy", chkGoodHealth.Checked);
             cmd.Parameters.AddWithValue("@UnderTreatment", chkUnderMedication.Checked);
 
-            // ===== ENCRYPTED FIELD: Treatment Details =====
             cmd.Parameters.AddWithValue("@TreatmentDetails",
                 string.IsNullOrEmpty(txtMedicationDetails.Text) ? "" : CryptoHelper.Encrypt(txtMedicationDetails.Text));
 
             cmd.Parameters.AddWithValue("@SeriousIllness", chkSeriousIllness.Checked);
-
-            // ===== ENCRYPTED FIELD: Illness Details =====
             cmd.Parameters.AddWithValue("@IllnessDetails",
                 string.IsNullOrEmpty(txtIllnessDetails.Text) ? "" : CryptoHelper.Encrypt(txtIllnessDetails.Text));
 
             cmd.Parameters.AddWithValue("@Hospitalized", chkHospitalized.Checked);
-
-            // ===== ENCRYPTED FIELD: Hospitalization Details =====
             cmd.Parameters.AddWithValue("@HospitalizationDetails",
                 string.IsNullOrEmpty(txtHospitalizationDetails.Text) ? "" : CryptoHelper.Encrypt(txtHospitalizationDetails.Text));
 
@@ -384,13 +337,10 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@Aspirin", chkAspirin.Checked);
             cmd.Parameters.AddWithValue("@Latex", chkLatex.Checked);
 
-            // ===== ENCRYPTED FIELD: Other Allergies =====
             cmd.Parameters.AddWithValue("@OtherAllergies",
                 string.IsNullOrEmpty(txtOtherAllergies.Text) ? "" : CryptoHelper.Encrypt(txtOtherAllergies.Text));
 
             cmd.Parameters.AddWithValue("@PrescriptionMeds", chkPrescriptionMeds.Checked);
-
-            // ===== ENCRYPTED FIELD: Medication List =====
             cmd.Parameters.AddWithValue("@MedicationList",
                 string.IsNullOrEmpty(txtMedicationList.Text) ? "" : CryptoHelper.Encrypt(txtMedicationList.Text));
 
@@ -412,23 +362,17 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@Nursing", isFemale && chkNursing.Checked);
             cmd.Parameters.AddWithValue("@BirthControl", isFemale && chkBirthControl.Checked);
 
-            // ===== ENCRYPTED FIELD: Blood Type =====
             string bloodType = cmbBloodType.SelectedItem?.ToString() ?? "";
-            if (string.IsNullOrEmpty(bloodType) || bloodType == "-- Select Blood Type --")
-            {
-                cmd.Parameters.AddWithValue("@BloodType", "");
-            }
-            else
-            {
-                cmd.Parameters.AddWithValue("@BloodType", CryptoHelper.Encrypt(bloodType));
-            }
+            cmd.Parameters.AddWithValue("@BloodType",
+                string.IsNullOrEmpty(bloodType) || bloodType == "-- Select Blood Type --"
+                    ? ""
+                    : CryptoHelper.Encrypt(bloodType));
         }
 
         private void UpdateNavigation()
         {
             btnCancel.Visible = (currentTab == 0);
             btnBack.Visible = (currentTab > 0);
-
             btnSave.Visible = (currentTab == totalTabs - 1);
             btnNext.Visible = (currentTab < totalTabs - 1);
         }
@@ -448,31 +392,21 @@ namespace M.A_Florencio_Dental_Records
             {
                 e.Graphics.FillRectangle(new SolidBrush(Color.DodgerBlue), tabRect);
                 e.Graphics.DrawString(tabPage.Text, new Font("Arial", 10, FontStyle.Bold),
-                                     Brushes.White, tabRect.Location);
+                    Brushes.White, tabRect.Location);
             }
             else
             {
                 e.Graphics.FillRectangle(new SolidBrush(Color.LightGray), tabRect);
                 e.Graphics.DrawString(tabPage.Text, new Font("Arial", 10),
-                                     Brushes.Black, tabRect.Location);
+                    Brushes.Black, tabRect.Location);
             }
 
             e.Graphics.DrawRectangle(Pens.Black, tabRect);
         }
 
-        private void materialTabControl1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void cmbBloodType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tabGeneral_Click(object sender, EventArgs e)
-        {
-
-        }
+        private void chkGoodHealth_CheckedChanged(object sender, EventArgs e) { }
+        private void materialTabControl1_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void cmbBloodType_SelectedIndexChanged(object sender, EventArgs e) { }
+        private void tabGeneral_Click(object sender, EventArgs e) { }
     }
 }

@@ -136,11 +136,16 @@
     <Compile Include="CompleteAppointmentForm.Designer.cs">
       <DependentUpon>CompleteAppointmentForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ConnectionHelper.cs" />
     <Compile Include="ConnectionSettings.cs" />
     <Compile Include="ConnectionSetupForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="CryptoHelper.cs" />
+    <Compile Include="DatabaseInitializer.cs" />
+    <Compile Include="DatabaseViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="DBcontrol.cs">
       <SubType>UserControl</SubType>
     </Compile>

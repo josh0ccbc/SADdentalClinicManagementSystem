@@ -30,6 +30,22 @@ namespace M.A_Florencio_Dental_Records
             if (!ValidateFields())
                 return;
 
+            // ── Require admin password before creating account ────────────
+            using (AdminPasswordDialog adminDialog = new AdminPasswordDialog())
+            {
+                DialogResult adminResult = adminDialog.ShowDialog();
+
+                if (adminResult != DialogResult.OK || !adminDialog.IsVerified)
+                {
+                    MessageBox.Show(
+                        "Admin verification failed. Staff account was not created.",
+                        "Access Denied",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
             string username = txtUsername.Text;
             string email = txtEmail.Text;
             string password = txtPassword.Text;
@@ -37,7 +53,11 @@ namespace M.A_Florencio_Dental_Records
 
             if (UserExists(username, email))
             {
-                MessageBox.Show("Username or email already exists!", "Registration Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Username or email already exists!",
+                    "Registration Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
                 return;
             }
 
@@ -46,11 +66,11 @@ namespace M.A_Florencio_Dental_Records
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = @"
-                INSERT INTO Users (Username, Email, PasswordHash, FullName, Role, IsActive)
-                VALUES (@Username, @Email, @PasswordHash, @FullName, @Role, @IsActive)";
+                        INSERT INTO Users (Username, Email, PasswordHash, FullName, Role, IsActive)
+                        VALUES (@Username, @Email, @PasswordHash, @FullName, @Role, @IsActive)";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@Username", username);
@@ -64,22 +84,29 @@ namespace M.A_Florencio_Dental_Records
                     cmd.ExecuteNonQuery();
                     conn.Close();
 
-                    MessageBox.Show("Account created successfully! You can now login.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(
+                        "Account created successfully! The new staff member can now login.",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
 
-                    // ✅ CLOSE THIS FORM (returns to LoginForm automatically)
                     this.Close();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Registration Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Error: " + ex.Message,
+                    "Registration Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
         // ✅ CHECK IF USER EXISTS
         private bool UserExists(string username, string email)
         {
-            using (SqlConnection conn = new SqlConnection(ConnectionSettings.Current.GetConnectionString()))
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = "SELECT COUNT(*) FROM Users WHERE Username = @Username OR Email = @Email";
                 SqlCommand cmd = new SqlCommand(query, conn);

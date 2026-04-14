@@ -193,7 +193,7 @@
             this.tabMedicalHistory.Multiline = true;
             this.tabMedicalHistory.Name = "tabMedicalHistory";
             this.tabMedicalHistory.SelectedIndex = 0;
-            this.tabMedicalHistory.Size = new System.Drawing.Size(623, 330);
+            this.tabMedicalHistory.Size = new System.Drawing.Size(578, 330);
             this.tabMedicalHistory.TabIndex = 4;
             // 
             // tabGeneral
@@ -214,7 +214,7 @@
             this.tabGeneral.Controls.Add(this.label20);
             this.tabGeneral.Location = new System.Drawing.Point(4, 24);
             this.tabGeneral.Name = "tabGeneral";
-            this.tabGeneral.Size = new System.Drawing.Size(615, 302);
+            this.tabGeneral.Size = new System.Drawing.Size(570, 302);
             this.tabGeneral.TabIndex = 0;
             this.tabGeneral.Text = "General";
             this.tabGeneral.UseVisualStyleBackColor = true;
@@ -363,9 +363,9 @@
             this.tabAllergies.Controls.Add(this.chkPenicillin);
             this.tabAllergies.Controls.Add(this.chkLocalAnesthetic);
             this.tabAllergies.Controls.Add(this.label22);
-            this.tabAllergies.Location = new System.Drawing.Point(4, 22);
+            this.tabAllergies.Location = new System.Drawing.Point(4, 24);
             this.tabAllergies.Name = "tabAllergies";
-            this.tabAllergies.Size = new System.Drawing.Size(615, 304);
+            this.tabAllergies.Size = new System.Drawing.Size(570, 302);
             this.tabAllergies.TabIndex = 1;
             this.tabAllergies.Text = "Allergies";
             this.tabAllergies.UseVisualStyleBackColor = true;
@@ -456,9 +456,9 @@
             this.tabMedication.Controls.Add(this.txtMedicationList);
             this.tabMedication.Controls.Add(this.chkPrescriptionMeds);
             this.tabMedication.Controls.Add(this.label24);
-            this.tabMedication.Location = new System.Drawing.Point(4, 22);
+            this.tabMedication.Location = new System.Drawing.Point(4, 24);
             this.tabMedication.Name = "tabMedication";
-            this.tabMedication.Size = new System.Drawing.Size(615, 304);
+            this.tabMedication.Size = new System.Drawing.Size(570, 302);
             this.tabMedication.TabIndex = 2;
             this.tabMedication.Text = "Medication & Substances";
             this.tabMedication.UseVisualStyleBackColor = true;
@@ -537,9 +537,9 @@
             this.tabCondition.Controls.Add(this.chkLowBP);
             this.tabCondition.Controls.Add(this.chkHighBP);
             this.tabCondition.Controls.Add(this.label26);
-            this.tabCondition.Location = new System.Drawing.Point(4, 22);
+            this.tabCondition.Location = new System.Drawing.Point(4, 24);
             this.tabCondition.Name = "tabCondition";
-            this.tabCondition.Size = new System.Drawing.Size(615, 304);
+            this.tabCondition.Size = new System.Drawing.Size(570, 302);
             this.tabCondition.TabIndex = 3;
             this.tabCondition.Text = "Condition";
             this.tabCondition.UseVisualStyleBackColor = true;
@@ -555,7 +555,7 @@
             // 
             // txtOtherConditions
             // 
-            this.txtOtherConditions.Location = new System.Drawing.Point(29, 263);
+            this.txtOtherConditions.Location = new System.Drawing.Point(29, 261);
             this.txtOtherConditions.Multiline = true;
             this.txtOtherConditions.Name = "txtOtherConditions";
             this.txtOtherConditions.Size = new System.Drawing.Size(425, 35);
@@ -699,9 +699,9 @@
             this.tabWomen.Controls.Add(this.chkPregnant);
             this.tabWomen.Controls.Add(this.label27);
             this.tabWomen.Controls.Add(this.label28);
-            this.tabWomen.Location = new System.Drawing.Point(4, 22);
+            this.tabWomen.Location = new System.Drawing.Point(4, 24);
             this.tabWomen.Name = "tabWomen";
-            this.tabWomen.Size = new System.Drawing.Size(615, 304);
+            this.tabWomen.Size = new System.Drawing.Size(570, 302);
             this.tabWomen.TabIndex = 4;
             this.tabWomen.Text = "Women";
             this.tabWomen.UseVisualStyleBackColor = true;
@@ -767,7 +767,7 @@
             // MedicalHistoryForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(629, 450);
+            this.ClientSize = new System.Drawing.Size(584, 450);
             this.Controls.Add(this.tabMedicalHistory);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnSave);

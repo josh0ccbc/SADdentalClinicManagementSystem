@@ -58,7 +58,6 @@
             this.label5.TabIndex = 11;
             this.label5.Text = "Total Patients";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
             // lblPatientCount
             // 
@@ -109,7 +108,6 @@
             this.label3.Size = new System.Drawing.Size(254, 18);
             this.label3.TabIndex = 6;
             this.label3.Text = "Overview of today\'s operations";
-            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // label2
             // 
@@ -120,7 +118,6 @@
             this.label2.Size = new System.Drawing.Size(285, 37);
             this.label2.TabIndex = 5;
             this.label2.Text = "Clinic Dashboard";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // BTNAddPatient
             // 
