@@ -290,7 +290,7 @@
             this.cmbBloodType.FormattingEnabled = true;
             this.cmbBloodType.Location = new System.Drawing.Point(178, 250);
             this.cmbBloodType.Name = "cmbBloodType";
-            this.cmbBloodType.Size = new System.Drawing.Size(110, 23);
+            this.cmbBloodType.Size = new System.Drawing.Size(165, 23);
             this.cmbBloodType.TabIndex = 38;
             this.cmbBloodType.SelectedIndexChanged += new System.EventHandler(this.cmbBloodType_SelectedIndexChanged);
             // 
@@ -363,9 +363,9 @@
             this.tabAllergies.Controls.Add(this.chkPenicillin);
             this.tabAllergies.Controls.Add(this.chkLocalAnesthetic);
             this.tabAllergies.Controls.Add(this.label22);
-            this.tabAllergies.Location = new System.Drawing.Point(4, 24);
+            this.tabAllergies.Location = new System.Drawing.Point(4, 22);
             this.tabAllergies.Name = "tabAllergies";
-            this.tabAllergies.Size = new System.Drawing.Size(570, 302);
+            this.tabAllergies.Size = new System.Drawing.Size(570, 304);
             this.tabAllergies.TabIndex = 1;
             this.tabAllergies.Text = "Allergies";
             this.tabAllergies.UseVisualStyleBackColor = true;
@@ -456,9 +456,9 @@
             this.tabMedication.Controls.Add(this.txtMedicationList);
             this.tabMedication.Controls.Add(this.chkPrescriptionMeds);
             this.tabMedication.Controls.Add(this.label24);
-            this.tabMedication.Location = new System.Drawing.Point(4, 24);
+            this.tabMedication.Location = new System.Drawing.Point(4, 22);
             this.tabMedication.Name = "tabMedication";
-            this.tabMedication.Size = new System.Drawing.Size(570, 302);
+            this.tabMedication.Size = new System.Drawing.Size(570, 304);
             this.tabMedication.TabIndex = 2;
             this.tabMedication.Text = "Medication & Substances";
             this.tabMedication.UseVisualStyleBackColor = true;
@@ -537,9 +537,9 @@
             this.tabCondition.Controls.Add(this.chkLowBP);
             this.tabCondition.Controls.Add(this.chkHighBP);
             this.tabCondition.Controls.Add(this.label26);
-            this.tabCondition.Location = new System.Drawing.Point(4, 24);
+            this.tabCondition.Location = new System.Drawing.Point(4, 22);
             this.tabCondition.Name = "tabCondition";
-            this.tabCondition.Size = new System.Drawing.Size(570, 302);
+            this.tabCondition.Size = new System.Drawing.Size(570, 304);
             this.tabCondition.TabIndex = 3;
             this.tabCondition.Text = "Condition";
             this.tabCondition.UseVisualStyleBackColor = true;
@@ -699,9 +699,9 @@
             this.tabWomen.Controls.Add(this.chkPregnant);
             this.tabWomen.Controls.Add(this.label27);
             this.tabWomen.Controls.Add(this.label28);
-            this.tabWomen.Location = new System.Drawing.Point(4, 24);
+            this.tabWomen.Location = new System.Drawing.Point(4, 22);
             this.tabWomen.Name = "tabWomen";
-            this.tabWomen.Size = new System.Drawing.Size(570, 302);
+            this.tabWomen.Size = new System.Drawing.Size(570, 304);
             this.tabWomen.TabIndex = 4;
             this.tabWomen.Text = "Women";
             this.tabWomen.UseVisualStyleBackColor = true;

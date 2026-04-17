@@ -1,23 +1,32 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Windows.Forms;
 
 namespace M.A_Florencio_Dental_Records
 {
     public class AdminKeyBackupForm : Form
     {
-        // Export controls
+        // Controls
         private TextBox txtExportPassword;
         private TextBox txtExportConfirm;
         private TextBox txtExportPath;
-        private Button btnExport;
+        private Button btnExportKey;
         private Label lblExportStatus;
 
-        // Import controls
-        private TextBox txtImportPassword;
         private TextBox txtImportPath;
-        private Button btnImport;
+        private TextBox txtImportPassword;
+        private Button btnImportKey;
         private Label lblImportStatus;
+
+        private Button btnDbBackup;
+        private Button btnDbRestore;
+        private Label lblDbStatus;
+
+        private const string BackupFolder = @"C:\DentalClinicBackups";
+        private const string SqlInstance = @".\SQLEXPRESS";   // ← Fixed for your setup
 
         public AdminKeyBackupForm()
         {
@@ -26,194 +35,288 @@ namespace M.A_Florencio_Dental_Records
 
         private void BuildUI()
         {
-            this.Text = "Security — Encryption Key Backup & Recovery";
-            this.Width = 620;
-            this.Height = 580;
+            this.Text = "Security — Backup & Recovery";
+            this.Width = 760;
+            this.Height = 730;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.AutoScroll = true;
+            this.AutoScrollMinSize = new Size(0, 680);
 
-            // ── EXPORT SECTION ──────────────────────────────────────
-            var grpExport = new GroupBox();
-            grpExport.Text = "📤 Export Key Backup (Do this on working PC)";
-            grpExport.Location = new System.Drawing.Point(15, 15);
-            grpExport.Width = 570;
-            grpExport.Height = 230;
-            grpExport.Font = new System.Drawing.Font("Arial", 9, System.Drawing.FontStyle.Bold);
-            this.Controls.Add(grpExport);
+            int y = 15;
 
-            var lblWarning = new Label();
-            lblWarning.Text = "⚠️  Store the backup file and password in a safe place (e.g. USB drive in locked drawer).\n" +
-                              "     Without both, data CANNOT be recovered if this PC is replaced.";
-            lblWarning.Location = new System.Drawing.Point(10, 22);
-            lblWarning.Width = 545;
-            lblWarning.Height = 40;
-            lblWarning.Font = new System.Drawing.Font("Arial", 8);
-            lblWarning.ForeColor = System.Drawing.Color.DarkRed;
-            grpExport.Controls.Add(lblWarning);
+            // ====================== ENCRYPTION KEY EXPORT ======================
+            var grpKeyExport = new GroupBox
+            {
+                Text = "📤 Encryption Key Backup (Do this on working PC)",
+                Location = new Point(20, y),
+                Width = 710,
+                Height = 265
+            };
+            this.Controls.Add(grpKeyExport);
 
-            AddLabel(grpExport, "Backup Password:", 10, 68);
-            txtExportPassword = AddTextBox(grpExport, 10, 88, true);
+            var lblKeyWarning = new Label
+            {
+                Text = "⚠️ Store this backup file and password safely.\nWithout both, patient data cannot be recovered.",
+                Location = new Point(20, 25),
+                Width = 660,
+                Height = 40,
+                ForeColor = Color.DarkRed
+            };
+            grpKeyExport.Controls.Add(lblKeyWarning);
 
-            AddLabel(grpExport, "Confirm Password:", 10, 115);
-            txtExportConfirm = AddTextBox(grpExport, 10, 135, true);
+            AddLabel(grpKeyExport, "Backup Password:", 20, 72);
+            txtExportPassword = AddTextBox(grpKeyExport, 20, 92, true, 480);
+            AddLabel(grpKeyExport, "Confirm Password:", 20, 122);
+            txtExportConfirm = AddTextBox(grpKeyExport, 20, 142, true, 480);
+            AddLabel(grpKeyExport, "Save Key Backup To:", 20, 172);
+            txtExportPath = AddTextBox(grpKeyExport, 20, 192, false, 530);
 
-            AddLabel(grpExport, "Save Backup File To:", 10, 160);
-            txtExportPath = AddTextBox(grpExport, 10, 178, false);
-            txtExportPath.Width = 400;
-            txtExportPath.Text = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                "DentalClinic_KeyBackup.dkb");
-
-            var btnBrowseExport = new Button();
-            btnBrowseExport.Text = "Browse...";
-            btnBrowseExport.Location = new System.Drawing.Point(420, 176);
-            btnBrowseExport.Width = 90;
+            var btnBrowseExport = new Button { Text = "Browse...", Location = new Point(565, 190), Width = 110 };
             btnBrowseExport.Click += BrowseExportPath;
-            grpExport.Controls.Add(btnBrowseExport);
+            grpKeyExport.Controls.Add(btnBrowseExport);
 
-            btnExport = new Button();
-            btnExport.Text = "📤 Export Key Backup";
-            btnExport.Location = new System.Drawing.Point(10, 205);
-            btnExport.Width = 200;
-            btnExport.Height = 32;
-            btnExport.BackColor = System.Drawing.Color.SteelBlue;
-            btnExport.ForeColor = System.Drawing.Color.White;
-            btnExport.FlatStyle = FlatStyle.Flat;
-            btnExport.Click += ExportKey;
-            grpExport.Controls.Add(btnExport);
+            btnExportKey = new Button
+            {
+                Text = "📤 Export Encryption Key",
+                Location = new Point(20, 225),
+                Width = 250,
+                Height = 40,
+                BackColor = Color.SteelBlue,
+                ForeColor = Color.White
+            };
+            btnExportKey.Click += ExportKey;
+            grpKeyExport.Controls.Add(btnExportKey);
 
-            lblExportStatus = new Label();
-            lblExportStatus.Location = new System.Drawing.Point(220, 210);
-            lblExportStatus.Width = 330;
-            lblExportStatus.Height = 25;
-            lblExportStatus.Font = new System.Drawing.Font("Arial", 8);
-            grpExport.Controls.Add(lblExportStatus);
+            lblExportStatus = new Label { Location = new Point(285, 230), Width = 400, Height = 30 };
+            grpKeyExport.Controls.Add(lblExportStatus);
 
-            // ── IMPORT SECTION ──────────────────────────────────────
-            var grpImport = new GroupBox();
-            grpImport.Text = "📥 Import Key Backup (Use this on replacement PC)";
-            grpImport.Location = new System.Drawing.Point(15, 260);
-            grpImport.Width = 570;
-            grpImport.Height = 190;
-            grpImport.Font = new System.Drawing.Font("Arial", 9, System.Drawing.FontStyle.Bold);
-            this.Controls.Add(grpImport);
+            y += 280;
 
-            var lblImportNote = new Label();
-            lblImportNote.Text = "ℹ️  Use this after restoring the database backup to a new PC.\n" +
-                                 "    The app will be able to read all existing patient data after import.";
-            lblImportNote.Location = new System.Drawing.Point(10, 22);
-            lblImportNote.Width = 545;
-            lblImportNote.Height = 35;
-            lblImportNote.Font = new System.Drawing.Font("Arial", 8);
-            lblImportNote.ForeColor = System.Drawing.Color.DarkBlue;
-            grpImport.Controls.Add(lblImportNote);
+            // ====================== ENCRYPTION KEY IMPORT ======================
+            var grpKeyImport = new GroupBox
+            {
+                Text = "📥 Import Encryption Key (On new or replacement PC)",
+                Location = new Point(20, y),
+                Width = 710,
+                Height = 190
+            };
+            this.Controls.Add(grpKeyImport);
 
-            AddLabel(grpImport, "Backup File:", 10, 63);
-            txtImportPath = AddTextBox(grpImport, 10, 82, false);
-            txtImportPath.Width = 400;
+            AddLabel(grpKeyImport, "Key Backup File:", 20, 28);
+            txtImportPath = AddTextBox(grpKeyImport, 20, 48, false, 530);
 
-            var btnBrowseImport = new Button();
-            btnBrowseImport.Text = "Browse...";
-            btnBrowseImport.Location = new System.Drawing.Point(420, 80);
-            btnBrowseImport.Width = 90;
+            var btnBrowseImport = new Button { Text = "Browse...", Location = new Point(565, 46), Width = 110 };
             btnBrowseImport.Click += BrowseImportPath;
-            grpImport.Controls.Add(btnBrowseImport);
+            grpKeyImport.Controls.Add(btnBrowseImport);
 
-            AddLabel(grpImport, "Backup Password:", 10, 108);
-            txtImportPassword = AddTextBox(grpImport, 10, 127, true);
+            AddLabel(grpKeyImport, "Backup Password:", 20, 82);
+            txtImportPassword = AddTextBox(grpKeyImport, 20, 102, true, 480);
 
-            btnImport = new Button();
-            btnImport.Text = "📥 Import & Restore Key";
-            btnImport.Location = new System.Drawing.Point(10, 155);
-            btnImport.Width = 200;
-            btnImport.Height = 32;
-            btnImport.BackColor = System.Drawing.Color.DarkGreen;
-            btnImport.ForeColor = System.Drawing.Color.White;
-            btnImport.FlatStyle = FlatStyle.Flat;
-            btnImport.Click += ImportKey;
-            grpImport.Controls.Add(btnImport);
+            btnImportKey = new Button
+            {
+                Text = "📥 Import & Restore Key",
+                Location = new Point(20, 140),
+                Width = 250,
+                Height = 42,
+                BackColor = Color.DarkGreen,
+                ForeColor = Color.White
+            };
+            btnImportKey.Click += ImportKey;
+            grpKeyImport.Controls.Add(btnImportKey);
 
-            lblImportStatus = new Label();
-            lblImportStatus.Location = new System.Drawing.Point(220, 160);
-            lblImportStatus.Width = 330;
-            lblImportStatus.Height = 25;
-            lblImportStatus.Font = new System.Drawing.Font("Arial", 8);
-            grpImport.Controls.Add(lblImportStatus);
+            lblImportStatus = new Label { Location = new Point(285, 145), Width = 400, Height = 30 };
+            grpKeyImport.Controls.Add(lblImportStatus);
 
-            // ── CLOSE BUTTON ────────────────────────────────────────
-            var btnClose = new Button();
-            btnClose.Text = "Close";
-            btnClose.Location = new System.Drawing.Point(490, 470);
-            btnClose.Width = 90;
+            y += 205;
+
+            // ====================== FULL DATABASE BACKUP & RESTORE ======================
+            var grpDb = new GroupBox
+            {
+                Text = "💾 Full Database Backup & Restore",
+                Location = new Point(20, y),
+                Width = 710,
+                Height = 205
+            };
+            this.Controls.Add(grpDb);
+
+            var lblDbNote = new Label
+            {
+                Text = "This backs up EVERYTHING: patients, medical history, appointments, prescriptions, etc.",
+                Location = new Point(20, 25),
+                Width = 660,
+                Height = 35,
+                ForeColor = Color.DarkBlue
+            };
+            grpDb.Controls.Add(lblDbNote);
+
+            var lblWarning = new Label
+            {
+                Text = "⚠️ Recommended: Save backups to C:\\DentalClinicBackups\n(SQL Server service needs write permission)",
+                Location = new Point(20, 62),
+                Width = 660,
+                Height = 38,
+                ForeColor = Color.DarkOrange,
+                Font = new Font("Arial", 9, FontStyle.Bold)
+            };
+            grpDb.Controls.Add(lblWarning);
+
+            btnDbBackup = new Button
+            {
+                Text = "📤 Backup Full Database (.bak)",
+                Location = new Point(20, 105),
+                Width = 320,
+                Height = 48,
+                BackColor = Color.Teal,
+                ForeColor = Color.White
+            };
+            btnDbBackup.Click += BtnDbBackup_Click;
+            grpDb.Controls.Add(btnDbBackup);
+
+            btnDbRestore = new Button
+            {
+                Text = "📥 Restore Database from .bak",
+                Location = new Point(360, 105),
+                Width = 320,
+                Height = 48,
+                BackColor = Color.OrangeRed,
+                ForeColor = Color.White
+            };
+            btnDbRestore.Click += BtnDbRestore_Click;
+            grpDb.Controls.Add(btnDbRestore);
+
+            lblDbStatus = new Label
+            {
+                Location = new Point(20, 160),
+                Width = 660,
+                Height = 35,
+                Font = new Font("Arial", 8)
+            };
+            grpDb.Controls.Add(lblDbStatus);
+
+            // Close Button
+            var btnClose = new Button
+            {
+                Text = "Close",
+                Location = new Point(640, this.Height - 75),
+                Width = 90,
+                Height = 35,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+            };
             btnClose.Click += (s, e) => this.Close();
             this.Controls.Add(btnClose);
         }
 
-        // ── EVENT HANDLERS ──────────────────────────────────────────
+        // ====================== BACKUP & RESTORE (Using SQLEXPRESS) ======================
+        private void BtnDbBackup_Click(object sender, EventArgs e)
+        {
+            EnsureBackupFolderExists();
 
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.InitialDirectory = BackupFolder;
+                sfd.Filter = "SQL Backup (*.bak)|*.bak";
+                sfd.FileName = $"DentalClinicDB_Backup_{DateTime.Now:yyyyMMdd_HHmm}.bak";
+
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    var result = ServerDiscovery.BackupDatabase(SqlInstance, "DentalClinicDB", sfd.FileName);
+                    MessageBox.Show(result.message,
+                        result.success ? "Success" : "Failed",
+                        MessageBoxButtons.OK,
+                        result.success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void BtnDbRestore_Click(object sender, EventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "⚠️ WARNING: This will REPLACE the entire current database.\nAll current data will be lost.\n\nContinue?",
+                "Confirm Restore", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirm != DialogResult.Yes) return;
+
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.InitialDirectory = BackupFolder;
+                ofd.Filter = "SQL Backup (*.bak)|*.bak";
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    var result = ServerDiscovery.RestoreDatabase(SqlInstance, "DentalClinicDB", ofd.FileName);
+
+                    MessageBox.Show(result.message,
+                        result.success ? "Success" : "Failed",
+                        MessageBoxButtons.OK,
+                        result.success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+
+                    if (result.success)
+                        MessageBox.Show("Please restart the application.", "Restart Required");
+                }
+            }
+        }
+
+        // ====================== AUTO FOLDER & PERMISSIONS ======================
+        private void EnsureBackupFolderExists()
+        {
+            try
+            {
+                if (!Directory.Exists(BackupFolder))
+                    Directory.CreateDirectory(BackupFolder);
+
+                GrantFullControlToSqlService(BackupFolder);
+            }
+            catch
+            {
+                MessageBox.Show($"Could not auto-create folder.\n\nPlease manually create:\n{BackupFolder}\nand give Full Control to 'NT SERVICE\\MSSQL$SQLEXPRESS'",
+                    "Folder Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void GrantFullControlToSqlService(string folderPath)
+        {
+            try
+            {
+                var di = new DirectoryInfo(folderPath);
+                var security = di.GetAccessControl();
+
+                // For SQL Express
+                var sid = new SecurityIdentifier("S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464");
+                security.AddAccessRule(new FileSystemAccessRule(
+                    sid, FileSystemRights.FullControl,
+                    InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                    PropagationFlags.None, AccessControlType.Allow));
+
+                di.SetAccessControl(security);
+            }
+            catch { }
+        }
+
+        // ====================== ENCRYPTION KEY METHODS ======================
         private void ExportKey(object sender, EventArgs e)
         {
-            // Validate passwords match
-            if (string.IsNullOrWhiteSpace(txtExportPassword.Text))
+            if (string.IsNullOrWhiteSpace(txtExportPassword.Text) || txtExportPassword.Text != txtExportConfirm.Text)
             {
-                SetStatus(lblExportStatus, "❌ Password cannot be empty.", false);
-                return;
-            }
-            if (txtExportPassword.Text != txtExportConfirm.Text)
-            {
-                SetStatus(lblExportStatus, "❌ Passwords do not match.", false);
-                return;
-            }
-            if (txtExportPassword.Text.Length < 8)
-            {
-                SetStatus(lblExportStatus, "❌ Password must be at least 8 characters.", false);
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(txtExportPath.Text))
-            {
-                SetStatus(lblExportStatus, "❌ Please choose a save location.", false);
+                SetStatus(lblExportStatus, "❌ Passwords do not match or are empty.", false);
                 return;
             }
 
             try
             {
-                btnExport.Enabled = false;
-                SetStatus(lblExportStatus, "⏳ Exporting...", true);
-
-                bool success = KeyBackupManager.ExportKeyBackup(
-                    txtExportPath.Text,
-                    txtExportPassword.Text);
-
+                btnExportKey.Enabled = false;
+                SetStatus(lblExportStatus, "⏳ Exporting key...", true);
+                bool success = KeyBackupManager.ExportKeyBackup(txtExportPath.Text, txtExportPassword.Text);
                 if (success)
-                {
-                    SetStatus(lblExportStatus, "✅ Backup exported successfully!", true);
-                    MessageBox.Show(
-                        "✅ Key backup exported successfully!\n\n" +
-                        $"File: {txtExportPath.Text}\n\n" +
-                        "NEXT STEPS:\n" +
-                        "1. Copy this file to a USB drive\n" +
-                        "2. Store the USB in a locked, secure location\n" +
-                        "3. Write down the backup password and store it separately\n" +
-                        "4. Never store the file and password in the same place",
-                        "Export Successful",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
+                    SetStatus(lblExportStatus, "✅ Key backup exported successfully!", true);
             }
             catch (Exception ex)
             {
                 SetStatus(lblExportStatus, "❌ Export failed.", false);
-                MessageBox.Show(
-                    $"Export failed:\n\n{ex.Message}",
-                    "Export Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            finally
-            {
-                btnExport.Enabled = true;
-            }
+            finally { btnExportKey.Enabled = true; }
         }
 
         private void ImportKey(object sender, EventArgs e)
@@ -223,68 +326,32 @@ namespace M.A_Florencio_Dental_Records
                 SetStatus(lblImportStatus, "❌ Please select a valid backup file.", false);
                 return;
             }
-            if (string.IsNullOrWhiteSpace(txtImportPassword.Text))
-            {
-                SetStatus(lblImportStatus, "❌ Password cannot be empty.", false);
-                return;
-            }
 
-            // Final confirmation — this is irreversible
-            var confirm = MessageBox.Show(
-                "⚠️ This will replace the current encryption key on this machine.\n\n" +
-                "Only proceed if:\n" +
-                "  • You are on a NEW or REPLACEMENT PC\n" +
-                "  • You have already restored the database backup\n\n" +
-                "Are you sure you want to continue?",
-                "Confirm Key Import",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
-
-            if (confirm != DialogResult.Yes)
-                return;
+            var confirm = MessageBox.Show("This will replace the current encryption key.\nContinue?",
+                "Confirm Import", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (confirm != DialogResult.Yes) return;
 
             try
             {
-                btnImport.Enabled = false;
-                SetStatus(lblImportStatus, "⏳ Importing...", true);
-
-                bool success = KeyBackupManager.ImportKeyBackup(
-                    txtImportPath.Text,
-                    txtImportPassword.Text);
-
+                btnImportKey.Enabled = false;
+                SetStatus(lblImportStatus, "⏳ Importing key...", true);
+                bool success = KeyBackupManager.ImportKeyBackup(txtImportPath.Text, txtImportPassword.Text);
                 if (success)
-                {
-                    SetStatus(lblImportStatus, "✅ Key restored successfully!", true);
-                    MessageBox.Show(
-                        "✅ Encryption key restored successfully!\n\n" +
-                        "All patient data can now be decrypted normally.\n\n" +
-                        "Please restart the application.",
-                        "Import Successful",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
+                    SetStatus(lblImportStatus, "✅ Key imported successfully!", true);
             }
             catch (Exception ex)
             {
                 SetStatus(lblImportStatus, "❌ Import failed.", false);
-                MessageBox.Show(
-                    $"Import failed:\n\n{ex.Message}",
-                    "Import Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            finally
-            {
-                btnImport.Enabled = true;
-            }
+            finally { btnImportKey.Enabled = true; }
         }
 
         private void BrowseExportPath(object sender, EventArgs e)
         {
             using (var sfd = new SaveFileDialog())
             {
-                sfd.Title = "Save Key Backup File";
-                sfd.Filter = "Dental Key Backup (*.dkb)|*.dkb|All Files (*.*)|*.*";
+                sfd.Filter = "Dental Key Backup (*.dkb)|*.dkb";
                 sfd.FileName = "DentalClinic_KeyBackup.dkb";
                 if (sfd.ShowDialog() == DialogResult.OK)
                     txtExportPath.Text = sfd.FileName;
@@ -295,38 +362,38 @@ namespace M.A_Florencio_Dental_Records
         {
             using (var ofd = new OpenFileDialog())
             {
-                ofd.Title = "Select Key Backup File";
-                ofd.Filter = "Dental Key Backup (*.dkb)|*.dkb|All Files (*.*)|*.*";
+                ofd.Filter = "Dental Key Backup (*.dkb)|*.dkb";
                 if (ofd.ShowDialog() == DialogResult.OK)
                     txtImportPath.Text = ofd.FileName;
             }
         }
 
-        // ── HELPERS ─────────────────────────────────────────────────
-
         private void SetStatus(Label lbl, string message, bool success)
         {
             lbl.Text = message;
-            lbl.ForeColor = success ? System.Drawing.Color.DarkGreen : System.Drawing.Color.DarkRed;
-            Application.DoEvents();
+            lbl.ForeColor = success ? Color.DarkGreen : Color.DarkRed;
         }
 
         private Label AddLabel(Control parent, string text, int x, int y)
         {
-            var lbl = new Label();
-            lbl.Text = text;
-            lbl.Location = new System.Drawing.Point(x, y);
-            lbl.Width = 200;
-            lbl.Font = new System.Drawing.Font("Arial", 8);
+            var lbl = new Label
+            {
+                Text = text,
+                Location = new Point(x, y),
+                Width = 200,
+                Font = new Font("Arial", 8)
+            };
             parent.Controls.Add(lbl);
             return lbl;
         }
 
-        private TextBox AddTextBox(Control parent, int x, int y, bool isPassword)
+        private TextBox AddTextBox(Control parent, int x, int y, bool isPassword, int width = 450)
         {
-            var txt = new TextBox();
-            txt.Location = new System.Drawing.Point(x, y);
-            txt.Width = 500;
+            var txt = new TextBox
+            {
+                Location = new Point(x, y),
+                Width = width
+            };
             if (isPassword) txt.PasswordChar = '●';
             parent.Controls.Add(txt);
             return txt;

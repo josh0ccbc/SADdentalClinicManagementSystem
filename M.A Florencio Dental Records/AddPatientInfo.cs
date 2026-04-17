@@ -26,40 +26,31 @@ namespace M.A_Florencio_Dental_Records
 
         }
 
-        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        // ─── Safe encrypt with field-level error detection ────────────────────────
+        /// <summary>
+        /// Encrypts a value and throws if encryption silently fails (returns empty for non-empty input).
+        /// This catches the common bug where CryptoHelper.Encrypt() swallows exceptions and returns "".
+        /// </summary>
+        private string SafeEncrypt(string value, string fieldName)
         {
-            if (dtpBirthDate.Value > DateTime.Today)
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            string encrypted = CryptoHelper.Encrypt(value);
+
+            // If the input was non-empty but encryption returned empty, the key failed silently.
+            if (string.IsNullOrEmpty(encrypted))
             {
-                MessageBox.Show("Birth date cannot be in the future!");
-                dtpBirthDate.Value = DateTime.Today.AddYears(-18);
-                return;
+                throw new Exception(
+                    $"Encryption failed for field '{fieldName}'.\n\n" +
+                    "This usually means the encryption key is missing or inaccessible.\n\n" +
+                    "Go to Admin Panel → Security → Import Key Backup and try again.");
             }
 
-            int age = CalculateAge(dtpBirthDate.Value);
-            txtAge.Text = age.ToString();
-
-            if (age < 18)
-            {
-                label10.Visible = true;
-                Gname.Visible = true;
-                label11.Visible = true;
-                Gcontact.Visible = true;
-                label12.Visible = true;
-                Grelationship.Visible = true;
-                label13.Visible = true;
-            }
-            else
-            {
-                label10.Visible = false;
-                Gname.Visible = false;
-                label11.Visible = false;
-                Gcontact.Visible = false;
-                label12.Visible = false;
-                Grelationship.Visible = false;
-                label13.Visible = false;
-            }
+            return encrypted;
         }
 
+        // ─── Safe decrypt helper ──────────────────────────────────────────────────
         private string SafeDecrypt(object dbValue)
         {
             if (dbValue == DBNull.Value || dbValue == null)
@@ -76,95 +67,152 @@ namespace M.A_Florencio_Dental_Records
             }
             catch
             {
-                return value;
+                return value; // fallback for legacy unencrypted data
             }
         }
 
+        // ─── Age calculation ──────────────────────────────────────────────────────
+        private int CalculateAge(DateTime birthDate)
+        {
+            DateTime today = DateTime.Today;
+            int age = today.Year - birthDate.Year;
+
+            if (birthDate.Date > today.AddYears(-age))
+                age--;
+
+            return age;
+        }
+
+        // ─── Birth date changed ───────────────────────────────────────────────────
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
+        {
+            if (dtpBirthDate.Value > DateTime.Today)
+            {
+                MessageBox.Show("Birth date cannot be in the future!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                dtpBirthDate.Value = DateTime.Today.AddYears(-18);
+                return;
+            }
+
+            int age = CalculateAge(dtpBirthDate.Value);
+            txtAge.Text = age.ToString();
+
+            bool isMinor = age < 18;
+            label10.Visible = isMinor;
+            Gname.Visible = isMinor;
+            label11.Visible = isMinor;
+            Gcontact.Visible = isMinor;
+            label12.Visible = isMinor;
+            Grelationship.Visible = isMinor;
+            label13.Visible = isMinor;
+
+            // Clear guardian fields when patient becomes adult
+            if (!isMinor)
+            {
+                Gname.Text = "";
+                Gcontact.Text = "";
+                Grelationship.Text = "";
+            }
+        }
+
+        // ─── Form validation ──────────────────────────────────────────────────────
         private bool ValidateForm()
         {
             if (string.IsNullOrWhiteSpace(txtFullName.Text))
             {
-                MessageBox.Show("Full Name is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Full Name is required!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtFullName.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(cmbGender.Text))
             {
-                MessageBox.Show("Gender is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Gender is required!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 cmbGender.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(txtContact.Text))
             {
-                MessageBox.Show("Contact Number is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Contact Number is required!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtContact.Focus();
                 return false;
             }
 
-            if (!long.TryParse(txtContact.Text, out long contact))
+            if (!long.TryParse(txtContact.Text, out _))
             {
-                MessageBox.Show("Contact must be numbers only!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Contact must be numbers only!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtContact.Focus();
                 return false;
             }
 
             if (txtContact.Text.Length < 10 || txtContact.Text.Length > 11)
             {
-                MessageBox.Show("Contact must be 10-11 digits!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Contact must be 10-11 digits!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtContact.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(txtAddress.Text))
             {
-                MessageBox.Show("Address is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Address is required!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtAddress.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(cmbCivilStatus.Text))
             {
-                MessageBox.Show("Civil Status is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Civil Status is required!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 cmbCivilStatus.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(txtReligion.Text))
             {
-                MessageBox.Show("Religion is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Religion is required!", "Validation Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtReligion.Focus();
                 return false;
             }
 
-            int age = int.Parse(txtAge.Text);
-            if (age < 18)
+            // Guardian fields required for minors
+            if (int.TryParse(txtAge.Text, out int age) && age < 18)
             {
                 if (string.IsNullOrWhiteSpace(Gname.Text))
                 {
-                    MessageBox.Show("Guardian Name is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Guardian Name is required for patients under 18!", "Validation Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Gname.Focus();
                     return false;
                 }
 
                 if (string.IsNullOrWhiteSpace(Gcontact.Text))
                 {
-                    MessageBox.Show("Guardian Contact is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Guardian Contact is required for patients under 18!", "Validation Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Gcontact.Focus();
                     return false;
                 }
 
-                if (!long.TryParse(Gcontact.Text, out long gcontact))
+                if (!long.TryParse(Gcontact.Text, out _))
                 {
-                    MessageBox.Show("Guardian Contact must be numbers only!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Guardian Contact must be numbers only!", "Validation Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Gcontact.Focus();
                     return false;
                 }
 
                 if (string.IsNullOrWhiteSpace(Grelationship.Text))
                 {
-                    MessageBox.Show("Guardian Relationship is required!", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Guardian Relationship is required for patients under 18!", "Validation Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     Grelationship.Focus();
                     return false;
                 }
@@ -173,19 +221,7 @@ namespace M.A_Florencio_Dental_Records
             return true;
         }
 
-        private int CalculateAge(DateTime birthDate)
-        {
-            DateTime today = DateTime.Today;
-            int age = today.Year - birthDate.Year;
-
-            if (birthDate.Date > today.AddYears(-age))
-            {
-                age--;
-            }
-
-            return age;
-        }
-
+        // ─── Back / Cancel button ─────────────────────────────────────────────────
         private void button2_Click(object sender, EventArgs e)
         {
             Form2 form2 = (Form2)this.FindForm();
@@ -197,6 +233,7 @@ namespace M.A_Florencio_Dental_Records
                 mainForm.Show();
                 mainForm.LoadControl(new DBcontrol());
             }
+
             form2.Close();
         }
 
@@ -210,6 +247,7 @@ namespace M.A_Florencio_Dental_Records
             button2.BackgroundImage = Properties.Resources.Button3;
         }
 
+        // ─── Load existing patient info (for edit scenarios) ──────────────────────
         private void LoadPatientInfo(int patientID)
         {
             using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
@@ -224,65 +262,73 @@ namespace M.A_Florencio_Dental_Records
                 if (reader.Read())
                 {
                     txtFullName.Text = reader["FullName"].ToString();
-                    cmbGender.SelectedItem = reader["Gender"].ToString();
+
+                    string gender = SafeDecrypt(reader["Gender"]);
+                    cmbGender.SelectedItem = gender;
+
                     dtpBirthDate.Value = Convert.ToDateTime(reader["BirthDate"]);
                     txtAge.Text = reader["Age"].ToString();
 
                     txtContact.Text = SafeDecrypt(reader["ContactNumber"]);
                     txtAddress.Text = SafeDecrypt(reader["Address"]);
-                    cmbCivilStatus.SelectedItem = reader["CivilStatus"].ToString();
-                    txtReligion.Text = reader["Religion"].ToString();
+
+                    string civilStatus = SafeDecrypt(reader["CivilStatus"]);
+                    cmbCivilStatus.SelectedItem = civilStatus;
+
+                    txtReligion.Text = SafeDecrypt(reader["Religion"]);
 
                     Gname.Text = SafeDecrypt(reader["GuardianName"]);
                     Gcontact.Text = SafeDecrypt(reader["GuardianContact"]);
                     Grelationship.Text = SafeDecrypt(reader["GuardianRelationship"]);
                 }
 
-                conn.Close();
+                reader.Close();
             }
 
+            // Trigger guardian visibility based on loaded age
             dateTimePicker1_ValueChanged(null, null);
         }
 
+        // ─── Next button — validate, save patient, open medical history ───────────
         private void btnNext_Click(object sender, EventArgs e)
         {
             if (!ValidateForm())
                 return;
 
-            patientData.FullName = txtFullName.Text;
-            patientData.Gender = cmbGender.Text;
+            // Populate patientData object (for reference elsewhere if needed)
+            patientData.FullName = txtFullName.Text.Trim();
+            patientData.Gender = cmbGender.Text.Trim();
             patientData.BirthDate = dtpBirthDate.Value;
             patientData.Age = int.Parse(txtAge.Text);
-            patientData.ContactNumber = txtContact.Text;
-            patientData.Address = txtAddress.Text;
-            patientData.CivilStatus = cmbCivilStatus.Text;
-            patientData.Religion = txtReligion.Text;
-            patientData.GuardianName = Gname.Text;
-            patientData.GuardianContact = Gcontact.Text;
-            patientData.GuardianRelationship = Grelationship.Text;
+            patientData.ContactNumber = txtContact.Text.Trim();
+            patientData.Address = txtAddress.Text.Trim();
+            patientData.CivilStatus = cmbCivilStatus.Text.Trim();
+            patientData.Religion = txtReligion.Text.Trim();
+            patientData.GuardianName = Gname.Text.Trim();
+            patientData.GuardianContact = Gcontact.Text.Trim();
+            patientData.GuardianRelationship = Grelationship.Text.Trim();
 
             int newPatientID = SavePatientToDB();
 
             if (newPatientID <= 0)
             {
-                MessageBox.Show("Failed to save patient. Cannot proceed.", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // SavePatientToDB already showed the error — just stop here
                 return;
             }
 
             Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
             Form2 form2 = (Form2)this.FindForm();
 
-            // ✅ Hide Form2 while MedicalHistoryForm is open
+            // Hide Form2 while MedicalHistoryForm is open
             form2.Hide();
 
-            // ✅ Show MedicalHistoryForm as dialog over Form1
+            // Show MedicalHistoryForm as dialog
             using (MedicalHistoryForm mhForm = new MedicalHistoryForm(newPatientID))
             {
                 mhForm.ShowDialog(mainForm);
             }
 
-            // ✅ MedicalHistoryForm is now closed — show Form1 with DBcontrol
+            // MedicalHistoryForm closed — return to main with DBcontrol
             if (mainForm != null)
             {
                 mainForm.LoadControl(new DBcontrol());
@@ -291,57 +337,95 @@ namespace M.A_Florencio_Dental_Records
                 mainForm.BringToFront();
             }
 
-            // ✅ Now safe to close Form2 — Form1 is already visible
             form2.returningToMain = true;
             form2.Close();
         }
 
+        // ─── Save patient to DB with encryption guard ─────────────────────────────
         private int SavePatientToDB()
         {
             try
             {
+                // Encrypt all sensitive fields up-front so any encryption failure
+                // is caught BEFORE we open the DB connection. This prevents partial saves.
+                string encGender = SafeEncrypt(cmbGender.Text.Trim(), "Gender");
+                string encContact = SafeEncrypt(txtContact.Text.Trim(), "Contact Number");
+                string encAddress = SafeEncrypt(txtAddress.Text.Trim(), "Address");
+                string encCivilStatus = SafeEncrypt(cmbCivilStatus.Text.Trim(), "Civil Status");
+                string encReligion = SafeEncrypt(txtReligion.Text.Trim(), "Religion");
+                string encGuardianName = SafeEncrypt(Gname.Text.Trim(), "Guardian Name");
+                string encGuardianContact = SafeEncrypt(Gcontact.Text.Trim(), "Guardian Contact");
+                string encGuardianRelationship = SafeEncrypt(Grelationship.Text.Trim(), "Guardian Relationship");
+
                 using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
                     string query = @"
-                INSERT INTO Patients 
-                (FullName, Gender, BirthDate, Age, ContactNumber, Address, CivilStatus, Religion, 
-                 GuardianName, GuardianContact, GuardianRelationship, DateRegistered, IsArchived)
-                VALUES
-                (@FullName, @Gender, @BirthDate, @Age, @ContactNumber, @Address, @CivilStatus, @Religion,
-                 @GuardianName, @GuardianContact, @GuardianRelationship, @DateRegistered, 0);
-                
-                SELECT CAST(SCOPE_IDENTITY() as int);";
+                        INSERT INTO Patients 
+                            (FullName, Gender, BirthDate, Age, ContactNumber, Address,
+                             CivilStatus, Religion, GuardianName, GuardianContact,
+                             GuardianRelationship, DateRegistered, IsArchived)
+                        VALUES
+                            (@FullName, @Gender, @BirthDate, @Age, @ContactNumber, @Address,
+                             @CivilStatus, @Religion, @GuardianName, @GuardianContact,
+                             @GuardianRelationship, @DateRegistered, 0);
+
+                        SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
                     SqlCommand cmd = new SqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text);
-                    cmd.Parameters.AddWithValue("@Gender", string.IsNullOrEmpty(cmbGender.Text) ? "" : CryptoHelper.Encrypt(cmbGender.Text));
-                    cmd.Parameters.AddWithValue("@BirthDate", dtpBirthDate.Value);
+
+                    // FullName is intentionally stored unencrypted for search/display
+                    cmd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@Gender", encGender);
+                    cmd.Parameters.AddWithValue("@BirthDate", dtpBirthDate.Value.Date);
                     cmd.Parameters.AddWithValue("@Age", int.Parse(txtAge.Text));
-                    cmd.Parameters.AddWithValue("@ContactNumber", CryptoHelper.Encrypt(txtContact.Text));
-                    cmd.Parameters.AddWithValue("@Address", CryptoHelper.Encrypt(txtAddress.Text));
-                    cmd.Parameters.AddWithValue("@CivilStatus", string.IsNullOrEmpty(cmbCivilStatus.Text) ? "" : CryptoHelper.Encrypt(cmbCivilStatus.Text));
-                    cmd.Parameters.AddWithValue("@Religion", string.IsNullOrEmpty(txtReligion.Text) ? "" : CryptoHelper.Encrypt(txtReligion.Text));
-                    cmd.Parameters.AddWithValue("@GuardianName", string.IsNullOrEmpty(Gname.Text) ? "" : CryptoHelper.Encrypt(Gname.Text));
-                    cmd.Parameters.AddWithValue("@GuardianContact", string.IsNullOrEmpty(Gcontact.Text) ? "" : CryptoHelper.Encrypt(Gcontact.Text));
-                    cmd.Parameters.AddWithValue("@GuardianRelationship", string.IsNullOrEmpty(Grelationship.Text) ? "" : CryptoHelper.Encrypt(Grelationship.Text));
+                    cmd.Parameters.AddWithValue("@ContactNumber", encContact);
+                    cmd.Parameters.AddWithValue("@Address", encAddress);
+                    cmd.Parameters.AddWithValue("@CivilStatus", encCivilStatus);
+                    cmd.Parameters.AddWithValue("@Religion", encReligion);
+                    cmd.Parameters.AddWithValue("@GuardianName", encGuardianName);
+                    cmd.Parameters.AddWithValue("@GuardianContact", encGuardianContact);
+                    cmd.Parameters.AddWithValue("@GuardianRelationship", encGuardianRelationship);
                     cmd.Parameters.AddWithValue("@DateRegistered", DateTime.Now);
 
                     conn.Open();
-                    int newID = (int)cmd.ExecuteScalar();
-                    conn.Close();
+                    object result = cmd.ExecuteScalar();
 
-                    return newID;
+                    if (result == null || result == DBNull.Value)
+                    {
+                        MessageBox.Show(
+                            "Patient was not saved — the database did not return a new ID.\n\n" +
+                            "Check that the Patients table exists and the connection is valid.",
+                            "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return 0;
+                    }
+
+                    return (int)result;
                 }
+            }
+            catch (Exception ex) when (ex.Message.Contains("Encryption failed"))
+            {
+                // Encryption-specific error — already contains a user-friendly message
+                MessageBox.Show(ex.Message, "Encryption Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 0;
+            }
+            catch (SqlException sqlEx)
+            {
+                MessageBox.Show(
+                    "Database error while saving patient:\n\n" + sqlEx.Message,
+                    "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return 0;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error saving patient: " + ex.Message);
+                MessageBox.Show(
+                    "Unexpected error saving patient:\n\n" + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return 0;
             }
         }
 
-        private void txtFullName_TextChanged(object sender, EventArgs e)
-        {
-        }
+        // ─── Unused stub (keep for designer compatibility) ────────────────────────
+        private void txtFullName_TextChanged(object sender, EventArgs e) { }
     }
 }

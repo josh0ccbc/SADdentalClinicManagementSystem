@@ -301,7 +301,7 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnSecurityKeyBackup_Click(object sender, EventArgs e)
         {
-            // Only allow admin users
+            // Only allow Admin role
             if (LoginForm.CurrentUserRole != "Admin")
             {
                 MessageBox.Show("Access denied. Admin privileges required.",
@@ -309,8 +309,22 @@ namespace M.A_Florencio_Dental_Records
                 return;
             }
 
-            var form = new AdminKeyBackupForm();
-            form.ShowDialog();
+            // Step 1: Ask for Admin Password
+            using (AdminPasswordDialog passwordDialog = new AdminPasswordDialog())
+            {
+                DialogResult result = passwordDialog.ShowDialog();
+
+                if (result != DialogResult.OK || !passwordDialog.IsVerified)
+                {
+                    return; // User cancelled or wrong password
+                }
+            }
+
+            // Step 2: Password verified → Open Key Backup Form
+            using (AdminKeyBackupForm backupForm = new AdminKeyBackupForm())
+            {
+                backupForm.ShowDialog();
+            }
         }
 
         private void btnMockData_Click(object sender, EventArgs e)

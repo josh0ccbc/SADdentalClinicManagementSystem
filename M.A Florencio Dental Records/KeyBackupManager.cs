@@ -2,25 +2,10 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Forms;
 
 namespace M.A_Florencio_Dental_Records
 {
-    /// <summary>
-    /// Handles export and import of the AES+HMAC key material to/from a .dkb backup file.
-    ///
-    /// FILE FORMAT (binary):
-    ///   [20 bytes]  ASCII header "DENTAL_KEY_BACKUP_V2"
-    ///   [8  bytes]  Creation timestamp (DateTime.UtcNow.ToBinary())
-    ///   [4  bytes]  Machine name byte length (int32)
-    ///   [N  bytes]  Machine name (UTF-8)
-    ///   [4  bytes]  Export blob length (int32)
-    ///   [?  bytes]  Export blob from CryptoHelper.ExportKeyWithPassphrase()
-    ///               Internal: [16 bytes salt] + [16 bytes IV] + [AES-CBC ciphertext of 64-byte key material]
-    ///
-    /// Key material is 64 bytes: [32 bytes AES key | 32 bytes HMAC key].
-    /// Protected by admin passphrase via PBKDF2 — NOT DPAPI.
-    /// Portable across any machine.
-    /// </summary>
     public static class KeyBackupManager
     {
         private const string BACKUP_FILE_HEADER = "DENTAL_KEY_BACKUP_V2";
@@ -28,85 +13,55 @@ namespace M.A_Florencio_Dental_Records
         // =====================================================================
         // EXPORT
         // =====================================================================
-
-        /// <summary>
-        /// Exports the encryption key material to a password-protected .dkb file.
-        /// Delegates key wrapping to CryptoHelper.ExportKeyWithPassphrase().
-        /// Returns true on success, throws on failure.
-        /// </summary>
         public static bool ExportKeyBackup(string outputPath, string adminPassword)
         {
-            if (string.IsNullOrWhiteSpace(outputPath))
-                throw new ArgumentException("Output path cannot be empty.");
-            if (string.IsNullOrWhiteSpace(adminPassword))
-                throw new ArgumentException("Password cannot be empty.");
-
-            // Ensure destination directory exists
-            string dir = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+            if (string.IsNullOrWhiteSpace(outputPath)) throw new ArgumentException("Output path cannot be empty.");
+            if (string.IsNullOrWhiteSpace(adminPassword)) throw new ArgumentException("Password cannot be empty.");
 
             try
             {
-                // Step 1: Get the passphrase-protected key blob from CryptoHelper
-                // Format: [16 bytes salt] + [16 bytes IV] + [encrypted key material]
+                string dir = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
                 byte[] exportBlob = CryptoHelper.ExportKeyWithPassphrase(adminPassword);
 
-                // Step 2: Write the .dkb file with header + metadata + blob
-                using (var fs = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+                using (var fs = new FileStream(outputPath, FileMode.Create))
                 using (var bw = new BinaryWriter(fs, Encoding.UTF8))
                 {
-                    // Header — identifies valid backup files and format version
                     bw.Write(Encoding.UTF8.GetBytes(BACKUP_FILE_HEADER));
-
-                    // Metadata: timestamp and source machine name (informational only)
                     bw.Write(DateTime.UtcNow.ToBinary());
 
                     byte[] machineBytes = Encoding.UTF8.GetBytes(Environment.MachineName);
                     bw.Write(machineBytes.Length);
                     bw.Write(machineBytes);
 
-                    // Payload: length-prefixed passphrase-protected key blob
                     bw.Write(exportBlob.Length);
                     bw.Write(exportBlob);
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[BACKUP EXPORT] ✅ Key exported to: {outputPath}");
+                MessageBox.Show($"✅ Backup created successfully!\n\nFile: {outputPath}",
+                    "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
-            }
-            catch (CryptographicException ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[BACKUP EXPORT] ❌ DPAPI failure: {ex.Message}");
-                throw new Exception(
-                    "Cannot read the encryption key on this machine.\n\n" +
-                    "Export must be performed on the original PC where the key was created, " +
-                    "logged in as the same Windows user account.", ex);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[BACKUP EXPORT] ❌ {ex.Message}");
-                throw;
+                MessageBox.Show($"Export failed:\n\n{ex.Message}", "Export Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
 
         // =====================================================================
-        // IMPORT
+        // IMPORT - FIXED VERSION
         // =====================================================================
-
-        /// <summary>
-        /// Imports a .dkb backup file and restores the key on the current machine.
-        /// Delegates key unwrapping + DB saving to CryptoHelper.ImportKeyWithPassphrase().
-        /// After this completes, all existing patient data can be decrypted normally.
-        /// Returns true on success, throws on failure.
-        /// </summary>
         public static bool ImportKeyBackup(string backupPath, string adminPassword)
         {
-            if (string.IsNullOrWhiteSpace(backupPath))
-                throw new ArgumentException("Backup file path cannot be empty.");
-            if (!File.Exists(backupPath))
-                throw new FileNotFoundException("Backup file not found.", backupPath);
+            if (string.IsNullOrWhiteSpace(backupPath) || !File.Exists(backupPath))
+                throw new Exception("Backup file not found or path is empty.");
+
             if (string.IsNullOrWhiteSpace(adminPassword))
-                throw new ArgumentException("Password cannot be empty.");
+                throw new Exception("Password cannot be empty.");
 
             try
             {
@@ -115,56 +70,48 @@ namespace M.A_Florencio_Dental_Records
                 using (var fs = new FileStream(backupPath, FileMode.Open, FileAccess.Read))
                 using (var br = new BinaryReader(fs, Encoding.UTF8))
                 {
-                    // Step 1: Verify file header
-                    byte[] expectedHeader = Encoding.UTF8.GetBytes(BACKUP_FILE_HEADER);
-                    byte[] readHeader = br.ReadBytes(expectedHeader.Length);
-                    string readHeaderStr = Encoding.UTF8.GetString(readHeader);
+                    // Read header
+                    byte[] headerBytes = br.ReadBytes(BACKUP_FILE_HEADER.Length);
+                    string header = Encoding.UTF8.GetString(headerBytes);
 
-                    if (readHeaderStr != BACKUP_FILE_HEADER)
+                    if (header != BACKUP_FILE_HEADER)
                     {
-                        // Detect old V1 format and give a clear message
-                        if (readHeaderStr.StartsWith("DENTAL_KEY_BACKUP_V1"))
-                            throw new Exception(
-                                "This backup was created with an older version of the application (V1).\n\n" +
-                                "Please export a new backup from the original machine first.");
-
-                        throw new Exception(
-                            "Invalid backup file. This file was not created by this application.");
+                        if (header.StartsWith("DENTAL_KEY_BACKUP_V1"))
+                            throw new Exception("This backup file is from an older version.\nPlease create a new backup from the original PC.");
+                        throw new Exception("Invalid backup file format.");
                     }
 
-                    // Step 2: Read metadata — log for diagnostics, not used for decryption
-                    long createdBinary = br.ReadInt64();
-                    int machineNameLen = br.ReadInt32();
-                    string originalMachine = Encoding.UTF8.GetString(br.ReadBytes(machineNameLen));
+                    // Skip metadata
+                    br.ReadInt64();                    // timestamp
+                    int machineLen = br.ReadInt32();
+                    br.ReadBytes(machineLen);          // machine name
 
-                    System.Diagnostics.Debug.WriteLine($"[BACKUP IMPORT] Original machine : {originalMachine}");
-                    System.Diagnostics.Debug.WriteLine($"[BACKUP IMPORT] Created (UTC)     : {DateTime.FromBinary(createdBinary):yyyy-MM-dd HH:mm:ss}");
-
-                    // Step 3: Read the passphrase-protected key blob
+                    // Read blob
                     int blobLength = br.ReadInt32();
-                    exportBlob = br.ReadBytes(blobLength);
+                    if (blobLength <= 0 || blobLength > fs.Length - fs.Position)
+                        throw new Exception("Backup file is corrupted (invalid blob size).");
 
-                    if (exportBlob.Length != blobLength)
-                        throw new Exception("Backup file appears truncated or corrupted.");
+                    exportBlob = br.ReadBytes(blobLength);
                 }
 
-                // Step 4: Delegate decryption + DPAPI re-protection + DB save to CryptoHelper
+                // Pass to CryptoHelper
                 CryptoHelper.ImportKeyWithPassphrase(exportBlob, adminPassword);
 
-                System.Diagnostics.Debug.WriteLine("[BACKUP IMPORT] ✅ Key restored successfully.");
+                MessageBox.Show("✅ Key imported successfully!\n\nYou can now use the system on this PC.\n\nPlease restart the application.",
+                    "Import Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
             }
             catch (CryptographicException)
             {
-                // Wrong passphrase produces a crypto error during AES decryption
-                throw new Exception(
-                    "Wrong password, or the backup file is corrupted.\n\n" +
-                    "Please check the backup password and try again.");
+                MessageBox.Show("❌ Wrong password or the backup file is corrupted.\n\nPlease check the password and try again.",
+                    "Import Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[BACKUP IMPORT] ❌ {ex.Message}");
-                throw;
+                MessageBox.Show($"Import failed:\n\n{ex.Message}", "Import Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
     }

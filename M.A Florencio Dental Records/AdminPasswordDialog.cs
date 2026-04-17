@@ -22,26 +22,43 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnConfirm_Click(object sender, EventArgs e)
         {
-            string enteredPassword = txtAdminPassword.Text;
-
-            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
+            if (string.IsNullOrWhiteSpace(txtAdminPassword.Text))
             {
-                string query = "SELECT PasswordHash FROM Users WHERE Role = 'Admin' AND IsActive = 1";
-                SqlCommand cmd = new SqlCommand(query, conn);
-                conn.Open();
-                SqlDataReader reader = cmd.ExecuteReader();
+                MessageBox.Show("Please enter password.", "Input Required",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                while (reader.Read())
+            IsVerified = false;
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
-                    string hash = reader["PasswordHash"].ToString();
+                    string query = @"
+                SELECT PasswordHash 
+                FROM Users 
+                WHERE Role = 'Admin' 
+                  AND IsActive = 1";
 
-                    // Use your existing PasswordHelper to verify
-                    if (PasswordHelper.VerifyPassword(enteredPassword, hash))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        IsVerified = true;
-                        break;
+                        conn.Open();
+                        string hash = cmd.ExecuteScalar()?.ToString();
+
+                        if (!string.IsNullOrEmpty(hash) &&
+                            PasswordHelper.VerifyPassword(txtAdminPassword.Text.Trim(), hash))
+                        {
+                            IsVerified = true;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Database error during verification.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
 
             if (IsVerified)
