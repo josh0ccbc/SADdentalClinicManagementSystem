@@ -252,7 +252,6 @@ namespace M.A_Florencio_Dental_Records
                     Timestamp DATETIME NOT NULL DEFAULT GETDATE(),
                     Details NVARCHAR(MAX) NULL
                 );";
-
             using (SqlCommand cmd = new SqlCommand(sql, conn))
                 cmd.ExecuteNonQuery();
 
@@ -323,7 +322,6 @@ namespace M.A_Florencio_Dental_Records
                     BACKUP DATABASE [{databaseName}]
                     TO DISK = N'{backupFilePath}'
                     WITH FORMAT, INIT, NAME = 'DentalClinicDB-FullBackup', SKIP, NOREWIND, NOUNLOAD, STATS = 10;";
-
                 using (SqlConnection conn = new SqlConnection($"Server={serverName};Database=master;Integrated Security=True;"))
                 {
                     conn.Open();
@@ -345,22 +343,17 @@ namespace M.A_Florencio_Dental_Records
             {
                 string dataPath = GetDefaultDataPath(serverName);
                 string logPath = GetDefaultLogPath(serverName);
-
                 string mdfPath = Path.Combine(dataPath, $"{databaseName}.mdf");
                 string ldfPath = Path.Combine(logPath, $"{databaseName}_Log.ldf");
-
                 string sql = $@"
                     USE [master];
                     ALTER DATABASE [{databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-
                     RESTORE DATABASE [{databaseName}]
                     FROM DISK = N'{backupFilePath}'
                     WITH REPLACE,
                          MOVE '{databaseName}' TO N'{mdfPath}',
                          MOVE '{databaseName}_Log' TO N'{ldfPath}';
-
                     ALTER DATABASE [{databaseName}] SET MULTI_USER;";
-
                 using (SqlConnection conn = new SqlConnection($"Server={serverName};Database=master;Integrated Security=True;"))
                 {
                     conn.Open();
@@ -370,7 +363,6 @@ namespace M.A_Florencio_Dental_Records
                         cmd.ExecuteNonQuery();
                     }
                 }
-
                 return (true, "✅ Database restored successfully!\n\nPlease restart the application.");
             }
             catch (Exception ex)
@@ -379,7 +371,6 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ====================== HELPERS FOR RESTORE ======================
         private static string GetDefaultDataPath(string serverName)
         {
             try
@@ -397,8 +388,29 @@ namespace M.A_Florencio_Dental_Records
                 }
             }
             catch { }
-
             return @"C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\";
+        }
+
+        public static string GetSqlInstanceName()
+        {
+            // First try the saved / current one
+            string current = ConnectionHelper.GetCurrentServerName();
+            var test = TestConnectionDetailed(current, "master");
+            if (test.success)
+                return current;
+
+            // Try common names
+            foreach (string candidate in CommonServerNames)
+            {
+                var result = TestConnectionDetailed(candidate, "master");
+                if (result.success)
+                {
+                    ConnectionHelper.SetServerName(candidate);
+                    return candidate;
+                }
+            }
+
+            return ".";
         }
 
         private static string GetDefaultLogPath(string serverName)
@@ -418,7 +430,6 @@ namespace M.A_Florencio_Dental_Records
                 }
             }
             catch { }
-
             return @"C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\";
         }
     }

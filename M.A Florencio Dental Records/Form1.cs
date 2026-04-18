@@ -22,6 +22,7 @@ namespace M.A_Florencio_Dental_Records
         private System.Windows.Forms.Timer _inactivityTimer;
         private const int INACTIVITY_TIMEOUT_SECONDS = 300;
         private int _inactivitySecondsRemaining;
+        private bool _usbBackupInProgress = false;
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
@@ -121,11 +122,54 @@ namespace M.A_Florencio_Dental_Records
             this.MouseMove += ResetInactivityTimer;
             this.KeyPress += ResetInactivityTimer;
             Application.AddMessageFilter(new ActivityFilter(ResetInactivityTimer));
+
+            if (UsbBackupManager.IsRegisteredDrivePresent(out _))
+            {
+                UsbBackupManager.PerformBackupToUsb();
+            }
         }
 
         private void ResetInactivityTimer(object sender, EventArgs e)
         {
             _inactivitySecondsRemaining = INACTIVITY_TIMEOUT_SECONDS;
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            const int WM_DEVICECHANGE = 0x0219;
+            const int DBT_DEVICEARRIVAL = 0x8000; // only "device arrived", not removal/other
+
+            if (m.Msg == WM_DEVICECHANGE && m.WParam.ToInt32() == DBT_DEVICEARRIVAL)
+            {
+                if (_usbBackupInProgress) return; // prevent duplicate triggers
+                _usbBackupInProgress = true;
+
+                // Delay off the UI thread so the drive has time to fully mount
+                Task.Delay(2000).ContinueWith(_ =>
+                {
+                    this.Invoke((Action)(() =>
+                    {
+                        try
+                        {
+                            if (UsbBackupManager.IsRegisteredDrivePresent(out string usbRoot))
+                            {
+                                UsbBackupManager.PerformBackupToUsb();
+
+                                // Optional: notify user
+                                MessageBox.Show(
+                                    $"✅ Auto-backup completed to {usbRoot}DentalClinicBackups\\",
+                                    "USB Backup", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        finally
+                        {
+                            _usbBackupInProgress = false;
+                        }
+                    }));
+                });
+            }
         }
 
         private void StartInactivityTimer()
