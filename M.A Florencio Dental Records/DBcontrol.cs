@@ -117,5 +117,96 @@ namespace M.A_Florencio_Dental_Records
         {
             BTNAddPatient.BackgroundImage = Properties.Resources.Button;
         }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new patientControl());
+                mainForm.ActivateButton(mainForm.button2);  // call it on mainForm
+            }
+        }
+
+        private void lblPatientCount_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new patientControl());
+                mainForm.ActivateButton(mainForm.button2);  // call it on mainForm
+            }
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new patientControl());
+                mainForm.ActivateButton(mainForm.button2);  // call it on mainForm
+            }
+        }
+
+        private void pictureBox5_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new appointmentsControl());
+                mainForm.ActivateButton(mainForm.button4);  // call it on mainForm
+            }
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new appointmentsControl());
+                mainForm.ActivateButton(mainForm.button4);  // call it on mainForm
+            }
+        }
+
+        private void lblTodayAppointments_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new appointmentsControl());
+                mainForm.ActivateButton(mainForm.button4);  // call it on mainForm
+            }
+        }
+
+        private void lblUpcomingAppointments_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new appointmentsControl(), 400); // ✅ 400 = your scroll Y
+                mainForm.ActivateButton(mainForm.button4);
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new appointmentsControl(), 400); // ✅ 400 = your scroll Y
+                mainForm.ActivateButton(mainForm.button4);
+            }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            Form1 mainForm = this.FindForm() as Form1;
+            if (mainForm != null)
+            {
+                mainForm.LoadControl(new appointmentsControl(), 400); // ✅ 400 = your scroll Y
+                mainForm.ActivateButton(mainForm.button4);
+            }
+        }
     }
+  
 }

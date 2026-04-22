@@ -29,7 +29,7 @@ namespace M.A_Florencio_Dental_Records
             string value = dbValue.ToString();
             if (string.IsNullOrEmpty(value)) return "";
             try { return CryptoHelper.Decrypt(value); }
-            catch { return value; } // Return as-is if already plain text (old data)
+            catch { return value; }
         }
 
         private string SafeEncrypt(string value)
@@ -43,6 +43,16 @@ namespace M.A_Florencio_Dental_Records
         private void EditPatientForm_Load(object sender, EventArgs e)
         {
             this.StartPosition = FormStartPosition.CenterScreen;
+
+            // ─── Hide all conditional detail fields first ───
+            // This ensures Designer defaults never interfere
+            txtMedicationDetails.Visible = false;
+            lblMedicationDetails.Visible = false;
+            txtIllnessDetails.Visible = false;
+            lblIllnessDetails.Visible = false;
+            txtHospitalizationDetails.Visible = false;
+            lblHospitalizationDetails.Visible = false;
+
             SetupTabControl();
             LoadPatientData();
             UpdateNavigation();
@@ -104,14 +114,12 @@ namespace M.A_Florencio_Dental_Records
                     cmbGender.Items.Add("Male");
                     cmbGender.Items.Add("Female");
 
-                    // ✅ DECRYPT gender before setting
                     string gender = SafeDecrypt(reader["Gender"]);
                     cmbGender.SelectedItem = gender;
                     isFemale = (gender.ToLower() == "female");
 
                     dtpBirthDate.Value = Convert.ToDateTime(reader["BirthDate"]);
 
-                    // ✅ DECRYPT sensitive fields
                     txtContactNumber.Text = SafeDecrypt(reader["ContactNumber"]);
                     txtAddress.Text = SafeDecrypt(reader["Address"]);
 
@@ -125,16 +133,7 @@ namespace M.A_Florencio_Dental_Records
                     txtReligion.Text = SafeDecrypt(reader["Religion"]);
                     txtGuardianName.Text = SafeDecrypt(reader["GuardianName"]);
                     txtGuardianContact.Text = SafeDecrypt(reader["GuardianContact"]);
-
-                    cmbGuardianRelationship.Items.Clear();
-                    cmbGuardianRelationship.Items.Add("Parent");
-                    cmbGuardianRelationship.Items.Add("Sibling");
-                    cmbGuardianRelationship.Items.Add("Spouse");
-                    cmbGuardianRelationship.Items.Add("Other");
-
-                    string rel = SafeDecrypt(reader["GuardianRelationship"]);
-                    if (!string.IsNullOrEmpty(rel))
-                        cmbGuardianRelationship.SelectedItem = rel;
+                    txtGuardianRelationship.Text = SafeDecrypt(reader["GuardianRelationship"]);
 
                     reader.Close();
                     conn.Close();
@@ -178,17 +177,17 @@ namespace M.A_Florencio_Dental_Records
                         return;
                     }
 
-                    // ── General Health (boolean fields — no encryption needed) ──
+                    // ── General Health ──
                     chkGoodHealth.Checked = Convert.ToBoolean(reader["is_healthy"]);
                     chkUnderMedication.Checked = Convert.ToBoolean(reader["under_treatment"]);
                     chkSeriousIllness.Checked = Convert.ToBoolean(reader["serious_illness"]);
                     chkHospitalized.Checked = Convert.ToBoolean(reader["recently_hospitalized"]);
 
-                    // ✅ DECRYPT text detail fields
                     txtMedicationDetails.Text = SafeDecrypt(reader["treatment_details"]);
                     txtIllnessDetails.Text = SafeDecrypt(reader["illness_details"]);
                     txtHospitalizationDetails.Text = SafeDecrypt(reader["hospitalization_details"]);
 
+                    // ─── Show detail fields if checkbox is already checked ───
                     txtMedicationDetails.Visible = chkUnderMedication.Checked;
                     lblMedicationDetails.Visible = chkUnderMedication.Checked;
                     txtIllnessDetails.Visible = chkSeriousIllness.Checked;
@@ -196,25 +195,21 @@ namespace M.A_Florencio_Dental_Records
                     txtHospitalizationDetails.Visible = chkHospitalized.Checked;
                     lblHospitalizationDetails.Visible = chkHospitalized.Checked;
 
-                    // ── Allergies (boolean fields — no encryption needed) ──
+                    // ── Allergies ──
                     chkLocalAnesthetic.Checked = Convert.ToBoolean(reader["LocalAestheticAllergy"]);
                     chkPenicillin.Checked = Convert.ToBoolean(reader["PenicillinAllergy"]);
                     chkSulfa.Checked = Convert.ToBoolean(reader["SulfaAllergy"]);
                     chkAspirin.Checked = Convert.ToBoolean(reader["AspirinAllergy"]);
                     chkLatex.Checked = Convert.ToBoolean(reader["LatexAllergy"]);
-
-                    // ✅ DECRYPT other allergies text
                     txtOtherAllergies.Text = SafeDecrypt(reader["OtherAllergies"]);
 
                     // ── Medications ──
                     chkPrescriptionMeds.Checked = Convert.ToBoolean(reader["TakingPrescriptionMeds"]);
                     chkUsesTobacco.Checked = Convert.ToBoolean(reader["UsesTobacco"]);
                     chkUsesAlcoholDrugs.Checked = Convert.ToBoolean(reader["UsesAlcoholDrugs"]);
-
-                    // ✅ DECRYPT medication list
                     txtMedicationList.Text = SafeDecrypt(reader["MedicationList"]);
 
-                    // ── Conditions (boolean fields — no encryption needed) ──
+                    // ── Conditions ──
                     chkHighBP.Checked = Convert.ToBoolean(reader["HighBP"]);
                     chkLowBP.Checked = Convert.ToBoolean(reader["LowBP"]);
                     chkHeartDisease.Checked = Convert.ToBoolean(reader["HeartDisease"]);
@@ -226,14 +221,12 @@ namespace M.A_Florencio_Dental_Records
                     chkArthritis.Checked = Convert.ToBoolean(reader["Arthritis"]);
                     chkKidneyDisease.Checked = Convert.ToBoolean(reader["KidneyDisease"]);
 
-                    // ── Women's info (only if tab exists) ──
+                    // ── Women's info ──
                     if (isFemale)
                     {
                         chkPregnant.Checked = Convert.ToBoolean(reader["IsPregnant"]);
                         chkNursing.Checked = Convert.ToBoolean(reader["IsNursing"]);
                         chkBirthControl.Checked = Convert.ToBoolean(reader["OnBirthControl"]);
-
-                        // ✅ DECRYPT blood type
                         cmbBloodType.Text = SafeDecrypt(reader["BloodType"]);
                     }
 
@@ -247,7 +240,7 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ─── STEP 4: Navigation button visibility ─────────────────────────────
+        // ─── STEP 4: Navigation ───────────────────────────────────────────────
         private void UpdateNavigation()
         {
             btnCancel.Visible = (currentTab == 0);
@@ -274,6 +267,24 @@ namespace M.A_Florencio_Dental_Records
                 tabControl.SelectedIndex = currentTab;
                 UpdateNavigation();
             }
+        }
+
+        // ─── Enter key navigation ─────────────────────────────────────────────
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Enter)
+            {
+                if (this.ActiveControl is TextBox tb && tb.Multiline)
+                    return base.ProcessCmdKey(ref msg, keyData);
+
+                if (currentTab < totalTabs - 1)
+                    btnNext_Click(btnNext, EventArgs.Empty);
+                else
+                    btnSave_Click(btnSave, EventArgs.Empty);
+
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         // ─── STEP 5: Cancel ───────────────────────────────────────────────────
@@ -350,7 +361,6 @@ namespace M.A_Florencio_Dental_Records
                 return false;
             }
 
-            // Guardian required only for minors
             int age = DateTime.Today.Year - dtpBirthDate.Value.Year;
             if (dtpBirthDate.Value.Date > DateTime.Today.AddYears(-age)) age--;
 
@@ -384,7 +394,7 @@ namespace M.A_Florencio_Dental_Records
             return true;
         }
 
-        // ─── STEP 7: Save — UPDATE both tables with ENCRYPTION ────────────────
+        // ─── STEP 7: Save ─────────────────────────────────────────────────────
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (!ValidateFields())
@@ -399,7 +409,6 @@ namespace M.A_Florencio_Dental_Records
                     int age = DateTime.Today.Year - dtpBirthDate.Value.Year;
                     if (dtpBirthDate.Value.Date > DateTime.Today.AddYears(-age)) age--;
 
-                    // ✅ UPDATE Patients — encrypt all sensitive fields
                     string updatePatient = @"
                         UPDATE Patients SET
                             FullName             = @FullName,
@@ -427,10 +436,8 @@ namespace M.A_Florencio_Dental_Records
                     cmdPatient.Parameters.AddWithValue("@Religion", SafeEncrypt(txtReligion.Text));
                     cmdPatient.Parameters.AddWithValue("@GuardianName", SafeEncrypt(txtGuardianName.Text ?? ""));
                     cmdPatient.Parameters.AddWithValue("@GuardianContact", SafeEncrypt(txtGuardianContact.Text ?? ""));
-                    cmdPatient.Parameters.AddWithValue("@GuardianRelationship", SafeEncrypt(cmbGuardianRelationship.SelectedItem?.ToString() ?? ""));
+                    cmdPatient.Parameters.AddWithValue("@GuardianRelationship",SafeEncrypt(txtGuardianRelationship.Text ?? ""));
                     cmdPatient.ExecuteNonQuery();
-
-                    // UPSERT PatientMedicalHistory
                     string checkQuery = "SELECT COUNT(*) FROM PatientMedicalHistory WHERE PatientID = @PatientID";
                     SqlCommand checkCmd = new SqlCommand(checkQuery, conn);
                     checkCmd.Parameters.AddWithValue("@PatientID", PatientID);
@@ -505,12 +512,11 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ─── Shared parameter helper — ENCRYPT all text fields ────────────────
+        // ─── Shared parameter helper ──────────────────────────────────────────
         private void AddMedicalParameters(SqlCommand cmd)
         {
             cmd.Parameters.AddWithValue("@PatientID", PatientID);
 
-            // Boolean fields — no encryption needed
             cmd.Parameters.AddWithValue("@IsHealthy", chkGoodHealth.Checked);
             cmd.Parameters.AddWithValue("@UnderTreatment", chkUnderMedication.Checked);
             cmd.Parameters.AddWithValue("@SeriousIllness", chkSeriousIllness.Checked);
@@ -537,7 +543,6 @@ namespace M.A_Florencio_Dental_Records
             cmd.Parameters.AddWithValue("@Nursing", isFemale ? chkNursing.Checked : false);
             cmd.Parameters.AddWithValue("@BirthControl", isFemale ? chkBirthControl.Checked : false);
 
-            // ✅ ENCRYPT all text fields before saving
             cmd.Parameters.AddWithValue("@TreatmentDetails", SafeEncrypt(txtMedicationDetails.Text ?? ""));
             cmd.Parameters.AddWithValue("@IllnessDetails", SafeEncrypt(txtIllnessDetails.Text ?? ""));
             cmd.Parameters.AddWithValue("@HospitalizationDetails", SafeEncrypt(txtHospitalizationDetails.Text ?? ""));

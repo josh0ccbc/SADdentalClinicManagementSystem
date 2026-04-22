@@ -23,14 +23,21 @@ namespace M.A_Florencio_Dental_Records
 
         private void AddPatientInfo_Load(object sender, EventArgs e)
         {
+            // ✅ Removed KeyDown — using ProcessCmdKey instead
+        }
 
+        // ✅ Intercepts Enter key at UserControl level before it bubbles up
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Enter)
+            {
+                btnNext_Click(this, EventArgs.Empty);
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         // ─── Safe encrypt with field-level error detection ────────────────────────
-        /// <summary>
-        /// Encrypts a value and throws if encryption silently fails (returns empty for non-empty input).
-        /// This catches the common bug where CryptoHelper.Encrypt() swallows exceptions and returns "".
-        /// </summary>
         private string SafeEncrypt(string value, string fieldName)
         {
             if (string.IsNullOrEmpty(value))
@@ -38,7 +45,6 @@ namespace M.A_Florencio_Dental_Records
 
             string encrypted = CryptoHelper.Encrypt(value);
 
-            // If the input was non-empty but encryption returned empty, the key failed silently.
             if (string.IsNullOrEmpty(encrypted))
             {
                 throw new Exception(
@@ -67,7 +73,7 @@ namespace M.A_Florencio_Dental_Records
             }
             catch
             {
-                return value; // fallback for legacy unencrypted data
+                return value;
             }
         }
 
@@ -106,7 +112,6 @@ namespace M.A_Florencio_Dental_Records
             Grelationship.Visible = isMinor;
             label13.Visible = isMinor;
 
-            // Clear guardian fields when patient becomes adult
             if (!isMinor)
             {
                 Gname.Text = "";
@@ -182,7 +187,6 @@ namespace M.A_Florencio_Dental_Records
                 return false;
             }
 
-            // Guardian fields required for minors
             if (int.TryParse(txtAge.Text, out int age) && age < 18)
             {
                 if (string.IsNullOrWhiteSpace(Gname.Text))
@@ -285,7 +289,6 @@ namespace M.A_Florencio_Dental_Records
                 reader.Close();
             }
 
-            // Trigger guardian visibility based on loaded age
             dateTimePicker1_ValueChanged(null, null);
         }
 
@@ -295,7 +298,6 @@ namespace M.A_Florencio_Dental_Records
             if (!ValidateForm())
                 return;
 
-            // Populate patientData object (for reference elsewhere if needed)
             patientData.FullName = txtFullName.Text.Trim();
             patientData.Gender = cmbGender.Text.Trim();
             patientData.BirthDate = dtpBirthDate.Value;
@@ -311,24 +313,18 @@ namespace M.A_Florencio_Dental_Records
             int newPatientID = SavePatientToDB();
 
             if (newPatientID <= 0)
-            {
-                // SavePatientToDB already showed the error — just stop here
                 return;
-            }
 
             Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
             Form2 form2 = (Form2)this.FindForm();
 
-            // Hide Form2 while MedicalHistoryForm is open
             form2.Hide();
 
-            // Show MedicalHistoryForm as dialog
             using (MedicalHistoryForm mhForm = new MedicalHistoryForm(newPatientID))
             {
                 mhForm.ShowDialog(mainForm);
             }
 
-            // MedicalHistoryForm closed — return to main with DBcontrol
             if (mainForm != null)
             {
                 mainForm.LoadControl(new DBcontrol());
@@ -346,8 +342,6 @@ namespace M.A_Florencio_Dental_Records
         {
             try
             {
-                // Encrypt all sensitive fields up-front so any encryption failure
-                // is caught BEFORE we open the DB connection. This prevents partial saves.
                 string encGender = SafeEncrypt(cmbGender.Text.Trim(), "Gender");
                 string encContact = SafeEncrypt(txtContact.Text.Trim(), "Contact Number");
                 string encAddress = SafeEncrypt(txtAddress.Text.Trim(), "Address");
@@ -373,7 +367,6 @@ namespace M.A_Florencio_Dental_Records
 
                     SqlCommand cmd = new SqlCommand(query, conn);
 
-                    // FullName is intentionally stored unencrypted for search/display
                     cmd.Parameters.AddWithValue("@FullName", txtFullName.Text.Trim());
                     cmd.Parameters.AddWithValue("@Gender", encGender);
                     cmd.Parameters.AddWithValue("@BirthDate", dtpBirthDate.Value.Date);
@@ -404,7 +397,6 @@ namespace M.A_Florencio_Dental_Records
             }
             catch (Exception ex) when (ex.Message.Contains("Encryption failed"))
             {
-                // Encryption-specific error — already contains a user-friendly message
                 MessageBox.Show(ex.Message, "Encryption Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return 0;

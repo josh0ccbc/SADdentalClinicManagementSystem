@@ -33,10 +33,16 @@ namespace M.A_Florencio_Dental_Records
                 Primary.Teal500, Primary.Teal700, Primary.Teal200, Accent.Teal200, TextShade.WHITE);
 
             this.StartPosition = FormStartPosition.CenterScreen;
-            txtUsername.Font = new System.Drawing.Font("Segoe UI", 10f);
-            txtPassword.Font = new System.Drawing.Font("Segoe UI", 10f);
 
-            this.Shown += LoginForm_Shown;
+            // ✅ Force font AFTER MaterialSkin initializes
+            var font = new System.Drawing.Font("Arial Rounded MT Bold", 11.25F,
+                System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+
+            label1.Font = font;
+            label2.Font = font;
+            txtUsername.Font = font;
+            txtPassword.Font = font;
+            lnkForgotPassword.Font = font;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -234,8 +240,6 @@ namespace M.A_Florencio_Dental_Records
 
         private void LoginForm_Shown(object sender, EventArgs e)
         {
-            txtUsername.Font = new System.Drawing.Font("Segoe UI", 10f);
-            txtPassword.Font = new System.Drawing.Font("Segoe UI", 10f);
         }
     }
 }

@@ -59,6 +59,24 @@ namespace M.A_Florencio_Dental_Records
             cmbBloodType.SelectedIndex = 0;
         }
 
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.Enter)
+            {
+                // Let multiline textboxes keep their normal Enter behavior
+                if (this.ActiveControl is TextBox tb && tb.Multiline)
+                    return base.ProcessCmdKey(ref msg, keyData);
+
+                if (currentTab < totalTabs - 1)
+                    btnNext_Click(btnNext, EventArgs.Empty);
+                else
+                    btnSave_Click(btnSave, EventArgs.Empty);
+
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
         // ─── Safe decrypt ─────────────────────────────────────────────────────────
         private string SafeDecrypt(object dbValue)
         {

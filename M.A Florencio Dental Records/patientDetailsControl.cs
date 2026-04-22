@@ -270,17 +270,56 @@ namespace M.A_Florencio_Dental_Records
         private void LoadMedicalRecords()
         {
             panelMedicalRecords.Controls.Clear();
+            panelMedicalRecords.AutoScroll = true;
+
+            Panel headerRow = new Panel();
+            headerRow.Size = new Size(panelMedicalRecords.Width - 20, 30);
+            headerRow.Location = new Point(10, 5);
+            headerRow.BackColor = Color.FromArgb(0, 150, 136);
+
+            string[] headers = { "Date & Time", "Diagnosis", "Procedure", "Action"};
+            int[] xPositions = { 72, 246, 429, 732};
+
+            foreach (var (text, x) in headers.Zip(xPositions, (t, p) => (t, p)))
+            {
+                Label lbl = new Label();
+                lbl.Text = text;
+                lbl.Font = new Font("Arial Rounded MT Bold", 9f, FontStyle.Regular);
+                lbl.ForeColor = Color.White;
+                lbl.AutoSize = false;
+                lbl.Width = 170;
+                lbl.Height = 30;
+                lbl.TextAlign = ContentAlignment.MiddleLeft;
+                lbl.Location = new Point(x, 0);
+                headerRow.Controls.Add(lbl);
+            }
+
+            panelMedicalRecords.Controls.Add(headerRow);
+
+            // ✅ Separator line
+            Panel separator = new Panel();
+            separator.Size = new Size(panelMedicalRecords.Width - 20, 1);
+            separator.Location = new Point(10, 36);
+            separator.BackColor = Color.LightGray;
+            panelMedicalRecords.Controls.Add(separator);
+
+            // ✅ Single yPosition declaration here — NOT inside the using block
+            int yPosition = 45;
+
 
             using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
             {
                 string query = @"
-                    SELECT mr.record_id, mr.visit_date, mr.diagnosis, mr.[procedure],
-                           mr.notes, mr.appointment_id,
-                           a.AppointmentDate, a.ServiceType
-                    FROM MedicalRecords mr
-                    LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
-                    WHERE mr.patient_id = @PatientID
-                    ORDER BY mr.visit_date DESC";
+            SELECT mr.record_id, mr.visit_date, mr.diagnosis, mr.[procedure],
+                   mr.notes, a.AppointmentTime
+            FROM MedicalRecords mr
+            LEFT JOIN Appointments a 
+                ON mr.appointment_id = a.AppointmentID
+                OR (mr.appointment_id IS NULL 
+                    AND a.PatientID = mr.patient_id 
+                    AND CAST(a.AppointmentDate AS DATE) = CAST(mr.visit_date AS DATE))
+            WHERE mr.patient_id = @PatientID
+            ORDER BY mr.visit_date DESC";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@PatientID", PatientID);
@@ -288,15 +327,14 @@ namespace M.A_Florencio_Dental_Records
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
 
-                int yPosition = 10;
-
                 if (!reader.HasRows)
                 {
                     Label noRecords = new Label();
                     noRecords.Text = "No medical records found.";
-                    noRecords.AutoSize = true;
+                    noRecords.Font = new Font("Segoe UI", 10);
                     noRecords.ForeColor = Color.Gray;
-                    noRecords.Location = new Point(10, yPosition);
+                    noRecords.AutoSize = true;
+                    noRecords.Location = new Point(10, 10);
                     panelMedicalRecords.Controls.Add(noRecords);
                     return;
                 }
@@ -307,32 +345,54 @@ namespace M.A_Florencio_Dental_Records
                     DateTime visitDate = Convert.ToDateTime(reader["visit_date"]);
                     string diagnosis = SafeDecrypt(reader["diagnosis"]);
                     string procedure = SafeDecrypt(reader["procedure"]);
-                    string serviceType = reader["ServiceType"]?.ToString() ?? "";
+                    string notes = SafeDecrypt(reader["notes"]);
 
-                    Label lblRecord = new Label();
-                    lblRecord.Text =
-                        visitDate.ToString("MMM dd, yyyy") + "  |  " +
-                        (string.IsNullOrEmpty(serviceType) ? "Walk-in" : serviceType) + "  |  " +
-                        "Dx: " + (string.IsNullOrEmpty(diagnosis) ? "N/A" : diagnosis) + "  |  " +
-                        "Proc: " + (string.IsNullOrEmpty(procedure) ? "N/A" : procedure);
+                    string appointmentTime = "";
+                    if (reader["AppointmentTime"] != DBNull.Value)
+                    {
+                        TimeSpan time = (TimeSpan)reader["AppointmentTime"];
+                        appointmentTime = DateTime.Today.Add(time).ToString("hh:mm tt");
+                    }
 
-                    lblRecord.AutoSize = false;
-                    lblRecord.Width = panelMedicalRecords.Width - 20;
-                    lblRecord.Height = 40;
-                    lblRecord.AutoEllipsis = true;
-                    lblRecord.Tag = recordID;
-                    lblRecord.Cursor = Cursors.Hand;
-                    lblRecord.Location = new Point(10, yPosition);
-                    lblRecord.ForeColor = Color.Blue;
+                    // ✅ Create card
+                    MedicalRecordCard card = new MedicalRecordCard();
+                    card.SetRecord(recordID, visitDate, appointmentTime, diagnosis, procedure, notes);
+                    card.Width = panelMedicalRecords.Width - 20;
+                    card.Location = new Point(10, yPosition);
 
-                    // Capture recordID for closure
-                    int capturedID = recordID;
-                    lblRecord.Click += (s, ev) => ViewRecordDetails(capturedID);
-                    lblRecord.MouseEnter += (s, ev) => lblRecord.ForeColor = Color.DarkBlue;
-                    lblRecord.MouseLeave += (s, ev) => lblRecord.ForeColor = Color.Blue;
+                    // ✅ Wire up view button
+                    card.OnViewClicked += (s, id) => ViewRecordDetails(id);
+                    card.OnEditClicked += (s, id) => EditRecordDetails(id);
 
-                    panelMedicalRecords.Controls.Add(lblRecord);
-                    yPosition += 50;
+                    panelMedicalRecords.Controls.Add(card);
+                    yPosition += card.Height + 8;
+                }
+            }
+        }
+
+        private void EditRecordDetails(int recordID)
+        {
+            // ✅ Staff requires admin authorization
+            if (GetCurrentUserRole() == "Staff")
+            {
+                using (AdminPasswordDialog adminPrompt = new AdminPasswordDialog())
+                {
+                    if (adminPrompt.ShowDialog() != DialogResult.OK)
+                    {
+                        MessageBox.Show("Edit cancelled. Admin authorization required.",
+                            "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+                }
+            }
+
+            using (EditMedicalRecordForm editForm = new EditMedicalRecordForm(recordID))
+            {
+                if (editForm.ShowDialog() == DialogResult.OK)
+                {
+                    LoadMedicalRecords(); // ✅ Refresh the list
+                    MessageBox.Show("Medical record updated successfully!", "Success",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
@@ -347,7 +407,7 @@ namespace M.A_Florencio_Dental_Records
                 conn.Open();
 
                 string query = @"
-                    SELECT mr.*, a.ServiceType, a.AppointmentDate
+                    SELECT mr.*, a.ServiceType, a.AppointmentDate, a.AppointmentTime
                     FROM MedicalRecords mr
                     LEFT JOIN Appointments a ON mr.appointment_id = a.AppointmentID
                     WHERE mr.record_id = @RecordID";
@@ -374,14 +434,22 @@ namespace M.A_Florencio_Dental_Records
                 string notes = SafeDecrypt(reader["notes"]);
                 DateTime visitDate = Convert.ToDateTime(reader["visit_date"]);
 
+                string appointmentTime = "";
+                if (reader["AppointmentTime"] != DBNull.Value)
+                {
+                    TimeSpan time = (TimeSpan)reader["AppointmentTime"];
+                    appointmentTime = DateTime.Today.Add(time).ToString("hh:mm tt");
+                }
+
                 reader.Close();
 
                 string details = "";
                 details += divider + "\n";
                 details += "        MEDICAL RECORD DETAILS\n";
-                details += divider + "\n\n";
+                details += divider + "\n";
                 details += "Visit Date : " + visitDate.ToString("MMM dd, yyyy") + "\n";
-                details += "Service    : " + (string.IsNullOrEmpty(serviceType) ? "Walk-in" : serviceType) + "\n\n";
+                if (!string.IsNullOrEmpty(appointmentTime))
+                    details += "Time       : " + appointmentTime + "\n";
                 details += thin + "\n";
                 details += "DIAGNOSIS:\n";
                 details += WrapText(string.IsNullOrEmpty(diagnosis) ? "N/A" : diagnosis, lineWidth) + "\n\n";

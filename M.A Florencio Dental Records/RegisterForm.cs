@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Windows.Forms;
+using System.Linq; // ✅ fixes Enumerable error
 using MaterialSkin;
 using MaterialSkin.Controls;
 
@@ -8,6 +9,8 @@ namespace M.A_Florencio_Dental_Records
 {
     public partial class RegisterForm : MaterialForm
     {
+        private bool isUpdating = false;
+
         public RegisterForm()
         {
             InitializeComponent();
@@ -22,6 +25,13 @@ namespace M.A_Florencio_Dental_Records
                 Primary.Teal500, Primary.Teal700, Primary.Teal200, Accent.Teal200, TextShade.WHITE);
 
             this.StartPosition = FormStartPosition.CenterScreen;
+
+            txtUsername.TextChanged += txtUsername_TextChanged;
+            txtEmail.TextChanged += txtEmail_TextChanged;
+            txtEmail.Text = "";
+            txtEmail.SelectionStart = 0;  // ✅ Cursor at beginning
+            lblUsernameStatus.Text = "";
+            lblEmailStatus.Text = "";
         }
 
         // ✅ REGISTER BUTTON
@@ -177,6 +187,111 @@ namespace M.A_Florencio_Dental_Records
         private void label5_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private bool UsernameExists(string username)
+        {
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
+            {
+                string query = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Username", username);
+                conn.Open();
+                return (int)cmd.ExecuteScalar() > 0;
+            }
+        }
+
+        private bool EmailExists(string email)
+        {
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
+            {
+                string query = "SELECT COUNT(*) FROM Users WHERE Email = @Email";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Email", email);
+                conn.Open();
+                return (int)cmd.ExecuteScalar() > 0;
+            }
+        }
+
+        private void txtEmail_TextChanged(object sender, EventArgs e)
+        {
+            if (isUpdating) return;
+            isUpdating = true;
+
+            string suffix = "@gmail.com";
+            string current = txtEmail.Text;
+
+            if (string.IsNullOrEmpty(current))
+            {
+                lblEmailStatus.Text = "";
+                isUpdating = false;
+                return;
+            }
+
+            if (current.EndsWith(suffix))
+            {
+                int pos = current.Length - suffix.Length;
+                if (txtEmail.SelectionStart > pos)
+                    txtEmail.SelectionStart = pos;
+            }
+            else
+            {
+                string baseText = current;
+                for (int len = suffix.Length; len >= 1; len--)
+                {
+                    if (baseText.EndsWith(suffix.Substring(0, len)))
+                    {
+                        baseText = baseText.Substring(0, baseText.Length - len);
+                        break;
+                    }
+                }
+                txtEmail.Text = baseText + suffix;
+                txtEmail.SelectionStart = baseText.Length;
+            }
+
+            isUpdating = false;
+
+            // ✅ Check email after suffix logic
+            string email = txtEmail.Text.Trim();
+            if (email != suffix) // don't check if only "@gmail.com"
+            {
+                if (EmailExists(email))
+                {
+                    lblEmailStatus.Text = "✗ Email already registered";
+                    lblEmailStatus.ForeColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    lblEmailStatus.Text = "✓ Email available";
+                    lblEmailStatus.ForeColor = System.Drawing.Color.Green;
+                }
+            }
+            else
+            {
+                lblEmailStatus.Text = "";
+            }
+        }
+
+        private void txtUsername_TextChanged(object sender, EventArgs e)
+        {
+            string username = txtUsername.Text.Trim();
+
+            if (string.IsNullOrEmpty(username))
+            {
+                lblUsernameStatus.Text = "";
+                return;
+            }
+
+            if (UsernameExists(username))
+            {
+                lblUsernameStatus.Text = "✗ Username already taken";
+                lblUsernameStatus.ForeColor = System.Drawing.Color.Red;
+            }
+            else
+            {
+                lblUsernameStatus.Text = "✓ Username available";
+                lblUsernameStatus.ForeColor = System.Drawing.Color.Green;
+            }
         }
     }
 }

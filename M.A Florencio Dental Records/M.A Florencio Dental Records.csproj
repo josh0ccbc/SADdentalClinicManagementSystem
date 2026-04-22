@@ -156,6 +156,12 @@
     <Compile Include="DBcontrol.Designer.cs">
       <DependentUpon>DBcontrol.cs</DependentUpon>
     </Compile>
+    <Compile Include="EditMedicalRecordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EditMedicalRecordForm.Designer.cs">
+      <DependentUpon>EditMedicalRecordForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="EditPatientForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +198,12 @@
     </Compile>
     <Compile Include="MedicalHistoryForm.Designer.cs">
       <DependentUpon>MedicalHistoryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MedicalRecordCard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MedicalRecordCard.Designer.cs">
+      <DependentUpon>MedicalRecordCard.cs</DependentUpon>
     </Compile>
     <Compile Include="MockDataForm.cs">
       <SubType>Form</SubType>
@@ -271,6 +283,9 @@
     <EmbeddedResource Include="DBcontrol.resx">
       <DependentUpon>DBcontrol.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="EditMedicalRecordForm.resx">
+      <DependentUpon>EditMedicalRecordForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="EditPatientForm.resx">
       <DependentUpon>EditPatientForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -288,6 +303,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MedicalHistoryForm.resx">
       <DependentUpon>MedicalHistoryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MedicalRecordCard.resx">
+      <DependentUpon>MedicalRecordCard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MockDataForm.resx">
       <DependentUpon>MockDataForm.cs</DependentUpon>
@@ -413,6 +431,9 @@
     <Content Include="LOGOMA.ico" />
     <Content Include="LOGO_M.A.ico" />
     <Content Include="MyIcon.ico" />
+    <None Include="Resources\2Divider.png" />
+    <None Include="Resources\tooth2.png" />
+    <None Include="Resources\tooth.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -770,9 +770,9 @@
             this.ClientSize = new System.Drawing.Size(584, 450);
             this.Controls.Add(this.tabMedicalHistory);
             this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnNext);
+            this.Controls.Add(this.btnSave);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MaximizeBox = false;
             this.Name = "MedicalHistoryForm";

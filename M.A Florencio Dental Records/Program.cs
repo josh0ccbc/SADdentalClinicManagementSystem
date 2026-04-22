@@ -1,5 +1,4 @@
-﻿// Program.cs
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace M.A_Florencio_Dental_Records
@@ -51,24 +50,20 @@ namespace M.A_Florencio_Dental_Records
 
                 if (!success)
                 {
-                    var retry = MessageBox.Show(
-                        $"Cannot connect to database:\n\n{error}\n\nRun setup again?",
-                        "Connection Error",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Error);
-
-                    ConnectionHelper.DeleteSettings();
-
-                    if (retry == DialogResult.Yes)
+                    // Silently try to find a working server instead of showing error dialog
+                    string workingServer = ServerDiscovery.FindWorkingServer();
+                    if (workingServer != null)
                     {
-                        using (ConnectionSetupForm setupForm = new ConnectionSetupForm())
-                        {
-                            if (setupForm.ShowDialog() != DialogResult.OK)
-                                return;
-                        }
+                        ConnectionHelper.SetServerName(workingServer);
                     }
                     else
                     {
+                        // Only show error if truly no server found at all
+                        MessageBox.Show(
+                            $"Cannot connect to database:\n\n{error}",
+                            "Connection Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
                         return;
                     }
                 }

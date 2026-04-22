@@ -684,9 +684,9 @@
             // panelMedicalRecords
             // 
             this.panelMedicalRecords.AutoScroll = true;
-            this.panelMedicalRecords.Location = new System.Drawing.Point(13, 854);
+            this.panelMedicalRecords.Location = new System.Drawing.Point(13, 885);
             this.panelMedicalRecords.Name = "panelMedicalRecords";
-            this.panelMedicalRecords.Size = new System.Drawing.Size(853, 492);
+            this.panelMedicalRecords.Size = new System.Drawing.Size(853, 457);
             this.panelMedicalRecords.TabIndex = 17;
             this.panelMedicalRecords.Paint += new System.Windows.Forms.PaintEventHandler(this.panelMedicalRecords_Paint);
             // 
@@ -706,19 +706,20 @@
             // 
             // materialButton1
             // 
+            this.materialButton1.AutoSize = false;
             this.materialButton1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.materialButton1.Density = MaterialSkin.Controls.MaterialButton.MaterialButtonDensity.Default;
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
             this.materialButton1.Icon = null;
-            this.materialButton1.Location = new System.Drawing.Point(511, 14);
+            this.materialButton1.Location = new System.Drawing.Point(535, 14);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
             this.materialButton1.NoAccentTextColor = System.Drawing.Color.Empty;
-            this.materialButton1.Size = new System.Drawing.Size(156, 36);
+            this.materialButton1.Size = new System.Drawing.Size(132, 36);
             this.materialButton1.TabIndex = 19;
-            this.materialButton1.Text = "Add prescription";
+            this.materialButton1.Text = "Add Diagnosis";
             this.materialButton1.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
             this.materialButton1.UseAccentColor = false;
             this.materialButton1.UseVisualStyleBackColor = true;
@@ -814,7 +815,6 @@
             this.panelMedical.ResumeLayout(false);
             this.panelMedical.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

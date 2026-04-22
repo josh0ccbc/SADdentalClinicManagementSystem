@@ -58,6 +58,7 @@
             this.label5.TabIndex = 11;
             this.label5.Text = "Total Patients";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
             // lblPatientCount
             // 
@@ -71,6 +72,7 @@
             this.lblPatientCount.TabIndex = 12;
             this.lblPatientCount.Text = "0";
             this.lblPatientCount.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblPatientCount.Click += new System.EventHandler(this.lblPatientCount_Click);
             // 
             // label6
             // 
@@ -83,6 +85,7 @@
             this.label6.TabIndex = 14;
             this.label6.Text = "Today\'s Appointments";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label6.Click += new System.EventHandler(this.label6_Click);
             // 
             // lblTodayAppointments
             // 
@@ -97,6 +100,7 @@
             this.lblTodayAppointments.TabIndex = 15;
             this.lblTodayAppointments.Text = "0";
             this.lblTodayAppointments.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblTodayAppointments.Click += new System.EventHandler(this.lblTodayAppointments_Click);
             // 
             // label3
             // 
@@ -152,6 +156,7 @@
             this.label1.TabIndex = 14;
             this.label1.Text = "Upcoming Appointments";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // pictureBox4
             // 
@@ -161,6 +166,7 @@
             this.pictureBox4.Size = new System.Drawing.Size(242, 127);
             this.pictureBox4.TabIndex = 9;
             this.pictureBox4.TabStop = false;
+            this.pictureBox4.Click += new System.EventHandler(this.pictureBox4_Click);
             // 
             // pictureBox3
             // 
@@ -179,6 +185,7 @@
             this.pictureBox5.Size = new System.Drawing.Size(242, 127);
             this.pictureBox5.TabIndex = 13;
             this.pictureBox5.TabStop = false;
+            this.pictureBox5.Click += new System.EventHandler(this.pictureBox5_Click);
             // 
             // pictureBox1
             // 
@@ -188,6 +195,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(242, 127);
             this.pictureBox1.TabIndex = 17;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // lblUpcomingAppointments
             // 
@@ -202,6 +210,7 @@
             this.lblUpcomingAppointments.TabIndex = 15;
             this.lblUpcomingAppointments.Text = "0";
             this.lblUpcomingAppointments.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblUpcomingAppointments.Click += new System.EventHandler(this.lblUpcomingAppointments_Click);
             // 
             // DBcontrol
             // 

@@ -63,6 +63,16 @@ namespace M.A_Florencio_Dental_Records.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _2Divider {
+            get {
+                object obj = ResourceManager.GetObject("2Divider", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap archive {
             get {
                 object obj = ResourceManager.GetObject("archive", resourceCulture);
@@ -306,6 +316,26 @@ namespace M.A_Florencio_Dental_Records.Properties {
         internal static System.Drawing.Bitmap outbox2 {
             get {
                 object obj = ResourceManager.GetObject("outbox2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap tooth {
+            get {
+                object obj = ResourceManager.GetObject("tooth", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap tooth2 {
+            get {
+                object obj = ResourceManager.GetObject("tooth2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

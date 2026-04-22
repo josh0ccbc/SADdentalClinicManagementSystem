@@ -22,14 +22,52 @@ namespace M.A_Florencio_Dental_Records
         }
 
         private void CompleteAppointmentForm_Load(object sender, EventArgs e)
-        {
-            // Show appointment info
-            lblAppointmentInfo.Text = Appointment.AppointmentDate.ToString("MMM dd, yyyy") + " | " +
-                                      Appointment.ServiceName + " | " +
-                                      Appointment.PatientName;
+        { 
 
-            // Set visit date to appointment date
             dtpVisitDate.Value = Appointment.AppointmentDate;
+
+            LoadProcedureDropdown();
+
+            string timeStr = DateTime.Today.Add(Appointment.AppointmentTime).ToString("hh:mm tt");
+            this.Text = $"{Appointment.PatientName} · {Appointment.AppointmentDate:MMM dd} {timeStr} · {Appointment.ServiceName}";
+        }
+
+        private void LoadProcedureDropdown()
+        {
+            using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
+            {
+                string query = "SELECT ServiceID, ServiceName FROM DentalServices ORDER BY ServiceName";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                cmbProcedure.Items.Clear();
+
+                while (reader.Read())
+                {
+                    cmbProcedure.Items.Add(new ServiceItem
+                    {
+                        ServiceID = Convert.ToInt32(reader["ServiceID"]),
+                        ServiceName = reader["ServiceName"].ToString()
+                    });
+                }
+            }
+
+            cmbProcedure.DisplayMember = "ServiceName";
+
+            // ✅ Auto-select the appointed service
+            foreach (ServiceItem item in cmbProcedure.Items)
+            {
+                if (item.ServiceName == Appointment.ServiceName)
+                {
+                    cmbProcedure.SelectedItem = item;
+                    break;
+                }
+            }
+
+            // Fallback: select first if none matched
+            if (cmbProcedure.SelectedIndex < 0 && cmbProcedure.Items.Count > 0)
+                cmbProcedure.SelectedIndex = 0;
         }
 
         // ✅ ADD PRESCRIPTION BUTTON
@@ -47,7 +85,6 @@ namespace M.A_Florencio_Dental_Records
                 return;
             }
 
-            // Store in list
             lstPrescriptions.Items.Add(new PrescriptionData
             {
                 Medication = txtMedication.Text,
@@ -55,7 +92,6 @@ namespace M.A_Florencio_Dental_Records
                 Instructions = txtMedInstructions.Text
             });
 
-            // Clear fields
             txtMedication.Text = "";
             txtMedInstructions.Text = "";
             dtpPrescDate.Value = DateTime.Today;
@@ -76,21 +112,22 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ SAVE - WITH ALL FIXES
+        // ✅ SAVE
         private void btnSave_Click(object sender, EventArgs e)
         {
-            // Validate
             if (string.IsNullOrEmpty(txtDiagnosis.Text))
             {
                 MessageBox.Show("Enter diagnosis");
                 return;
             }
 
-            if (string.IsNullOrEmpty(txtProcedure.Text))
+            if (cmbProcedure.SelectedItem == null)
             {
-                MessageBox.Show("Enter procedure");
+                MessageBox.Show("Select a procedure");
                 return;
             }
+
+            string selectedProcedure = (cmbProcedure.SelectedItem as ServiceItem)?.ServiceName ?? "";
 
             try
             {
@@ -100,58 +137,40 @@ namespace M.A_Florencio_Dental_Records
 
                 using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
-                    System.Diagnostics.Debug.WriteLine($"CONNECTION: {conn.ConnectionString}");
-                    System.Diagnostics.Debug.WriteLine($"STATE BEFORE OPEN: {conn.State}");
                     conn.Open();
-                    System.Diagnostics.Debug.WriteLine($"STATE AFTER OPEN: {conn.State}");
-                    System.Diagnostics.Debug.WriteLine($"DATABASE: {conn.Database}");
-                    System.Diagnostics.Debug.WriteLine($"DATASOURCE: {conn.DataSource}");
                     System.Diagnostics.Debug.WriteLine("✅ Database connection opened");
 
                     using (SqlTransaction trans = conn.BeginTransaction())
                     {
                         try
                         {
-                            // ✅ FIX #1: Use [procedure] with brackets
-                            // ✅ FIX #2: Make sure to provide patient_id (it's NOT NULL)
                             System.Diagnostics.Debug.WriteLine("→ Inserting medical record...");
 
                             string recordQuery = @"
-                                INSERT INTO MedicalRecords
-                                (patient_id, appointment_id, visit_date, diagnosis, [procedure], notes)
-                                OUTPUT INSERTED.record_id
-                                VALUES
-                                (@PatientID, @AppointmentID, @VisitDate, @Diagnosis, @Procedure, @Notes);";
+                        INSERT INTO MedicalRecords
+                        (patient_id, appointment_id, visit_date, diagnosis, [procedure], notes)
+                        VALUES
+                        (@PatientID, @AppointmentID, @VisitDate, @Diagnosis, @Procedure, @Notes);
+                        SELECT SCOPE_IDENTITY();";
 
                             SqlCommand recordCmd = new SqlCommand(recordQuery, conn, trans);
-                            recordCmd.Parameters.AddWithValue("@PatientID", PatientID);  // ✅ REQUIRED - not optional
+                            recordCmd.Parameters.AddWithValue("@PatientID", PatientID);
                             recordCmd.Parameters.AddWithValue("@AppointmentID",
                                 AppointmentID > 0 ? (object)AppointmentID : DBNull.Value);
                             recordCmd.Parameters.AddWithValue("@VisitDate", dtpVisitDate.Value.Date);
                             recordCmd.Parameters.AddWithValue("@Diagnosis", CryptoHelper.Encrypt(txtDiagnosis.Text));
-                            recordCmd.Parameters.AddWithValue("@Procedure", CryptoHelper.Encrypt(txtProcedure.Text));  // ✅ Encrypted
-                            recordCmd.Parameters.AddWithValue("@Notes", CryptoHelper.Encrypt(txtNotes.Text ?? ""));     // ✅ Encrypted
+                            recordCmd.Parameters.AddWithValue("@Procedure", CryptoHelper.Encrypt(selectedProcedure));
+                            recordCmd.Parameters.AddWithValue("@Notes", CryptoHelper.Encrypt(txtNotes.Text ?? ""));
 
-                            int recordID = 0;
-
-                            using (SqlDataReader reader = recordCmd.ExecuteReader())
-                            {
-                                if (reader.Read())
-                                {
-                                    recordID = reader.GetInt32(0);
-                                }
-                                reader.Close(); // ✅ Explicitly close reader before next command
-                            }
+                            // ✅ ExecuteScalar instead of ExecuteReader
+                            int recordID = Convert.ToInt32(recordCmd.ExecuteScalar());
 
                             if (recordID == 0)
-                            {
                                 throw new Exception("Medical record insert failed - no ID returned");
-                            }
 
                             System.Diagnostics.Debug.WriteLine($"✅ Medical Record Created: ID={recordID}");
 
-                            // ✅ FIX #3: Declare @RecordID before using it in prescriptions
-                            // Insert prescriptions with the recordID we just created
+                            // Insert prescriptions
                             if (lstPrescriptions.Items.Count > 0)
                             {
                                 System.Diagnostics.Debug.WriteLine($"→ Inserting {lstPrescriptions.Items.Count} prescriptions...");
@@ -159,13 +178,13 @@ namespace M.A_Florencio_Dental_Records
                                 foreach (PrescriptionData presc in lstPrescriptions.Items)
                                 {
                                     string prescQuery = @"
-                                        INSERT INTO Prescription
-                                        (record_id, medication, prescription_date, med_instructions)
-                                        VALUES
-                                        (@RecordID, @Medication, @PrescDate, @Instructions)";
+                                INSERT INTO Prescription
+                                (record_id, medication, prescription_date, med_instructions)
+                                VALUES
+                                (@RecordID, @Medication, @PrescDate, @Instructions)";
 
                                     SqlCommand prescCmd = new SqlCommand(prescQuery, conn, trans);
-                                    prescCmd.Parameters.AddWithValue("@RecordID", recordID);  // ✅ Use the recordID from above
+                                    prescCmd.Parameters.AddWithValue("@RecordID", recordID);
                                     prescCmd.Parameters.AddWithValue("@Medication", CryptoHelper.Encrypt(presc.Medication));
                                     prescCmd.Parameters.AddWithValue("@PrescDate", presc.PrescriptionDate);
                                     prescCmd.Parameters.AddWithValue("@Instructions", CryptoHelper.Encrypt(presc.Instructions));
@@ -175,7 +194,7 @@ namespace M.A_Florencio_Dental_Records
                                 }
                             }
 
-                            // Update appointment status
+                            // Update appointment status to Done
                             System.Diagnostics.Debug.WriteLine("→ Updating appointment status...");
 
                             string updateApptQuery = "UPDATE Appointments SET Status = 'Done' WHERE AppointmentID = @AppointmentID";
@@ -183,13 +202,13 @@ namespace M.A_Florencio_Dental_Records
                             updateApptCmd.Parameters.AddWithValue("@AppointmentID", AppointmentID);
                             updateApptCmd.ExecuteNonQuery();
 
-                            // COMMIT
                             trans.Commit();
                             System.Diagnostics.Debug.WriteLine("✅ TRANSACTION COMMITTED!");
 
                             MessageBox.Show(
                                 $"✅ Appointment completed successfully!\n\n" +
                                 $"Medical Record ID: {recordID}\n" +
+                                $"Procedure: {selectedProcedure}\n" +
                                 $"Prescriptions: {lstPrescriptions.Items.Count}\n\n" +
                                 $"All data saved to database.",
                                 "Success",
@@ -207,13 +226,13 @@ namespace M.A_Florencio_Dental_Records
                             string errorMsg = $"SQL Error #{sqlEx.Number}\n\n{sqlEx.Message}";
 
                             if (sqlEx.Number == 156)
-                                errorMsg += "\n\n⚠️ Syntax Error - Check column names (use brackets for reserved keywords)";
+                                errorMsg += "\n\n⚠️ Syntax Error - Check column names";
                             else if (sqlEx.Number == 547)
                                 errorMsg += "\n\n⚠️ Foreign Key Constraint - Invalid PatientID or AppointmentID";
                             else if (sqlEx.Number == 515)
-                                errorMsg += "\n\n⚠️ NULL in NOT NULL column - patient_id is required!";
+                                errorMsg += "\n\n⚠️ NULL in NOT NULL column";
                             else if (sqlEx.Number == 137)
-                                errorMsg += "\n\n⚠️ Variable not declared - Check SQL syntax";
+                                errorMsg += "\n\n⚠️ Variable not declared";
 
                             MessageBox.Show(errorMsg, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
@@ -240,11 +259,28 @@ namespace M.A_Florencio_Dental_Records
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
+
+        private void cmbProcedure_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Reserved for future use
+        }
+
+        private void txtDiagnosis_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 
     // ✅ PRESCRIPTION DATA CLASS
     public class PrescriptionData
     {
+        public int PrescriptionID { get; set; }     // ← add this
+        public bool IsExisting { get; set; }         // ← add this
         public string Medication { get; set; }
         public DateTime PrescriptionDate { get; set; }
         public string Instructions { get; set; }

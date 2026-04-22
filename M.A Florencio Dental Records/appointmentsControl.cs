@@ -331,14 +331,12 @@ namespace M.A_Florencio_Dental_Records
 
             if (appt != null)
             {
-                // ✅ Use PatientID directly from appointment - no name lookup needed
                 CompleteAppointmentForm completeForm = new CompleteAppointmentForm(appointmentID, appt, appt.PatientID);
 
                 if (completeForm.ShowDialog() == DialogResult.OK)
                 {
-                    // ✅ Only delete the appointment row - NEVER delete medical records
-                    await DeleteAppointmentAsync(appointmentID);
-
+                    // ✅ No delete — appointment is already marked Done inside CompleteAppointmentForm
+                    // Queries filter by Status != 'Done' so it won't show up anymore
                     isLoading = true;
                     try
                     {
@@ -365,7 +363,6 @@ namespace M.A_Florencio_Dental_Records
             {
                 using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
-                    // ✅ Include PatientID directly from Appointments table
                     string query = @"SELECT a.AppointmentID, a.PatientID, a.PatientName, a.AppointmentDate, 
                                            a.AppointmentTime, s.ServiceName, a.Status
                                     FROM Appointments a
@@ -384,7 +381,7 @@ namespace M.A_Florencio_Dental_Records
                             return new AppointmentDetail
                             {
                                 AppointmentID = Convert.ToInt32(reader["AppointmentID"]),
-                                PatientID = Convert.ToInt32(reader["PatientID"]),  // ✅ Direct from DB
+                                PatientID = Convert.ToInt32(reader["PatientID"]),
                                 PatientName = reader["PatientName"].ToString(),
                                 AppointmentDate = Convert.ToDateTime(reader["AppointmentDate"]),
                                 AppointmentTime = TimeSpan.Parse(reader["AppointmentTime"].ToString()),
@@ -403,34 +400,6 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        // ✅ FIXED: Only deletes the appointment - medical records are NEVER deleted
-        private async Task DeleteAppointmentAsync(int appointmentID)
-        {
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
-                {
-                    await conn.OpenAsync();
-
-                    // ✅ First: unlink medical records from this appointment
-                    string unlinkMedical = "UPDATE MedicalRecords SET appointment_id = NULL WHERE appointment_id = @AppointmentID";
-                    SqlCommand cmd1 = new SqlCommand(unlinkMedical, conn);
-                    cmd1.Parameters.AddWithValue("@AppointmentID", appointmentID);
-                    await cmd1.ExecuteNonQueryAsync();
-
-                    // ✅ Then: safe to delete the appointment
-                    string deleteAppointment = "DELETE FROM Appointments WHERE AppointmentID = @AppointmentID";
-                    SqlCommand cmd2 = new SqlCommand(deleteAppointment, conn);
-                    cmd2.Parameters.AddWithValue("@AppointmentID", appointmentID);
-                    await cmd2.ExecuteNonQueryAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error deleting appointment: " + ex.Message);
-            }
-        }
-
         public async Task<int> GetTodayAppointmentsCountAsync()
         {
             try
@@ -445,9 +414,7 @@ namespace M.A_Florencio_Dental_Records
                     await conn.OpenAsync();
                     object result = await cmd.ExecuteScalarAsync();
                     if (result != null)
-                    {
                         count = (int)result;
-                    }
                 }
                 return count;
             }
@@ -458,23 +425,15 @@ namespace M.A_Florencio_Dental_Records
             }
         }
 
-        private void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e)
-        {
-        }
-
-        private void flowAppointments_Paint(object sender, PaintEventArgs e)
-        {
-        }
-
-        private void FlowAllAppointments_Paint(object sender, PaintEventArgs e)
-        {
-        }
+        private void monthCalendar1_DateChanged(object sender, DateRangeEventArgs e) { }
+        private void flowAppointments_Paint(object sender, PaintEventArgs e) { }
+        private void FlowAllAppointments_Paint(object sender, PaintEventArgs e) { }
     }
 
     public class AppointmentDetail
     {
         public int AppointmentID { get; set; }
-        public int PatientID { get; set; }      // ✅ Added - direct from Appointments table
+        public int PatientID { get; set; }
         public string PatientName { get; set; }
         public DateTime AppointmentDate { get; set; }
         public TimeSpan AppointmentTime { get; set; }

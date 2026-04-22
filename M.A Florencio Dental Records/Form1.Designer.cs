@@ -163,7 +163,7 @@
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(1150, 580);
+            this.ClientSize = new System.Drawing.Size(1166, 580);
             this.Controls.Add(this.materialButton2);
             this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.button3);
@@ -190,13 +190,13 @@
         #endregion
 
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button4;
         public System.Windows.Forms.Panel FormPnl;
-        private System.Windows.Forms.Button button3;
         private MaterialSkin.Controls.MaterialButton materialButton1;
         private MaterialSkin.Controls.MaterialButton materialButton2;
+        public System.Windows.Forms.Button button1;
+        public System.Windows.Forms.Button button2;
+        public System.Windows.Forms.Button button4;
+        public System.Windows.Forms.Button button3;
     }
 }
 

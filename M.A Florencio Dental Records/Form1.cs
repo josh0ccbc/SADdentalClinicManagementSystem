@@ -89,7 +89,7 @@ namespace M.A_Florencio_Dental_Records
             NavButton.ForeColor = Color.White;
         }
 
-        void ActivateButton(Button btn)
+        public void ActivateButton(Button btn)
         {
             if (NavButton != null)
             {
@@ -263,7 +263,7 @@ namespace M.A_Florencio_Dental_Records
         {
 
         }
-        public void LoadControl(UserControl control)
+        public void LoadControl(UserControl control, int scrollToY = 0)
         {
             FormPnl.Controls.Clear();
             control.Width = FormPnl.Width;   // ✅ match panel width
@@ -277,6 +277,7 @@ namespace M.A_Florencio_Dental_Records
             FormPnl.HorizontalScroll.Enabled = false;
             FormPnl.HorizontalScroll.Visible = false;
             FormPnl.AutoScroll = true;
+            FormPnl.AutoScrollPosition = new System.Drawing.Point(0, scrollToY);
         }
 
         private void panelContainer_Paint(object sender, PaintEventArgs e)

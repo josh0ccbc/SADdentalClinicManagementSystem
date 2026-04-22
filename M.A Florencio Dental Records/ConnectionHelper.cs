@@ -7,9 +7,7 @@ namespace M.A_Florencio_Dental_Records
     {
         // ================== TRY THESE ONE BY ONE ==================
         // For your dev PC, try each line below (rebuild after each change)
-        private static string ServerName = ".";           // Option 1 (most common for default instance)
-        // private static string ServerName = "(local)";  // Option 2
-        // private static string ServerName = "localhost"; // Option 3
+        private static string ServerName = ".";
 
         public static string GetConnectionString(string database = "DentalClinicDB")
         {
