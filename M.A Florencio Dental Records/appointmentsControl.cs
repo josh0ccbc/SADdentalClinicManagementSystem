@@ -27,7 +27,7 @@ namespace M.A_Florencio_Dental_Records
             monthCalendar1.SelectionEnd = DateTime.Today;
         }
 
-        private async void appointmentsControl_Load(object sender, EventArgs e)
+        private async void AppointmentsControl_Load(object sender, EventArgs e)
         {
             if (isLoading) return;
             isLoading = true;
@@ -295,32 +295,33 @@ namespace M.A_Florencio_Dental_Records
             await LoadAppointmentsAsync(e.Start);
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            Form1 mainForm = (Form1)this.FindForm();
-            mainForm.Hide();
-
-            AppointmentForm appointmentForm = new AppointmentForm();
-            appointmentForm.ShowDialog();
-
-            mainForm.Show();
-
-            if (!isLoading)
+            AppointmentForm apptForm = new AppointmentForm();
+            apptForm.FormClosed += async (s, args) =>
             {
-                isLoading = true;
-                try
+                System.Diagnostics.Debug.WriteLine("=== AppointmentForm closed: " + apptForm.DialogResult);
+
+                if (apptForm.DialogResult == DialogResult.OK && !isLoading)
                 {
-                    await LoadAppointmentDatesAsync();
-                    await LoadAppointmentsAsync(DateTime.Today);
-                    currentPage = 1;
-                    await LoadAllAppointmentsPagedAsync(currentPage);
-                    monthCalendar1.SelectionStart = DateTime.Today;
+                    isLoading = true;
+                    try
+                    {
+                        await LoadAppointmentDatesAsync();
+                        await LoadAppointmentsAsync(monthCalendar1.SelectionStart);
+                        currentPage = 1;
+                        await LoadAllAppointmentsPagedAsync(currentPage);
+                        monthCalendar1.SelectionStart = DateTime.Today;
+                    }
+                    finally
+                    {
+                        isLoading = false;
+                    }
                 }
-                finally
-                {
-                    isLoading = false;
-                }
-            }
+            };
+
+            System.Diagnostics.Debug.WriteLine("=== Showing AppointmentForm ===");
+            apptForm.Show();
         }
 
         private async void Card_OnMarkAsDone(int appointmentID)

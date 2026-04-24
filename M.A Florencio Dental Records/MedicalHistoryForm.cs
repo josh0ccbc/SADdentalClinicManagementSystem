@@ -378,9 +378,6 @@ namespace M.A_Florencio_Dental_Records
                     }
                 }
 
-                MessageBox.Show("Patient medical history saved successfully!", "Success",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

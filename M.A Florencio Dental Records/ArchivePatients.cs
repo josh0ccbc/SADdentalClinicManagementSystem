@@ -19,6 +19,11 @@ namespace M.A_Florencio_Dental_Records
         {
             InitializeComponent();
             lblName.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+
+            ToolTip toolTip = new ToolTip();
+            toolTip.SetToolTip(btnUnarchive, "Unarchive Patient");
+            toolTip.SetToolTip(btnDelete, "Delete Patient");
+            toolTip.SetToolTip(btnView, "View Patient Full Information");
         }
 
         private void btnView_Click(object sender, EventArgs e)

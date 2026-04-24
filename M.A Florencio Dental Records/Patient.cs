@@ -19,6 +19,11 @@ namespace M.A_Florencio_Dental_Records
         {
             InitializeComponent();
             lblName.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+
+            ToolTip toolTip = new ToolTip();
+            toolTip.SetToolTip(btnView, "View Patient Full Information");
+            toolTip.SetToolTip(BTNedit, "Edit Patient Information");
+            toolTip.SetToolTip(btnDelete, "Archive Patient");
         }
 
         private string SafeDecrypt(object dbValue)

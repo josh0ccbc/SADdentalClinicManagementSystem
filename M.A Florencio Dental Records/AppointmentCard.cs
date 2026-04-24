@@ -19,6 +19,7 @@ namespace M.A_Florencio_Dental_Records
         public TimeSpan AppointmentTime { get; set; }
         public string ServiceName { get; set; }
         public string Status { get; set; }
+        public string CancellationReason { get; set; }
 
         // ✅ NEW - EVENT FOR MARK AS DONE
         public event Action<int> OnMarkAsDone;
@@ -27,6 +28,10 @@ namespace M.A_Florencio_Dental_Records
         {
             InitializeComponent();
             lblPatientName.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+
+            ToolTip toolTip = new ToolTip();
+            toolTip.SetToolTip(btnMarkAsDone, "Complete Appointment");
+            toolTip.SetToolTip(btnDelete, "Cancel Appointment");
         }
 
         private void AppointmentCard_Load(object sender, EventArgs e)
@@ -34,7 +39,8 @@ namespace M.A_Florencio_Dental_Records
         }
 
         public void SetAppointment(int appointmentID, string patientName, DateTime appointmentDate,
-                           TimeSpan appointmentTime, string serviceName, string status, string notes)
+                   TimeSpan appointmentTime, string serviceName, string status, string notes,
+                   string cancellationReason = "")
         {
             AppointmentID = appointmentID;
             PatientName = patientName;
@@ -42,11 +48,22 @@ namespace M.A_Florencio_Dental_Records
             AppointmentTime = appointmentTime;
             ServiceName = serviceName;
             Status = status;
+            CancellationReason = cancellationReason;
 
             lblPatientName.Text = patientName;
             lblService.Text = "Service: " + serviceName;
-            lblDateTime.Text = appointmentDate.ToString("MMM dd, yyyy") + " at " + appointmentTime.ToString(@"hh\:mm");
+            lblDateTime.Text = appointmentDate.ToString("MMM dd, yyyy") + " at " + DateTime.Today.Add(appointmentTime).ToString("hh:mm tt");
             lblStatus.Text = "Status: " + status;
+
+            if (status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+            {
+                btnDelete.BackgroundImage = Properties.Resources.info;
+                btnMarkAsDone.Visible = false;
+            }
+            else
+            {
+                btnMarkAsDone.Visible = true;
+            }
         }
 
         // ✅ NEW - MARK AS DONE BUTTON
@@ -70,31 +87,54 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            DialogResult result = MessageBox.Show(
-                "Cancel this appointment?",
-                "Cancel Appointment",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-            if (result == DialogResult.Yes)
+            if (Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
             {
-                CancelAppointment();
+                // ✅ Show cancellation reason instead
+                MessageBox.Show($"This appointment was already cancelled.\n\nReason: {CancellationReason}",
+                    "Cancellation Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (Status.Equals("Done", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("This appointment is already completed.");
+                return;
+            }
+
+            using (CancelReasonDialog reasonDialog = new CancelReasonDialog())
+            {
+                if (reasonDialog.ShowDialog() == DialogResult.OK)
+                {
+                    CancelAppointment(reasonDialog.Reason);
+                }
             }
         }
 
-        private void CancelAppointment()
+        private void CancelAppointment(string reason)
         {
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConnectionHelper.GetConnectionString()))
                 {
-                    string query = "UPDATE Appointments SET Status = 'Cancelled' WHERE AppointmentID = @AppointmentID";
+                    string query = "UPDATE Appointments SET Status = 'Cancelled', CancellationReason = @Reason WHERE AppointmentID = @AppointmentID";
                     SqlCommand cmd = new SqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@AppointmentID", AppointmentID);
+                    cmd.Parameters.AddWithValue("@Reason", reason);
                     conn.Open();
                     cmd.ExecuteNonQuery();
-                    MessageBox.Show("Appointment cancelled!");
-                    this.Parent.Controls.Remove(this);
                 }
+
+                // ✅ Update state
+                Status = "Cancelled";
+                CancellationReason = reason;
+                lblStatus.Text = "Status: Cancelled";
+                btnMarkAsDone.Visible = false;
+
+                // ✅ Change button to info icon
+                btnDelete.BackgroundImage = Properties.Resources.info;
+
+                MessageBox.Show($"Appointment cancelled.\n\nReason: {reason}",
+                    "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -108,12 +148,18 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnDelete_MouseEnter(object sender, EventArgs e)
         {
-            btnDelete.BackgroundImage = Properties.Resources.bin2;
+            if (Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                btnDelete.BackgroundImage = Properties.Resources.info2;
+            else
+                btnDelete.BackgroundImage = Properties.Resources.cancel2;
         }
 
         private void btnDelete_MouseLeave(object sender, EventArgs e)
         {
-            btnDelete.BackgroundImage = Properties.Resources.bin;
+            if (Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                btnDelete.BackgroundImage = Properties.Resources.info;
+            else
+                btnDelete.BackgroundImage = Properties.Resources.cancel;
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -126,12 +172,18 @@ namespace M.A_Florencio_Dental_Records
 
         private void btnDelete_MouseEnter_1(object sender, EventArgs e)
         {
-            btnDelete.BackgroundImage = Properties.Resources.cancel2;
+            if (Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                btnDelete.BackgroundImage = Properties.Resources.info2;
+            else
+                btnDelete.BackgroundImage = Properties.Resources.cancel2;
         }
 
         private void btnDelete_MouseLeave_1(object sender, EventArgs e)
         {
-            btnDelete.BackgroundImage = Properties.Resources.cancel;
+            if (Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                btnDelete.BackgroundImage = Properties.Resources.info;
+            else
+                btnDelete.BackgroundImage = Properties.Resources.cancel;
         }
 
         private void btnMarkAsDone_MouseEnter(object sender, EventArgs e)

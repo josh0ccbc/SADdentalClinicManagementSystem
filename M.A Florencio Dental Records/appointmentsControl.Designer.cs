@@ -174,7 +174,7 @@
             this.Controls.Add(this.monthCalendar1);
             this.Name = "appointmentsControl";
             this.Size = new System.Drawing.Size(871, 860);
-            this.Load += new System.EventHandler(this.appointmentsControl_Load);
+            this.Load += new System.EventHandler(this.AppointmentsControl_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);

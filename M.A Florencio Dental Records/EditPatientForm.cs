@@ -220,6 +220,12 @@ namespace M.A_Florencio_Dental_Records
                     chkRespiratoryProblems.Checked = Convert.ToBoolean(reader["RespiratoryProblems"]);
                     chkArthritis.Checked = Convert.ToBoolean(reader["Arthritis"]);
                     chkKidneyDisease.Checked = Convert.ToBoolean(reader["KidneyDisease"]);
+                    cmbBloodType.Items.Clear();
+                    cmbBloodType.Items.AddRange(new string[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" });
+                    cmbBloodType.Text = SafeDecrypt(reader["BloodType"]);
+
+                    string bloodType = SafeDecrypt(reader["BloodType"]);
+                    cmbBloodType.SelectedItem = bloodType;
 
                     // ── Women's info ──
                     if (isFemale)
@@ -227,8 +233,11 @@ namespace M.A_Florencio_Dental_Records
                         chkPregnant.Checked = Convert.ToBoolean(reader["IsPregnant"]);
                         chkNursing.Checked = Convert.ToBoolean(reader["IsNursing"]);
                         chkBirthControl.Checked = Convert.ToBoolean(reader["OnBirthControl"]);
-                        cmbBloodType.Text = SafeDecrypt(reader["BloodType"]);
                     }
+
+                    // Fallback if SelectedItem didn't match
+                    if (cmbBloodType.SelectedIndex < 0 && !string.IsNullOrEmpty(bloodType))
+                        cmbBloodType.Text = bloodType;
 
                     reader.Close();
                     conn.Close();

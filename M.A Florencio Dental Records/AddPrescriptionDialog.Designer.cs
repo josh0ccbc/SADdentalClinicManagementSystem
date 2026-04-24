@@ -36,18 +36,17 @@
             this.txtInstructions = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtDiagnosis = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtProcedure = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.txtNotes = new System.Windows.Forms.TextBox();
             this.materialButton1 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton2 = new MaterialSkin.Controls.MaterialButton();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(28, 155);
+            this.label1.Location = new System.Drawing.Point(28, 207);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(87, 17);
@@ -57,17 +56,17 @@
             // 
             // txtMedication
             // 
-            this.txtMedication.Location = new System.Drawing.Point(31, 182);
+            this.txtMedication.Location = new System.Drawing.Point(31, 231);
             this.txtMedication.Margin = new System.Windows.Forms.Padding(4);
             this.txtMedication.Name = "txtMedication";
-            this.txtMedication.Size = new System.Drawing.Size(200, 25);
+            this.txtMedication.Size = new System.Drawing.Size(170, 25);
             this.txtMedication.TabIndex = 1;
             this.txtMedication.TextChanged += new System.EventHandler(this.txtMedication_TextChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(28, 84);
+            this.label2.Location = new System.Drawing.Point(28, 80);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(136, 17);
@@ -76,7 +75,7 @@
             // 
             // dtpVisitDate
             // 
-            this.dtpVisitDate.Location = new System.Drawing.Point(31, 113);
+            this.dtpVisitDate.Location = new System.Drawing.Point(31, 109);
             this.dtpVisitDate.Name = "dtpVisitDate";
             this.dtpVisitDate.Size = new System.Drawing.Size(200, 25);
             this.dtpVisitDate.TabIndex = 2;
@@ -84,7 +83,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(28, 219);
+            this.label3.Location = new System.Drawing.Point(28, 261);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(95, 17);
@@ -93,7 +92,7 @@
             // 
             // txtInstructions
             // 
-            this.txtInstructions.Location = new System.Drawing.Point(31, 246);
+            this.txtInstructions.Location = new System.Drawing.Point(31, 284);
             this.txtInstructions.Name = "txtInstructions";
             this.txtInstructions.Size = new System.Drawing.Size(200, 25);
             this.txtInstructions.TabIndex = 3;
@@ -101,7 +100,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(277, 84);
+            this.label4.Location = new System.Drawing.Point(28, 150);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(79, 17);
             this.label4.TabIndex = 5;
@@ -109,31 +108,15 @@
             // 
             // txtDiagnosis
             // 
-            this.txtDiagnosis.Location = new System.Drawing.Point(280, 113);
+            this.txtDiagnosis.Location = new System.Drawing.Point(31, 174);
             this.txtDiagnosis.Name = "txtDiagnosis";
-            this.txtDiagnosis.Size = new System.Drawing.Size(192, 25);
+            this.txtDiagnosis.Size = new System.Drawing.Size(200, 25);
             this.txtDiagnosis.TabIndex = 6;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(277, 155);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(86, 17);
-            this.label5.TabIndex = 5;
-            this.label5.Text = "Procedure";
-            // 
-            // txtProcedure
-            // 
-            this.txtProcedure.Location = new System.Drawing.Point(280, 182);
-            this.txtProcedure.Name = "txtProcedure";
-            this.txtProcedure.Size = new System.Drawing.Size(192, 25);
-            this.txtProcedure.TabIndex = 6;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(28, 283);
+            this.label6.Location = new System.Drawing.Point(28, 321);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(50, 17);
             this.label6.TabIndex = 5;
@@ -141,7 +124,7 @@
             // 
             // txtNotes
             // 
-            this.txtNotes.Location = new System.Drawing.Point(31, 311);
+            this.txtNotes.Location = new System.Drawing.Point(31, 345);
             this.txtNotes.Multiline = true;
             this.txtNotes.Name = "txtNotes";
             this.txtNotes.Size = new System.Drawing.Size(200, 47);
@@ -155,7 +138,7 @@
             this.materialButton1.Depth = 0;
             this.materialButton1.HighEmphasis = true;
             this.materialButton1.Icon = null;
-            this.materialButton1.Location = new System.Drawing.Point(397, 322);
+            this.materialButton1.Location = new System.Drawing.Point(156, 406);
             this.materialButton1.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton1.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton1.Name = "materialButton1";
@@ -176,7 +159,7 @@
             this.materialButton2.Depth = 0;
             this.materialButton2.HighEmphasis = false;
             this.materialButton2.Icon = null;
-            this.materialButton2.Location = new System.Drawing.Point(288, 322);
+            this.materialButton2.Location = new System.Drawing.Point(31, 406);
             this.materialButton2.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
             this.materialButton2.MouseState = MaterialSkin.MouseState.HOVER;
             this.materialButton2.Name = "materialButton2";
@@ -189,17 +172,31 @@
             this.materialButton2.UseVisualStyleBackColor = true;
             this.materialButton2.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // button1
+            // 
+            this.button1.BackgroundImage = global::M.A_Florencio_Dental_Records.Properties.Resources.health_check;
+            this.button1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.button1.FlatAppearance.BorderSize = 0;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Location = new System.Drawing.Point(209, 231);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(25, 25);
+            this.button1.TabIndex = 10;
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.MouseEnter += new System.EventHandler(this.button1_MouseEnter);
+            this.button1.MouseLeave += new System.EventHandler(this.button1_MouseLeave);
+            // 
             // AddPrescriptionDialog
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.ClientSize = new System.Drawing.Size(508, 380);
+            this.ClientSize = new System.Drawing.Size(265, 452);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.materialButton2);
             this.Controls.Add(this.materialButton1);
             this.Controls.Add(this.txtNotes);
-            this.Controls.Add(this.txtProcedure);
             this.Controls.Add(this.txtDiagnosis);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtInstructions);
             this.Controls.Add(this.dtpVisitDate);
@@ -214,7 +211,7 @@
             this.Padding = new System.Windows.Forms.Padding(4, 84, 4, 4);
             this.Sizable = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Add Prescription";
+            this.Text = "Add Diagnosis";
             this.Load += new System.EventHandler(this.AddPrescriptionDialog_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -231,11 +228,10 @@
         private System.Windows.Forms.TextBox txtInstructions;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtDiagnosis;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox txtProcedure;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox txtNotes;
         private MaterialSkin.Controls.MaterialButton materialButton1;
         private MaterialSkin.Controls.MaterialButton materialButton2;
+        private System.Windows.Forms.Button button1;
     }
 }

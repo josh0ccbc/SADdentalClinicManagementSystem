@@ -19,6 +19,11 @@ namespace M.A_Florencio_Dental_Records
         public MedicalRecordCard()
         {
             InitializeComponent();
+
+            ToolTip toolTip = new ToolTip();
+            toolTip.SetToolTip(button1, "View Patient Medical Record");
+            toolTip.SetToolTip(btnEdit, "Edit Patient Medical Record");
+            toolTip.SetToolTip(btnViewDC, "View Dental Chart");
         }
 
         private void MedicalRecordCard_Load(object sender, EventArgs e)

@@ -158,6 +158,7 @@ namespace M.A_Florencio_Dental_Records
                     Status VARCHAR(50) NULL,
                     Notes NVARCHAR(500) NULL,
                     AppointmentEndTime TIME NULL,
+                    CancellationReason NVARCHAR(500) NULL,
                     EndTime TIME NULL
                 );
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='PatientMedicalHistory' AND xtype='U')
@@ -251,11 +252,34 @@ namespace M.A_Florencio_Dental_Records
                     PerformedByUser NVARCHAR(100) NOT NULL,
                     Timestamp DATETIME NOT NULL DEFAULT GETDATE(),
                     Details NVARCHAR(MAX) NULL
-                );";
+                );
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='DentalChart' AND xtype='U')
+                    CREATE TABLE DentalChart (
+                        ChartID INT PRIMARY KEY IDENTITY(1,1),
+                        PatientID INT NOT NULL FOREIGN KEY REFERENCES Patients(PatientID),
+                        ToothNumber VARCHAR(3) NOT NULL,
+                        Condition VARCHAR(10),
+                        Restoration VARCHAR(10),
+                        Surgery VARCHAR(5),
+                        DateRecorded DATETIME DEFAULT GETDATE()
+                    )";
             using (SqlCommand cmd = new SqlCommand(sql, conn))
                 cmd.ExecuteNonQuery();
 
             // Safe column upgrade
+            string addCancellationColumn = @"
+                IF NOT EXISTS (
+                    SELECT * FROM sys.columns
+                    WHERE object_id = OBJECT_ID('Appointments')
+                    AND name = 'CancellationReason'
+                )
+                BEGIN
+                    ALTER TABLE Appointments
+                    ADD CancellationReason NVARCHAR(500) NULL;
+                END";
+            using (SqlCommand cmd = new SqlCommand(addCancellationColumn, conn))
+                cmd.ExecuteNonQuery();
+
             string alterColumn = @"
                 IF EXISTS (
                     SELECT * FROM sys.columns

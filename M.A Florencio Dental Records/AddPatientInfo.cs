@@ -311,20 +311,22 @@ namespace M.A_Florencio_Dental_Records
             patientData.GuardianRelationship = Grelationship.Text.Trim();
 
             int newPatientID = SavePatientToDB();
-
             if (newPatientID <= 0)
                 return;
 
             Form1 mainForm = Application.OpenForms.OfType<Form1>().FirstOrDefault();
             Form2 form2 = (Form2)this.FindForm();
-
             form2.Hide();
 
-            using (MedicalHistoryForm mhForm = new MedicalHistoryForm(newPatientID))
-            {
+            // ── Step 1: Medical History ───────────────────────────────────────
+            using (var mhForm = new MedicalHistoryForm(newPatientID))
                 mhForm.ShowDialog(mainForm);
-            }
 
+            // ── Step 2: Dental Chart ──────────────────────────────────────────
+            using (var dentalForm = new DentalChartForm(newPatientID))
+                dentalForm.ShowDialog(mainForm);
+
+            // ── Step 3: Return to main ────────────────────────────────────────
             if (mainForm != null)
             {
                 mainForm.LoadControl(new DBcontrol());

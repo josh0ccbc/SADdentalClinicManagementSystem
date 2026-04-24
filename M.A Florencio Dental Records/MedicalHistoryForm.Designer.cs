@@ -173,7 +173,7 @@
             this.btnSave.NoAccentTextColor = System.Drawing.Color.Empty;
             this.btnSave.Size = new System.Drawing.Size(75, 36);
             this.btnSave.TabIndex = 3;
-            this.btnSave.Text = "Save";
+            this.btnSave.Text = "Next";
             this.btnSave.Type = MaterialSkin.Controls.MaterialButton.MaterialButtonType.Contained;
             this.btnSave.UseAccentColor = false;
             this.btnSave.UseVisualStyleBackColor = true;
@@ -771,8 +771,8 @@
             this.Controls.Add(this.tabMedicalHistory);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnBack);
-            this.Controls.Add(this.btnNext);
             this.Controls.Add(this.btnSave);
+            this.Controls.Add(this.btnNext);
             this.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MaximizeBox = false;
             this.Name = "MedicalHistoryForm";

@@ -48,6 +48,7 @@
             this.materialButton3 = new MaterialSkin.Controls.MaterialButton();
             this.materialButton4 = new MaterialSkin.Controls.MaterialButton();
             this.cmbProcedure = new System.Windows.Forms.ComboBox();
+            this.btnViewMH = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -109,7 +110,7 @@
             // 
             this.txtMedication.Location = new System.Drawing.Point(22, 161);
             this.txtMedication.Name = "txtMedication";
-            this.txtMedication.Size = new System.Drawing.Size(255, 25);
+            this.txtMedication.Size = new System.Drawing.Size(215, 25);
             this.txtMedication.TabIndex = 9;
             // 
             // label6
@@ -272,6 +273,21 @@
             this.cmbProcedure.TabIndex = 20;
             this.cmbProcedure.SelectedIndexChanged += new System.EventHandler(this.cmbProcedure_SelectedIndexChanged);
             // 
+            // btnViewMH
+            // 
+            this.btnViewMH.BackgroundImage = global::M.A_Florencio_Dental_Records.Properties.Resources.health_check;
+            this.btnViewMH.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.btnViewMH.FlatAppearance.BorderSize = 0;
+            this.btnViewMH.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnViewMH.Location = new System.Drawing.Point(253, 161);
+            this.btnViewMH.Name = "btnViewMH";
+            this.btnViewMH.Size = new System.Drawing.Size(25, 25);
+            this.btnViewMH.TabIndex = 22;
+            this.btnViewMH.UseVisualStyleBackColor = true;
+            this.btnViewMH.Click += new System.EventHandler(this.btnViewMH_Click);
+            this.btnViewMH.MouseEnter += new System.EventHandler(this.btnViewMH_MouseEnter);
+            this.btnViewMH.MouseLeave += new System.EventHandler(this.btnViewMH_MouseLeave);
+            // 
             // pictureBox1
             // 
             this.pictureBox1.BackgroundImage = global::M.A_Florencio_Dental_Records.Properties.Resources._2Divider;
@@ -287,6 +303,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(652, 419);
+            this.Controls.Add(this.btnViewMH);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.cmbProcedure);
             this.Controls.Add(this.materialButton4);
@@ -345,5 +362,6 @@
         private MaterialSkin.Controls.MaterialButton materialButton4;
         private System.Windows.Forms.ComboBox cmbProcedure;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Button btnViewMH;
     }
 }

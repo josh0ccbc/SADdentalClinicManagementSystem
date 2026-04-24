@@ -253,6 +253,26 @@ namespace M.A_Florencio_Dental_Records.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap health_check {
+            get {
+                object obj = ResourceManager.GetObject("health-check", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap health_check2 {
+            get {
+                object obj = ResourceManager.GetObject("health-check2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap HoverArrowBack {
             get {
                 object obj = ResourceManager.GetObject("HoverArrowBack", resourceCulture);
@@ -266,6 +286,26 @@ namespace M.A_Florencio_Dental_Records.Properties {
         internal static System.Drawing.Bitmap HoverButton {
             get {
                 object obj = ResourceManager.GetObject("HoverButton", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap info {
+            get {
+                object obj = ResourceManager.GetObject("info", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap info2 {
+            get {
+                object obj = ResourceManager.GetObject("info2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

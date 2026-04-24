@@ -134,6 +134,12 @@
     <Compile Include="ArchivePatients.Designer.cs">
       <DependentUpon>ArchivePatients.cs</DependentUpon>
     </Compile>
+    <Compile Include="CancelReasonDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CancelReasonDialog.Designer.cs">
+      <DependentUpon>CancelReasonDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="CompleteAppointmentForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -155,6 +161,12 @@
     </Compile>
     <Compile Include="DBcontrol.Designer.cs">
       <DependentUpon>DBcontrol.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DentalChartForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DentalChartForm.Designer.cs">
+      <DependentUpon>DentalChartForm.cs</DependentUpon>
     </Compile>
     <Compile Include="EditMedicalRecordForm.cs">
       <SubType>Form</SubType>
@@ -277,11 +289,17 @@
     <EmbeddedResource Include="ArchivePatients.resx">
       <DependentUpon>ArchivePatients.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="CancelReasonDialog.resx">
+      <DependentUpon>CancelReasonDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="CompleteAppointmentForm.resx">
       <DependentUpon>CompleteAppointmentForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DBcontrol.resx">
       <DependentUpon>DBcontrol.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DentalChartForm.resx">
+      <DependentUpon>DentalChartForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EditMedicalRecordForm.resx">
       <DependentUpon>EditMedicalRecordForm.cs</DependentUpon>
@@ -431,6 +449,10 @@
     <Content Include="LOGOMA.ico" />
     <Content Include="LOGO_M.A.ico" />
     <Content Include="MyIcon.ico" />
+    <None Include="Resources\info2.png" />
+    <None Include="Resources\info.png" />
+    <None Include="Resources\health-check2.png" />
+    <None Include="Resources\health-check.png" />
     <None Include="Resources\2Divider.png" />
     <None Include="Resources\tooth2.png" />
     <None Include="Resources\tooth.png" />
